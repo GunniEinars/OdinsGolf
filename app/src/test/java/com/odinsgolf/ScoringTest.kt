@@ -60,6 +60,7 @@ class ScoringTest {
         assertEquals(8, round.totalStrokes)
         assertEquals(1, round.toPar)
         assertEquals("+1", Scoring.toParLabel(round.toPar))
-        assertEquals(4, Scoring.totalStableford(round)) // 2 + 2 + 0
+        // hole1 bogey (5 on par 4) = 1 pt, hole2 par = 2 pts, hole3 not entered = 0.
+        assertEquals(3, Scoring.totalStableford(round))
     }
 }
