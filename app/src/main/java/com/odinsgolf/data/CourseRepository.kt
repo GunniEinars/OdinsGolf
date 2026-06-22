@@ -6,7 +6,7 @@ import com.odinsgolf.data.model.Course
 import kotlinx.serialization.json.Json
 
 /**
- * Loads course definitions from assets/courses/*.json. Parsing is tolerant of
+ * Loads course definitions from the assets "courses" folder. Parsing is tolerant of
  * unknown keys so the JSON schema can grow without breaking older builds.
  */
 class CourseRepository(private val context: Context) {
