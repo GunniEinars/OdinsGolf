@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Simple golf flag mark on the adaptive-icon safe zone. -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M46,30 L46,78 L50,78 L50,30 Z" />
+    <path
+        android:fillColor="#FF1FA463"
+        android:pathData="M50,31 L74,38 L50,45 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M38,80 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+</vector>

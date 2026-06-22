@@ -1,0 +1,9 @@
+<resources>
+    <!-- Splash/launch theme: solid black window so the app opens cleanly on a dark watch. -->
+    <style name="OdinsGolfSplash" parent="@android:style/Theme.DeviceDefault">
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:colorBackground">@color/black</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+</resources>
