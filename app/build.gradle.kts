@@ -18,9 +18,24 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        // Stable debug key committed to the repo (app/odins-debug.keystore), so
+        // every build signs identically and the watch updates in place. Falls back
+        // to the default per-machine debug key if the file isn't present yet.
+        getByName("debug") {
+            val ks = file("odins-debug.keystore")
+            if (ks.exists()) {
+                storeFile = ks
+                storePassword = "odinsgolf"
+                keyAlias = "odinsgolf"
+                keyPassword = "odinsgolf"
+            }
+        }
+    }
+
     buildTypes {
         debug {
-            // Easy to sideload; no signing config needed for personal use.
+            // Signed with signingConfigs.debug (the committed stable key) automatically.
             isMinifyEnabled = false
         }
         release {

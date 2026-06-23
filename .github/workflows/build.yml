@@ -12,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # allows the one-time keystore commit below
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -25,14 +27,23 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      # Reuse one debug signing key across builds so the watch can update the
-      # APK in place (no uninstall). AGP signs debug builds with this keystore;
-      # caching it keeps the signature stable run-to-run.
-      - name: Stabilize debug signing key
-        uses: actions/cache@v4
-        with:
-          path: ~/.android/debug.keystore
-          key: odinsgolf-debug-keystore-v1
+      # Stable signing: generate ONE debug keystore and commit it to the repo
+      # (one time only). Every build afterwards — cloud or local — signs with the
+      # same key, so the watch updates in place with `adb install -r`. A debug
+      # keystore is not a secret (Android's default debug key is public).
+      - name: Ensure committed debug keystore
+        run: |
+          if [ ! -f app/odins-debug.keystore ]; then
+            keytool -genkeypair -v -keystore app/odins-debug.keystore \
+              -storepass odinsgolf -keypass odinsgolf -alias odinsgolf \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=OdinsGolf, O=OdinsGolf, C=IS"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -f app/odins-debug.keystore
+            git commit -m "ci: add stable debug keystore [skip ci]"
+            git push origin HEAD:main
+          fi
 
       - name: Set up Gradle (provisions gradle, no wrapper jar needed)
         uses: gradle/actions/setup-gradle@v4
