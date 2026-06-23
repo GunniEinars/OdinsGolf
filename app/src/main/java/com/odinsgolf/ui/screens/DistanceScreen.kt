@@ -28,6 +28,7 @@ import androidx.wear.compose.material.TimeText
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.geo.Distances
 import com.odinsgolf.ui.GolfUiState
+import com.odinsgolf.ui.components.DebugGpsReadout
 import com.odinsgolf.ui.components.GpsStatusPill
 import com.odinsgolf.ui.components.formatDistance
 import com.odinsgolf.ui.theme.OdinGreen
@@ -135,6 +136,10 @@ fun DistanceScreen(
 
             Spacer(Modifier.height(8.dp))
             GpsStatusPill(state.gps, state.nowElapsed, state.settings.debugGps)
+            if (state.settings.debugGps) {
+                Spacer(Modifier.height(4.dp))
+                DebugGpsReadout(state.gps, state.nowElapsed)
+            }
 
             Spacer(Modifier.height(10.dp))
 

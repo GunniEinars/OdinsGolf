@@ -60,7 +60,14 @@ fun StatusDot(color: Color, size: Int = 8) {
     ) {}
 }
 
-/** Compact "● Live · ±6 m" status row. */
+/** Seconds since the last fix, or null if there is no fix yet. */
+fun fixAgeSeconds(gps: GpsState, nowElapsed: Long): Long? {
+    val fixAt = gps.fixElapsedRealtimeMillis ?: return null
+    if (gps.point == null) return null
+    return ((nowElapsed - fixAt) / 1000).coerceAtLeast(0)
+}
+
+/** Compact "● Live · ±6 m · 3s" status row. */
 @Composable
 fun GpsStatusPill(gps: GpsState, nowElapsed: Long, debug: Boolean) {
     val status = gps.effectiveStatus(nowElapsed)
@@ -71,10 +78,30 @@ fun GpsStatusPill(gps: GpsState, nowElapsed: Long, debug: Boolean) {
         StatusDot(statusColor(status))
         val acc = gps.accuracyMeters
         val accText = if (acc != null && gps.point != null) " · ±${acc.roundToInt()} m" else ""
+        val age = fixAgeSeconds(gps, nowElapsed)
+        val ageText = if (age != null) " · ${age}s" else ""
         Text(
-            text = statusLabel(status) + accText,
+            text = statusLabel(status) + accText + ageText,
             color = OdinOnDim,
             style = androidx.wear.compose.material.MaterialTheme.typography.caption2,
         )
+    }
+}
+
+/** Developer GPS readout: exact coordinates, accuracy and fix age. */
+@Composable
+fun DebugGpsReadout(gps: GpsState, nowElapsed: Long) {
+    val p = gps.point
+    val age = fixAgeSeconds(gps, nowElapsed)
+    val lines = listOf(
+        "raw: ${gps.status}",
+        if (p != null) "lat ${"%.6f".format(java.util.Locale.US, p.lat)}" else "lat —",
+        if (p != null) "lon ${"%.6f".format(java.util.Locale.US, p.lon)}" else "lon —",
+        "acc ${gps.accuracyMeters?.let { "±${it.roundToInt()} m" } ?: "—"}  age ${age?.let { "${it}s" } ?: "—"}",
+    )
+    androidx.compose.foundation.layout.Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        lines.forEach {
+            Text(it, color = OdinOnDim, style = androidx.wear.compose.material.MaterialTheme.typography.caption3)
+        }
     }
 }
