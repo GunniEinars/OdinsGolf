@@ -2,4 +2,6 @@
     <color name="black">#FF000000</color>
     <color name="odins_green">#FF1FA463</color>
     <color name="ic_launcher_background">#FF0B3D2E</color>
+    <!-- Dark gunmetal app background (still very dark for OLED/sunlight). -->
+    <color name="odin_bg">#FF1C2026</color>
 </resources>

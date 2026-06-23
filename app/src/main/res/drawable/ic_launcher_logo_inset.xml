@@ -2,4 +2,4 @@
 <!-- The logo inset so it fits inside the circular launcher mask uncropped. -->
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
     android:drawable="@drawable/odins_logo"
-    android:inset="16%" />
+    android:inset="26%" />

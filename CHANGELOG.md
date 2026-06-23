@@ -26,6 +26,9 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
+- App background changed from pure black to a **dark gunmetal** (#1C2026) for a more
+  premium look while staying dark for OLED battery and outdoor contrast.
+- App icon logo inset further (26%) so the wordmark clears the circular launcher mask.
 - **CI signs every APK with a committed stable debug keystore** (`app/odins-debug.keystore`),
   so watch updates install in place with `adb install -r` (no uninstall). CI also writes
   build errors to the run Summary.

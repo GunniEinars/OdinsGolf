@@ -18,7 +18,7 @@ import java.util.Locale
 object RoundCardRenderer {
 
     // Not const: .toInt() on a Long literal isn't a compile-time constant.
-    private val BG = 0xFF000000.toInt()
+    private val BG = 0xFF1C2026.toInt()
     private val WHITE = 0xFFFFFFFF.toInt()
     private val DIM = 0xFF9CA3AF.toInt()
     private val GREEN = 0xFF22C55E.toInt()
