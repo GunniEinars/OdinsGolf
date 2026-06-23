@@ -19,7 +19,10 @@ import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import com.odinsgolf.data.model.GeoPoint
 import com.odinsgolf.geo.CanvasProjector
+import com.odinsgolf.geo.Distances
+import com.odinsgolf.geo.Geo
 import com.odinsgolf.ui.GolfUiState
+import com.odinsgolf.ui.components.formatDistance
 import com.odinsgolf.ui.theme.OdinAmber
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
@@ -39,13 +42,21 @@ fun HoleMapScreen(state: GolfUiState) {
 
             val tee = hole.tee
             val center = hole.green.center
-            val me = state.gps.point
+            val front = hole.green.front
+            val back = hole.green.back
+            // Ignore a GPS fix that is far from the hole (e.g. emulator default
+            // location, or a stale fix from another course): including it would
+            // blow up the bounding box and collapse the hole to a single dot.
+            val rawMe = state.gps.point
+            val me = rawMe?.takeIf { center == null || Geo.distanceMeters(it, center) < 2000 }
             val hazards = hole.hazards.map { it.point }
 
             // All points that must fit in view.
             val allPoints = buildList {
                 tee?.let { add(it) }
                 center?.let { add(it) }
+                front?.let { add(it) }
+                back?.let { add(it) }
                 me?.let { add(it) }
                 addAll(hazards)
                 addAll(hole.path)
@@ -100,15 +111,25 @@ fun HoleMapScreen(state: GolfUiState) {
                     isAntiAlias = true
                 }
 
-                hazards.forEach { h ->
+                hazards.forEachIndexed { i, h ->
                     val o = off(h)
-                    drawCircle(hazardColor, radius = 6f, center = o)
+                    drawCircle(hazardColor, radius = 8f, center = o)
+                    if (hazards.size > 1) {
+                        drawContext.canvas.nativeCanvas.drawText(
+                            "${i + 1}", o.x + 10f, o.y + 6f,
+                            label.apply { color = hazardColor.toArgb() },
+                        )
+                    }
                 }
 
+                // Green: a translucent body spanning front..back, with the centre pin.
                 center?.let {
                     val o = off(it)
-                    drawCircle(greenColor, radius = 11f, center = o)
-                    drawContext.canvas.nativeCanvas.drawText("G", o.x + 12f, o.y + 6f, label.apply { color = greenColor.toArgb() })
+                    drawCircle(greenColor.copy(alpha = 0.22f), radius = 20f, center = o)
+                    front?.let { f -> drawCircle(greenColor.copy(alpha = 0.8f), radius = 4f, center = off(f)) }
+                    back?.let { b -> drawCircle(greenColor.copy(alpha = 0.8f), radius = 4f, center = off(b)) }
+                    drawCircle(greenColor, radius = 7f, center = o)
+                    drawContext.canvas.nativeCanvas.drawText("G", o.x + 14f, o.y + 6f, label.apply { color = greenColor.toArgb() })
                 }
                 tee?.let {
                     val o = off(it)
@@ -129,14 +150,25 @@ fun HoleMapScreen(state: GolfUiState) {
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = 18.dp),
             )
 
-            if (state.gps.point == null) {
-                Text(
-                    text = "waiting for GPS",
-                    color = OdinOnDim,
-                    style = MaterialTheme.typography.caption3,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 18.dp),
-                )
+            // Bottom overlay: live front/centre/back yardages, or a GPS hint.
+            val units = state.settings.units
+            val d = Distances.toGreen(hole, me)
+            val overlay = if (me != null && d.centerMeters != null) {
+                buildString {
+                    d.frontMeters?.let { append("F ${formatDistance(it, units)}  ") }
+                    append("C ${formatDistance(d.centerMeters, units)}")
+                    d.backMeters?.let { append("  B ${formatDistance(it, units)}") }
+                    append(" ${units.suffix}")
+                }
+            } else {
+                "waiting for GPS"
             }
+            Text(
+                text = overlay,
+                color = OdinOnDim,
+                style = MaterialTheme.typography.caption2,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp),
+            )
         }
     }
 }

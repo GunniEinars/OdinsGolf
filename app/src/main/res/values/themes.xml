@@ -7,11 +7,12 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
-    <!-- Launch theme: clean white OS launch phase (transparent icon, no clipped
-         logo), then our full-screen Compose splash shows the whole logo. -->
+    <!-- Launch theme: the OS launch phase IS the brand moment — the OdinsGolf
+         logo on white, held briefly (see MainActivity.keepOnScreen). No separate
+         Compose splash, so there is no white-then-logo double take. -->
     <style name="Theme.OdinsGolf.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@android:color/white</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_transparent</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_logo_inset</item>
         <item name="postSplashScreenTheme">@style/Theme.OdinsGolf</item>
     </style>
 </resources>

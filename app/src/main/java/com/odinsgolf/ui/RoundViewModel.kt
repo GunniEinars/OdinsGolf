@@ -186,8 +186,28 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- Scoring ------------------------------------------------------------
 
-    fun incStrokes() = mutateScore { it.copy(strokes = (it.strokes + 1).coerceAtMost(20)) }
-    fun decStrokes() = mutateScore { it.copy(strokes = (it.strokes - 1).coerceAtLeast(0)) }
+    // The stepper opens on the hole's par (shown as a hint until confirmed), so a
+    // par/near-par score is one or two taps. "+" / "-" nudge from there. Pressing
+    // "-" past 1 (the slot "before 0") marks the hole picked up.
+    fun incStrokes() = mutateScore {
+        when {
+            it.pickedUp -> it.copy(pickedUp = false, strokes = 1)
+            it.strokes == 0 -> it.copy(strokes = (it.par + 1).coerceIn(1, 20)) // from par hint
+            else -> it.copy(strokes = (it.strokes + 1).coerceAtMost(20))
+        }
+    }
+    fun decStrokes() = mutateScore {
+        when {
+            it.pickedUp -> it // already at the far-left slot
+            it.strokes == 0 -> it.copy(strokes = (it.par - 1).coerceAtLeast(1)) // from par hint
+            it.strokes <= 1 -> it.copy(strokes = 0, pickedUp = true) // "left before 0" = pick up
+            else -> it.copy(strokes = it.strokes - 1)
+        }
+    }
+    /** Commit the displayed par hint as the score (player made par). */
+    fun confirmStrokes() = mutateScore {
+        if (it.strokes == 0 && !it.pickedUp) it.copy(strokes = it.par) else it
+    }
     fun incPutts() = mutateScore { it.copy(putts = (it.putts + 1).coerceAtMost(10)) }
     fun decPutts() = mutateScore { it.copy(putts = (it.putts - 1).coerceAtLeast(0)) }
     fun cycleFairway() = mutateScore {
@@ -274,10 +294,11 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- Survey -------------------------------------------------------------
 
-    fun captureSurveyPoint(kind: SurveyKind, label: String = "") {
-        val course = courseFlow.value ?: return
+    /** Returns true if a point was captured (course loaded and a GPS fix exists). */
+    fun captureSurveyPoint(kind: SurveyKind, label: String = ""): Boolean {
+        val course = courseFlow.value ?: return false
         val gps = location.state.value
-        val p = gps.point ?: return
+        val p = gps.point ?: return false
         val point = SurveyPoint(
             holeNumber = uiState.value.currentHole,
             kind = kind,
@@ -296,6 +317,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
                 else -> {}
             }
         }
+        return true
     }
 
     fun surveyExportPath(): String =

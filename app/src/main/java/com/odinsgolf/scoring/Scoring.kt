@@ -35,7 +35,7 @@ object Scoring {
      * net double bogey or worse = 0, net bogey = 1, net par = 2, net birdie = 3, ...
      */
     fun stablefordPoints(score: HoleScore, handicap: Int): Int {
-        if (!score.entered) return 0
+        if (score.pickedUp || !score.entered) return 0
         val net = netStrokes(score, handicap)
         val diff = score.par - net // positive = better than net par
         return (2 + diff).coerceAtLeast(0)

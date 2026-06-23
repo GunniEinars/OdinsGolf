@@ -5,6 +5,22 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ## [Unreleased]
 
 ### Added
+- **Stableford pick-up**: press "–" past 1 (the slot before 0) to mark a hole picked up
+  ("PU") — 0 Stableford points, excluded from gross totals, shown as PU/P on the scorecard,
+  summary card and hole list. Press "+" to un-pick.
+- **Score stepper opens on par**: each hole shows its par as a dim hint (tap the number to
+  keep par; "+"/"–" nudge from there), so par/bogey/birdie are one tap instead of many from 0.
+- **Hazards from OpenStreetMap**: bunkers and water for both courses, pulled from OSM and
+  assigned to the nearest hole(s) by playing line (Setberg 24, Kiðjaberg 55). Drawn on the
+  hole map (numbered) and listed as distances on the Distance screen. Reproducible via
+  `tools/bake_hazards.mjs`; flagged `HAZARDS_FROM_OSM` in the course JSON.
+- **Approximate green front/back**: synthesized from the green centre stepped ±11 m along
+  each hole's playing line (`CourseDto.toDomain`), so approach yardages show without field
+  work. A real Survey capture overrides them.
+- **Survey capture confirmation**: each capture confirms on screen with accuracy (e.g.
+  "Hazard captured ✓ (±5 m)"); the "Known for this hole" list shows a live hazard count.
+- Hole map enriched: green drawn as a body with front/back edge dots, hazards larger and
+  numbered, and a live Front/Centre/Back yardage strip along the bottom.
 - Decimal handicap **index** (e.g. 15.7) with a dedicated watch editor (single centered
   row: −1 / −0.1 / +0.1 / +1); stroke allocation uses the rounded playing handicap.
 - **Round modes**: 18 holes / Front 9 / Back 9 — controls hole navigation, the hole
@@ -26,6 +42,12 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
+- **Opening splash no longer double-takes**: the OS launch screen itself shows the OdinsGolf
+  logo (held ~0.75 s) and the app appears directly — replacing the previous
+  blank-white-then-Compose-logo sequence. The standalone Compose splash screen was removed.
+- Scorecard **"Export" is now "Save card"**: renders the round PNG to the watch Gallery with
+  on-screen feedback ("Card saved to Gallery ✓" / "Save failed" / "No score yet"), plus the
+  quiet JSON backup. Previously a silent JSON write that looked like nothing happened.
 - App background changed from pure black to a **dark gunmetal** (#1C2026) for a more
   premium look while staying dark for OLED battery and outdoor contrast.
 - App icon logo inset further (26%) so the wordmark clears the circular launcher mask.
@@ -37,12 +59,22 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Hole map rendered blank** (only the tee→green line on an empty screen) when a GPS fix was
+  far from the hole — the emulator default location or a stale fix from another course blew up
+  the map scale and collapsed the hole to a dot. Fixes more than 2 km from the green are now
+  ignored for framing.
 - Unclosed-comment compile error in CourseRepository (nested `/*` in a KDoc).
 - Wrong Stableford assertion in the round-totals test.
 - Permission screen showed a giant logo bleeding through (launch windowBackground had
   been set to the logo drawable; reverted to solid black).
 
 ### Notes
+- Green front/back are now **approximate** (centre ±11 m along the playing line), so the
+  Distance screen always shows Front/Back and the Survey "Known" list marks them present.
+  Capture on the green in Survey mode if you want surveyed edges; captures override the
+  approximation.
+- OSM hazards are assigned to a hole when within ~55 m of its tee→green line (or near the
+  green/tee), so a greenside hazard on a shared green can attach to both holes that use it.
 - Leiran (Hólmsvöllur í Leiru) was evaluated but **not added**: OSM has only the course
   boundary (no hole/green/tee geometry), so it would have no distances.
 - One active round is kept at a time; switching courses starts a fresh round for that course.

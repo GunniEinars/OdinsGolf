@@ -12,54 +12,1105 @@
   "sourceAttribution": [
     "Hole geometry (tees, greens), par and stroke index derived from OpenStreetMap golf_course way 241777619 (Kiðjabergsvöllur). Map data © OpenStreetMap contributors, ODbL (https://www.openstreetmap.org/copyright).",
     "Green center uses each hole's mapped centerline green end; green front/back must be captured in Survey mode.",
-    "No data was taken from any proprietary commercial golf-GPS app or database."
+    "No data was taken from any proprietary commercial golf-GPS app or database.",
+    "Hazards (bunkers, water) derived from OpenStreetMap and assigned to the nearest hole(s) by playing line. Map data © OpenStreetMap contributors, ODbL."
   ],
   "dataQuality": [
     "GEOMETRY_FROM_OSM",
     "PAR_FROM_OSM",
     "STROKE_INDEX_NEEDS_VERIFICATION",
-    "GREEN_FRONT_BACK_NEEDS_FIELD_VERIFICATION"
+    "GREEN_FRONT_BACK_NEEDS_FIELD_VERIFICATION",
+    "HAZARDS_FROM_OSM"
   ],
   "notes": "18 distinct holes. OSM stroke-index tags are slightly inconsistent (holes 11 and 13 both tagged SI 6; SI 4 missing) — verify against the printed scorecard.",
   "greens": [
-    { "id": "G1",  "center": { "lat": 63.9968327, "lon": -20.7749879 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G2",  "center": { "lat": 63.9970324, "lon": -20.7664123 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G3",  "center": { "lat": 63.9971846, "lon": -20.7625026 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G4",  "center": { "lat": 64.0015357, "lon": -20.7601483 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G5",  "center": { "lat": 64.0034007, "lon": -20.7603159 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G6",  "center": { "lat": 64.0008717, "lon": -20.7633302 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G7",  "center": { "lat": 63.9986424, "lon": -20.7634485 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G8",  "center": { "lat": 63.9977473, "lon": -20.7686618 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G9",  "center": { "lat": 64.0009789, "lon": -20.7760926 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G10", "center": { "lat": 63.9983741, "lon": -20.7814152 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G11", "center": { "lat": 63.9951055, "lon": -20.7841807 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G12", "center": { "lat": 63.9933288, "lon": -20.7844990 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G13", "center": { "lat": 63.9908565, "lon": -20.7902235 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G14", "center": { "lat": 63.9909749, "lon": -20.7856487 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G15", "center": { "lat": 63.9939796, "lon": -20.7823767 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G16", "center": { "lat": 63.9949564, "lon": -20.7815870 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G17", "center": { "lat": 63.9975388, "lon": -20.7789709 }, "quality": "GEOMETRY_FROM_OSM" },
-    { "id": "G18", "center": { "lat": 64.0005069, "lon": -20.7784995 }, "quality": "GEOMETRY_FROM_OSM" }
+    {
+      "id": "G1",
+      "center": {
+        "lat": 63.9968327,
+        "lon": -20.7749879
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G2",
+      "center": {
+        "lat": 63.9970324,
+        "lon": -20.7664123
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G3",
+      "center": {
+        "lat": 63.9971846,
+        "lon": -20.7625026
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G4",
+      "center": {
+        "lat": 64.0015357,
+        "lon": -20.7601483
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G5",
+      "center": {
+        "lat": 64.0034007,
+        "lon": -20.7603159
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G6",
+      "center": {
+        "lat": 64.0008717,
+        "lon": -20.7633302
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G7",
+      "center": {
+        "lat": 63.9986424,
+        "lon": -20.7634485
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G8",
+      "center": {
+        "lat": 63.9977473,
+        "lon": -20.7686618
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G9",
+      "center": {
+        "lat": 64.0009789,
+        "lon": -20.7760926
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G10",
+      "center": {
+        "lat": 63.9983741,
+        "lon": -20.7814152
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G11",
+      "center": {
+        "lat": 63.9951055,
+        "lon": -20.7841807
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G12",
+      "center": {
+        "lat": 63.9933288,
+        "lon": -20.784499
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G13",
+      "center": {
+        "lat": 63.9908565,
+        "lon": -20.7902235
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G14",
+      "center": {
+        "lat": 63.9909749,
+        "lon": -20.7856487
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G15",
+      "center": {
+        "lat": 63.9939796,
+        "lon": -20.7823767
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G16",
+      "center": {
+        "lat": 63.9949564,
+        "lon": -20.781587
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G17",
+      "center": {
+        "lat": 63.9975388,
+        "lon": -20.7789709
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    },
+    {
+      "id": "G18",
+      "center": {
+        "lat": 64.0005069,
+        "lon": -20.7784995
+      },
+      "quality": "GEOMETRY_FROM_OSM"
+    }
   ],
-  "hazards": [],
+  "hazards": [
+    {
+      "id": "bunker_1",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9909788,
+        "lon": -20.7898214,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_2",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9909473,
+        "lon": -20.7886774,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_3",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9986247,
+        "lon": -20.7751087,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_4",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9982748,
+        "lon": -20.7757135,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_5",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9980579,
+        "lon": -20.7753843,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_6",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9971273,
+        "lon": -20.7751639,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_7",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9970337,
+        "lon": -20.7752209,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_8",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9969337,
+        "lon": -20.7752506,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_9",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9969391,
+        "lon": -20.7667576,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_10",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.996898,
+        "lon": -20.7669246,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_11",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9973326,
+        "lon": -20.7624829,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_12",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9970455,
+        "lon": -20.7628255,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_13",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.001372,
+        "lon": -20.760006,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_14",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0006204,
+        "lon": -20.7604297,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_15",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0004637,
+        "lon": -20.7606604,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_16",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0034668,
+        "lon": -20.7605042,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_17",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0033921,
+        "lon": -20.7598803,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_18",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0029357,
+        "lon": -20.7602107,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_19",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.002772,
+        "lon": -20.7600398,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_20",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0010451,
+        "lon": -20.7630109,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_21",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0011569,
+        "lon": -20.7633219,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_22",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0013195,
+        "lon": -20.7631227,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_23",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.998689,
+        "lon": -20.7631747,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_24",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9988664,
+        "lon": -20.7632763,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_25",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9987905,
+        "lon": -20.7637612,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_26",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9980209,
+        "lon": -20.7684497,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_27",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9978869,
+        "lon": -20.7685697,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_28",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.997767,
+        "lon": -20.7683712,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_29",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9981795,
+        "lon": -20.7678614,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_30",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0008345,
+        "lon": -20.7757989,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_31",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.00081,
+        "lon": -20.775493,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_32",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0009983,
+        "lon": -20.7793639,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_33",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9984525,
+        "lon": -20.781643,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_34",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9993285,
+        "lon": -20.7816122,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_35",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0006489,
+        "lon": -20.7783619,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_36",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0004234,
+        "lon": -20.7787723,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_37",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 64.0002051,
+        "lon": -20.7786311,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_38",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.999695,
+        "lon": -20.7793236,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_39",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9996318,
+        "lon": -20.7790722,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_40",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9952043,
+        "lon": -20.7838024,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_41",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9952805,
+        "lon": -20.7842899,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_42",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9962187,
+        "lon": -20.7841018,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_43",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9961505,
+        "lon": -20.7832436,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_44",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.99642,
+        "lon": -20.7826331,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_45",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9960772,
+        "lon": -20.7830223,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_46",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9933933,
+        "lon": -20.7841637,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_47",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9912803,
+        "lon": -20.7880187,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_48",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9905973,
+        "lon": -20.7875671,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_49",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9906913,
+        "lon": -20.787221,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_50",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9906019,
+        "lon": -20.7871113,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_51",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9940585,
+        "lon": -20.7826642,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_52",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9949499,
+        "lon": -20.7818391,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_53",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9974311,
+        "lon": -20.7791114,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_54",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9972139,
+        "lon": -20.7803957,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    },
+    {
+      "id": "bunker_55",
+      "name": "Bunker",
+      "type": "bunker",
+      "point": {
+        "lat": 63.9972267,
+        "lon": -20.7799961,
+        "quality": "GEOMETRY_FROM_OSM"
+      }
+    }
+  ],
   "holes": [
-    { "number": 1,  "displayNumber": "1",  "par": 5, "strokeIndex": 7,  "greenId": "G1",  "tee": { "lat": 64.0007247, "lon": -20.7773746, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 2,  "displayNumber": "2",  "par": 4, "strokeIndex": 3,  "greenId": "G2",  "tee": { "lat": 63.9962831, "lon": -20.7743629, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 3,  "displayNumber": "3",  "par": 3, "strokeIndex": 13, "greenId": "G3",  "tee": { "lat": 63.9964909, "lon": -20.7654463, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 4,  "displayNumber": "4",  "par": 4, "strokeIndex": 1,  "greenId": "G4",  "tee": { "lat": 63.9983303, "lon": -20.7620931, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 5,  "displayNumber": "5",  "par": 4, "strokeIndex": 11, "greenId": "G5",  "tee": { "lat": 64.0007222, "lon": -20.7586238, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 6,  "displayNumber": "6",  "par": 4, "strokeIndex": 17, "greenId": "G6",  "tee": { "lat": 64.0026963, "lon": -20.7619456, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 7,  "displayNumber": "7",  "par": 3, "strokeIndex": 9,  "greenId": "G7",  "tee": { "lat": 64.0004924, "lon": -20.7632900, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 8,  "displayNumber": "8",  "par": 4, "strokeIndex": 15, "greenId": "G8",  "tee": { "lat": 63.9982937, "lon": -20.7621159, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 9,  "displayNumber": "9",  "par": 5, "strokeIndex": 5,  "greenId": "G9",  "tee": { "lat": 63.9980977, "lon": -20.7693236, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 10, "displayNumber": "10", "par": 4, "strokeIndex": 8,  "greenId": "G10", "tee": { "lat": 64.0013215, "lon": -20.7798726, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 11, "displayNumber": "11", "par": 4, "strokeIndex": 6,  "greenId": "G11", "tee": { "lat": 63.9982501, "lon": -20.7809238, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "OSM stroke index duplicates hole 13 (SI 6); verify on scorecard." },
-    { "number": 12, "displayNumber": "12", "par": 3, "strokeIndex": 16, "greenId": "G12", "tee": { "lat": 63.9946931, "lon": -20.7844853, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 13, "displayNumber": "13", "par": 5, "strokeIndex": 6,  "greenId": "G13", "tee": { "lat": 63.9947391, "lon": -20.7848723, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "OSM stroke index duplicates hole 11 (SI 6); verify on scorecard." },
-    { "number": 14, "displayNumber": "14", "par": 4, "strokeIndex": 12, "greenId": "G14", "tee": { "lat": 63.9905743, "lon": -20.7915012, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 15, "displayNumber": "15", "par": 4, "strokeIndex": 2,  "greenId": "G15", "tee": { "lat": 63.9907626, "lon": -20.7852315, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 16, "displayNumber": "16", "par": 3, "strokeIndex": 18, "greenId": "G16", "tee": { "lat": 63.9947503, "lon": -20.7844360, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 17, "displayNumber": "17", "par": 4, "strokeIndex": 14, "greenId": "G17", "tee": { "lat": 63.9949989, "lon": -20.7831318, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" },
-    { "number": 18, "displayNumber": "18", "par": 4, "strokeIndex": 10, "greenId": "G18", "tee": { "lat": 63.9976552, "lon": -20.7806656, "quality": "GEOMETRY_FROM_OSM" }, "greenFront": null, "greenBack": null, "hazardRefs": [], "path": [], "notes": "" }
+    {
+      "number": 1,
+      "displayNumber": "1",
+      "par": 5,
+      "strokeIndex": 7,
+      "greenId": "G1",
+      "tee": {
+        "lat": 64.0007247,
+        "lon": -20.7773746,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_3",
+        "bunker_4",
+        "bunker_5",
+        "bunker_6",
+        "bunker_7",
+        "bunker_8",
+        "bunker_35"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 2,
+      "displayNumber": "2",
+      "par": 4,
+      "strokeIndex": 3,
+      "greenId": "G2",
+      "tee": {
+        "lat": 63.9962831,
+        "lon": -20.7743629,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_9",
+        "bunker_10"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 3,
+      "displayNumber": "3",
+      "par": 3,
+      "strokeIndex": 13,
+      "greenId": "G3",
+      "tee": {
+        "lat": 63.9964909,
+        "lon": -20.7654463,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_11",
+        "bunker_12"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 4,
+      "displayNumber": "4",
+      "par": 4,
+      "strokeIndex": 1,
+      "greenId": "G4",
+      "tee": {
+        "lat": 63.9983303,
+        "lon": -20.7620931,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_13",
+        "bunker_14",
+        "bunker_15"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 5,
+      "displayNumber": "5",
+      "par": 4,
+      "strokeIndex": 11,
+      "greenId": "G5",
+      "tee": {
+        "lat": 64.0007222,
+        "lon": -20.7586238,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_13",
+        "bunker_16",
+        "bunker_17",
+        "bunker_18",
+        "bunker_19"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 6,
+      "displayNumber": "6",
+      "par": 4,
+      "strokeIndex": 17,
+      "greenId": "G6",
+      "tee": {
+        "lat": 64.0026963,
+        "lon": -20.7619456,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_20",
+        "bunker_21",
+        "bunker_22"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 7,
+      "displayNumber": "7",
+      "par": 3,
+      "strokeIndex": 9,
+      "greenId": "G7",
+      "tee": {
+        "lat": 64.0004924,
+        "lon": -20.76329,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_23",
+        "bunker_24",
+        "bunker_25"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 8,
+      "displayNumber": "8",
+      "par": 4,
+      "strokeIndex": 15,
+      "greenId": "G8",
+      "tee": {
+        "lat": 63.9982937,
+        "lon": -20.7621159,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_23",
+        "bunker_26",
+        "bunker_27",
+        "bunker_28",
+        "bunker_29"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 9,
+      "displayNumber": "9",
+      "par": 5,
+      "strokeIndex": 5,
+      "greenId": "G9",
+      "tee": {
+        "lat": 63.9980977,
+        "lon": -20.7693236,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_26",
+        "bunker_27",
+        "bunker_30",
+        "bunker_31"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 10,
+      "displayNumber": "10",
+      "par": 4,
+      "strokeIndex": 8,
+      "greenId": "G10",
+      "tee": {
+        "lat": 64.0013215,
+        "lon": -20.7798726,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_32",
+        "bunker_33",
+        "bunker_34"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 11,
+      "displayNumber": "11",
+      "par": 4,
+      "strokeIndex": 6,
+      "greenId": "G11",
+      "tee": {
+        "lat": 63.9982501,
+        "lon": -20.7809238,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_33",
+        "bunker_40",
+        "bunker_41",
+        "bunker_42",
+        "bunker_43",
+        "bunker_44",
+        "bunker_45"
+      ],
+      "path": [],
+      "notes": "OSM stroke index duplicates hole 13 (SI 6); verify on scorecard."
+    },
+    {
+      "number": 12,
+      "displayNumber": "12",
+      "par": 3,
+      "strokeIndex": 16,
+      "greenId": "G12",
+      "tee": {
+        "lat": 63.9946931,
+        "lon": -20.7844853,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_46"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 13,
+      "displayNumber": "13",
+      "par": 5,
+      "strokeIndex": 6,
+      "greenId": "G13",
+      "tee": {
+        "lat": 63.9947391,
+        "lon": -20.7848723,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_1"
+      ],
+      "path": [],
+      "notes": "OSM stroke index duplicates hole 11 (SI 6); verify on scorecard."
+    },
+    {
+      "number": 14,
+      "displayNumber": "14",
+      "par": 4,
+      "strokeIndex": 12,
+      "greenId": "G14",
+      "tee": {
+        "lat": 63.9905743,
+        "lon": -20.7915012,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_1",
+        "bunker_2",
+        "bunker_47",
+        "bunker_48",
+        "bunker_49",
+        "bunker_50"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 15,
+      "displayNumber": "15",
+      "par": 4,
+      "strokeIndex": 2,
+      "greenId": "G15",
+      "tee": {
+        "lat": 63.9907626,
+        "lon": -20.7852315,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_51"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 16,
+      "displayNumber": "16",
+      "par": 3,
+      "strokeIndex": 18,
+      "greenId": "G16",
+      "tee": {
+        "lat": 63.9947503,
+        "lon": -20.784436,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_40",
+        "bunker_52"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 17,
+      "displayNumber": "17",
+      "par": 4,
+      "strokeIndex": 14,
+      "greenId": "G17",
+      "tee": {
+        "lat": 63.9949989,
+        "lon": -20.7831318,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_40",
+        "bunker_52",
+        "bunker_53",
+        "bunker_54",
+        "bunker_55"
+      ],
+      "path": [],
+      "notes": ""
+    },
+    {
+      "number": 18,
+      "displayNumber": "18",
+      "par": 4,
+      "strokeIndex": 10,
+      "greenId": "G18",
+      "tee": {
+        "lat": 63.9976552,
+        "lon": -20.7806656,
+        "quality": "GEOMETRY_FROM_OSM"
+      },
+      "greenFront": null,
+      "greenBack": null,
+      "hazardRefs": [
+        "bunker_35",
+        "bunker_36",
+        "bunker_37",
+        "bunker_38",
+        "bunker_39",
+        "bunker_54"
+      ],
+      "path": [],
+      "notes": ""
+    }
   ]
 }

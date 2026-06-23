@@ -6,6 +6,7 @@ import com.odinsgolf.data.model.Green
 import com.odinsgolf.data.model.Hazard
 import com.odinsgolf.data.model.Hole
 import com.odinsgolf.data.model.Units
+import com.odinsgolf.geo.Geo
 import kotlinx.serialization.Serializable
 
 /**
@@ -101,11 +102,19 @@ data class HoleDto(
         hazardsById: Map<String, HazardDto>,
     ): Hole {
         val center = greenId?.let { greensById[it]?.center?.toGeoPointOrNull() }
-        val green = Green(
-            center = center,
-            front = greenFront?.toGeoPointOrNull(),
-            back = greenBack?.toGeoPointOrNull(),
-        )
+        val teePoint = tee?.toGeoPointOrNull()
+        var front = greenFront?.toGeoPointOrNull()
+        var back = greenBack?.toGeoPointOrNull()
+        // When real front/back edges aren't supplied, approximate them by stepping
+        // off the green centre along this hole's playing line (centre±~half a green
+        // depth). Front is toward the tee, back away from it. A real Survey capture
+        // overrides these. Good enough to show approach yardages without field work.
+        if (front == null && back == null && center != null && teePoint != null) {
+            val bearingToGreen = Geo.bearingDegrees(teePoint, center)
+            front = Geo.destination(center, (bearingToGreen + 180.0) % 360.0, GREEN_HALF_DEPTH_M)
+            back = Geo.destination(center, bearingToGreen, GREEN_HALF_DEPTH_M)
+        }
+        val green = Green(center = center, front = front, back = back)
         val resolvedHazards = hazardRefs.mapNotNull { ref ->
             hazardsById[ref]?.let { h ->
                 h.point.toGeoPointOrNull()?.let { p -> Hazard(h.id, h.name, h.type, p) }
@@ -116,11 +125,16 @@ data class HoleDto(
             displayNumber = displayNumber ?: number.toString(),
             par = par,
             strokeIndex = strokeIndex,
-            tee = tee?.toGeoPointOrNull(),
+            tee = teePoint,
             green = green,
             hazards = resolvedHazards,
             path = path.mapNotNull { it.toGeoPointOrNull() },
             notes = notes,
         )
+    }
+
+    private companion object {
+        /** Approx. green centre→edge distance (m) used to synthesize front/back. */
+        const val GREEN_HALF_DEPTH_M = 11.0
     }
 }

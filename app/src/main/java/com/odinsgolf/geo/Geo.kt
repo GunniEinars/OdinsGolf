@@ -1,6 +1,7 @@
 package com.odinsgolf.geo
 
 import com.odinsgolf.data.model.GeoPoint
+import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
@@ -22,6 +23,20 @@ object Geo {
         val h = sin(dLat / 2).let { it * it } +
             cos(lat1) * cos(lat2) * sin(dLon / 2).let { it * it }
         return 2 * EARTH_RADIUS_M * atan2(sqrt(h), sqrt(1 - h))
+    }
+
+    /** Point reached by travelling [meters] from [from] along [bearingDeg] (0 = north). */
+    fun destination(from: GeoPoint, bearingDeg: Double, meters: Double): GeoPoint {
+        val angular = meters / EARTH_RADIUS_M
+        val brng = Math.toRadians(bearingDeg)
+        val lat1 = Math.toRadians(from.lat)
+        val lon1 = Math.toRadians(from.lon)
+        val lat2 = asin(sin(lat1) * cos(angular) + cos(lat1) * sin(angular) * cos(brng))
+        val lon2 = lon1 + atan2(
+            sin(brng) * sin(angular) * cos(lat1),
+            cos(angular) - sin(lat1) * sin(lat2),
+        )
+        return GeoPoint(Math.toDegrees(lat2), Math.toDegrees(lon2))
     }
 
     /** Initial bearing from a to b, degrees 0..360 (0 = north). */

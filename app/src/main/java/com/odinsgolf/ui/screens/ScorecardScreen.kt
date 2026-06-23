@@ -1,5 +1,6 @@
 package com.odinsgolf.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,14 +30,17 @@ import com.odinsgolf.scoring.Scoring
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.formatHandicap
 import com.odinsgolf.ui.components.rotaryScroll
+import com.odinsgolf.ui.theme.OdinAmber
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
+import kotlinx.coroutines.launch
 
 @Composable
 fun ScorecardScreen(
     state: GolfUiState,
     onIncStrokes: () -> Unit,
     onDecStrokes: () -> Unit,
+    onConfirmStrokes: () -> Unit,
     onIncPutts: () -> Unit,
     onDecPutts: () -> Unit,
     onCycleFairway: () -> Unit,
@@ -49,6 +53,8 @@ fun ScorecardScreen(
     Scaffold(timeText = { TimeText() }) {
         val scroll = rememberScrollState()
         val saveMsg = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val scope = androidx.compose.runtime.rememberCoroutineScope()
         val hole = state.hole
         val score = state.currentScore
         val round = state.round
@@ -66,20 +72,37 @@ fun ScorecardScreen(
                 fontWeight = FontWeight.SemiBold,
             )
 
-            // Big stroke stepper.
+            // Big stroke stepper. Opens on par (dim hint) until entered/confirmed.
+            val pickedUp = score?.pickedUp == true
+            val entered = score?.entered == true
+            val display = when {
+                pickedUp -> "PU"
+                entered -> score!!.strokes.toString()
+                else -> (hole?.par ?: 0).toString()
+            }
+            val displayColor = when {
+                pickedUp -> OdinAmber
+                entered -> OdinGreen
+                else -> OdinOnDim
+            }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StepBtn("–", onDecStrokes)
                 Text(
-                    text = (score?.strokes ?: 0).let { if (it == 0) "–" else it.toString() },
-                    color = OdinGreen,
-                    fontSize = 44.sp,
+                    text = display,
+                    color = displayColor,
+                    fontSize = if (pickedUp) 30.sp else 44.sp,
                     fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable(onClick = onConfirmStrokes),
                 )
                 StepBtn("+", onIncStrokes)
             }
             val toPar = score?.toPar ?: 0
             Text(
-                if (score?.entered == true) "this hole ${Scoring.toParLabel(toPar)}" else "strokes",
+                when {
+                    pickedUp -> "picked up · 0 pts"
+                    entered -> "this hole ${Scoring.toParLabel(toPar)}"
+                    else -> "tap to keep par · – past 1 = pick up"
+                },
                 color = OdinOnDim,
                 style = MaterialTheme.typography.caption2,
             )
@@ -154,7 +177,27 @@ fun ScorecardScreen(
             }
             Spacer(Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                CompactChip(label = { Text("Export") }, onClick = onExport)
+                CompactChip(
+                    label = { Text("Save card") },
+                    onClick = {
+                        val r = round
+                        if (r == null || r.enteredHoles.isEmpty()) {
+                            saveMsg.value = "No score yet"
+                        } else {
+                            saveMsg.value = "Saving…"
+                            scope.launch {
+                                val ok = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                    onExport() // JSON backup pullable via adb
+                                    val bmp = com.odinsgolf.data.RoundCardRenderer.render(r)
+                                    com.odinsgolf.data.MediaExport.saveToGallery(
+                                        context, bmp, "OdinsGolf_${r.startedEpochMillis}",
+                                    )
+                                }
+                                saveMsg.value = if (ok) "Card saved to Gallery ✓" else "Save failed"
+                            }
+                        }
+                    },
+                )
                 CompactChip(label = { Text("Reset") }, onClick = onReset)
             }
         }

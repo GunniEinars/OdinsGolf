@@ -56,6 +56,7 @@ fun OdinsGolfApp(vm: RoundViewModel) {
                 state = state,
                 onIncStrokes = vm::incStrokes,
                 onDecStrokes = vm::decStrokes,
+                onConfirmStrokes = vm::confirmStrokes,
                 onIncPutts = vm::incPutts,
                 onDecPutts = vm::decPutts,
                 onCycleFairway = vm::cycleFairway,

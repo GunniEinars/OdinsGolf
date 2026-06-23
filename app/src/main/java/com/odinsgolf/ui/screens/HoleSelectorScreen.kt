@@ -35,7 +35,9 @@ fun HoleSelectorScreen(
         ScalingLazyColumn(state = listState, modifier = Modifier.rotaryScroll(listState)) {
             item { ListHeader { Text("Select hole") } }
             items(holes) { hole ->
-                val entered = round?.holes?.firstOrNull { it.holeNumber == hole.number }?.entered == true
+                val holeScore = round?.holes?.firstOrNull { it.holeNumber == hole.number }
+                val entered = holeScore?.entered == true
+                val pickedUp = holeScore?.pickedUp == true
                 val isCurrent = hole.number == state.currentHole
                 Chip(
                     modifier = Modifier.fillMaxWidth(),
@@ -52,7 +54,11 @@ fun HoleSelectorScreen(
                     },
                     secondaryLabel = {
                         Text(
-                            if (entered) "Score entered ✓" else "—",
+                            when {
+                                pickedUp -> "Picked up"
+                                entered -> "Score entered ✓"
+                                else -> "—"
+                            },
                             color = if (entered) OdinGreen else OdinOnDim,
                         )
                     },

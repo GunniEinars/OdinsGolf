@@ -6,7 +6,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 enum class FairwayResult { NONE, HIT, MISS }
 
-/** Per-hole score entry. Strokes of 0 means "not entered yet". */
+/**
+ * Per-hole score entry. Strokes of 0 means "not entered yet". [pickedUp] marks a
+ * hole the player abandoned (picked the ball up): it scores 0 Stableford points
+ * and is excluded from gross totals, but is shown as "PU" rather than a blank.
+ */
 @Serializable
 data class HoleScore(
     val holeNumber: Int,
@@ -16,8 +20,11 @@ data class HoleScore(
     val putts: Int = 0,
     val fairway: FairwayResult = FairwayResult.NONE,
     val gir: Boolean = false,
+    val pickedUp: Boolean = false,
 ) {
     val entered: Boolean get() = strokes > 0
+    /** The player engaged with this hole (entered a gross score or picked up). */
+    val played: Boolean get() = entered || pickedUp
     val toPar: Int get() = if (entered) strokes - par else 0
 }
 

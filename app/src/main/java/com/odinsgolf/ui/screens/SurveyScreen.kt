@@ -32,13 +32,24 @@ import com.odinsgolf.ui.theme.OdinOnDim
 @Composable
 fun SurveyScreen(
     state: GolfUiState,
-    onCapture: (SurveyKind) -> Unit,
+    onCapture: (SurveyKind) -> Boolean,
 ) {
     Scaffold(timeText = { TimeText() }) {
         val scroll = rememberScrollState()
         val hole = state.hole
+        val captureMsg = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
         val canCapture = state.gps.effectiveStatus(state.nowElapsed).let {
             it == GpsStatus.GOOD_FIX || it == GpsStatus.WEAK_FIX
+        }
+        // Confirm a capture with the kind and the accuracy at the moment it lands.
+        fun capture(kind: SurveyKind, label: String) {
+            val ok = onCapture(kind)
+            val acc = state.gps.accuracyMeters
+            captureMsg.value = if (ok) {
+                "$label captured ✓" + (acc?.let { " (±${it.toInt()} m)" } ?: "")
+            } else {
+                "No GPS fix — try again"
+            }
         }
         Column(
             modifier = Modifier
@@ -59,11 +70,21 @@ fun SurveyScreen(
             GpsStatusPill(state.gps, state.nowElapsed, state.settings.debugGps)
             Spacer(Modifier.height(10.dp))
 
-            CaptureChip("Capture TEE", canCapture) { onCapture(SurveyKind.TEE) }
-            CaptureChip("Capture GREEN FRONT", canCapture) { onCapture(SurveyKind.FRONT) }
-            CaptureChip("Capture GREEN CENTER", canCapture) { onCapture(SurveyKind.CENTER) }
-            CaptureChip("Capture GREEN BACK", canCapture) { onCapture(SurveyKind.BACK) }
-            CaptureChip("Capture HAZARD", canCapture) { onCapture(SurveyKind.HAZARD) }
+            CaptureChip("Capture TEE", canCapture) { capture(SurveyKind.TEE, "Tee") }
+            CaptureChip("Capture GREEN FRONT", canCapture) { capture(SurveyKind.FRONT, "Green front") }
+            CaptureChip("Capture GREEN CENTER", canCapture) { capture(SurveyKind.CENTER, "Green center") }
+            CaptureChip("Capture GREEN BACK", canCapture) { capture(SurveyKind.BACK, "Green back") }
+            CaptureChip("Capture HAZARD", canCapture) { capture(SurveyKind.HAZARD, "Hazard") }
+
+            if (captureMsg.value.isNotEmpty()) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    captureMsg.value,
+                    color = OdinGreen,
+                    style = MaterialTheme.typography.caption2,
+                    textAlign = TextAlign.Center,
+                )
+            }
 
             Spacer(Modifier.height(10.dp))
             // Show what is currently known for this hole (incl. captured overlay).
@@ -73,6 +94,7 @@ fun SurveyScreen(
                 Known("Front", it.green.front != null)
                 Known("Center", it.green.center != null)
                 Known("Back", it.green.back != null)
+                Known("Hazards", it.hazards.isNotEmpty(), count = it.hazards.size)
             }
             Spacer(Modifier.height(8.dp))
             Text(
@@ -97,9 +119,14 @@ private fun CaptureChip(label: String, enabled: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun Known(label: String, present: Boolean) {
+private fun Known(label: String, present: Boolean, count: Int? = null) {
+    val mark = when {
+        count != null -> if (count > 0) "$count" else "—"
+        present -> "✓"
+        else -> "—"
+    }
     Text(
-        "$label: ${if (present) "✓" else "—"}",
+        "$label: $mark",
         color = if (present) OdinGreen else OdinOnDim,
         style = MaterialTheme.typography.caption2,
     )

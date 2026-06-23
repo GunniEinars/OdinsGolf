@@ -75,10 +75,11 @@ class SurveyRepository(private val context: Context) {
             val newFront = pt(SurveyKind.FRONT) ?: hole.green.front
             val newBack = pt(SurveyKind.BACK) ?: hole.green.back
             val newTee = pt(SurveyKind.TEE) ?: hole.tee
+            val baseHazardCount = hole.hazards.size
             val extraHazards = pts.filter { it.kind == SurveyKind.HAZARD }.mapIndexed { i, p ->
                 Hazard(
                     id = "survey_${hole.number}_$i",
-                    name = p.label.ifBlank { "Hazard" },
+                    name = p.label.ifBlank { "Hazard ${baseHazardCount + i + 1}" },
                     type = "hazard",
                     point = GeoPoint(p.lat, p.lon),
                 )

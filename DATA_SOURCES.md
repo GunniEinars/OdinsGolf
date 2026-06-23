@@ -42,6 +42,46 @@ hole 8 par 3 → hole 17 par 4 (exactly the shared-green/different-par structure
 > tagged SI 3; SI 10 absent). Verify against the printed scorecard and fix `strokeIndex` in
 > `app/src/main/assets/courses/setbergsvollur.json`.
 
+## Hazards from OSM (done, both courses)
+
+Bunkers and water are openly mapped in OSM, so they're pulled and baked into the course JSON
+(top-level `hazards` + per-hole `hazardRefs`) by `tools/bake_hazards.mjs`:
+
+1. Query Overpass within each course bbox for `golf=bunker` / `golf=water_hazard` /
+   `golf=lateral_water_hazard` and `natural=water`.
+2. Dedupe feature centres within ~9 m (water polygons are sometimes double-tagged).
+3. Assign each hazard to a hole when it lies within ~55 m of that hole's tee→green line, or
+   within ~32 m of its green centre, or ~28 m of its tee. A greenside hazard on a shared green
+   can therefore attach to both holes that use the green.
+
+Result: **Setberg 24** hazards (1 water, 23 bunkers), **Kiðjaberg 55** bunkers. Flagged
+`HAZARDS_FROM_OSM` in the JSON; an extra ODbL attribution line is appended in each file.
+Hazards show numbered on the hole map and as distances on the Distance screen.
+
+## Green front/back edges (approximated, not from OSM)
+
+Front/back greens are **not** in OSM. Rather than leave them blank (and force a Survey
+capture), they're synthesized at load time in `CourseDto.toDomain`: step the green centre
+±11 m along that hole's tee→green bearing (front toward the tee, back away). This is an
+**approximation** — good enough for an approach yardage, not a surveyed edge — and any real
+Survey capture overrides it. The `GREEN_FRONT_BACK_NEEDS_FIELD_VERIFICATION` flag stays.
+
+## Reproduce the hazard query
+
+```overpassql
+[out:json][timeout:25];
+(
+  way["golf"~"bunker|water_hazard|lateral_water_hazard"]({{bbox}});
+  way["natural"="water"]({{bbox}});
+  relation["natural"="water"]({{bbox}});
+);
+out center tags;
+```
+
+`{{bbox}}` = `south,west,north,east`. Setberg ≈ `64.0655,-21.9320,64.0750,-21.9185`;
+Kiðjaberg ≈ `63.9895,-20.7925,64.0040,-20.7575`. Overpass needs a `User-Agent` header (a bare
+request gets HTTP 406). Then run `node tools/bake_hazards.mjs`.
+
 ## OSM attribution (required)
 
 This project uses data from **OpenStreetMap**, © OpenStreetMap contributors, licensed under the

@@ -124,7 +124,11 @@ private fun NineRow(label: String, range: IntRange, round: Round) {
         Text(label, color = OdinOnDim, style = MaterialTheme.typography.caption3, modifier = Modifier.width(24.dp))
         holes.forEach { hs ->
             Text(
-                text = if (hs.entered) hs.strokes.toString() else "–",
+                text = when {
+                    hs.pickedUp -> "P"
+                    hs.entered -> hs.strokes.toString()
+                    else -> "–"
+                },
                 color = cellColor(hs),
                 style = MaterialTheme.typography.caption2,
                 textAlign = TextAlign.Center,
@@ -142,6 +146,7 @@ private fun NineRow(label: String, range: IntRange, round: Round) {
 }
 
 private fun cellColor(s: HoleScore): Color = when {
+    s.pickedUp -> OdinAmber
     !s.entered -> OdinOnDim
     s.strokes < s.par -> OdinGreen
     s.strokes == s.par -> Color.White

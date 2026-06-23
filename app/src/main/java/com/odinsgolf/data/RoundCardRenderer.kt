@@ -77,7 +77,12 @@ object RoundCardRenderer {
         holes.forEachIndexed { i, hs ->
             p.color = cellColor(hs)
             val x = left + cellW * i + cellW / 2f
-            c.drawText(if (hs.entered) hs.strokes.toString() else "–", x, y, p)
+            val cell = when {
+                hs.pickedUp -> "P"
+                hs.entered -> hs.strokes.toString()
+                else -> "–"
+            }
+            c.drawText(cell, x, y, p)
         }
 
         val sub = round.strokesForRange(range)
@@ -89,6 +94,7 @@ object RoundCardRenderer {
     }
 
     private fun cellColor(s: HoleScore): Int = when {
+        s.pickedUp -> AMBER
         !s.entered -> DIM
         s.strokes < s.par -> GREEN
         s.strokes == s.par -> WHITE
