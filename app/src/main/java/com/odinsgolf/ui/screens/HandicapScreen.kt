@@ -51,10 +51,10 @@ fun HandicapScreen(
             Spacer(Modifier.height(12.dp))
             // All four controls on one row, sitting in the reachable middle band.
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                StepButton("−1") { onAdjust(-1.0) }
-                StepButton("−.1") { onAdjust(-0.1) }
-                StepButton("+.1") { onAdjust(0.1) }
                 StepButton("+1") { onAdjust(1.0) }
+                StepButton("−1") { onAdjust(-1.0) }
+                StepButton("+.1") { onAdjust(0.1) }
+                StepButton("−.1") { onAdjust(-0.1) }
             }
         }
     }

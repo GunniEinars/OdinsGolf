@@ -25,9 +25,9 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - **CI signs every APK with a committed stable debug keystore** (`app/odins-debug.keystore`),
   so watch updates install in place with `adb install -r` (no uninstall). CI also writes
   build errors to the run Summary.
-- Launch now uses the AndroidX **SplashScreen API** to show the **logo** at the standard
-  splash size on white, then opens straight into the app (the separate in-app splash page
-  was removed).
+- Launch shows the **full logo uncropped** on a white full-screen splash (the OS launch
+  phase is a clean blank to avoid the circular-mask clipping that affects wide logos). The
+  **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
 - Unclosed-comment compile error in CourseRepository (nested `/*` in a KDoc).
