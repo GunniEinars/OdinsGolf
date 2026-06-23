@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.odinsgolf.ui.OdinsGolfApp
 import com.odinsgolf.ui.RoundViewModel
 import com.odinsgolf.ui.screens.PermissionScreen
+import com.odinsgolf.ui.screens.SplashScreen
 import com.odinsgolf.ui.theme.OdinsGolfTheme
 
 class MainActivity : ComponentActivity() {
@@ -72,10 +74,16 @@ class MainActivity : ComponentActivity() {
                     onDispose { }
                 }
 
-                if (granted) {
-                    OdinsGolfApp(vm)
-                } else {
-                    PermissionScreen(onRequest = {
+                var showSplash by remember { mutableStateOf(true) }
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(1300)
+                    showSplash = false
+                }
+
+                when {
+                    showSplash -> SplashScreen()
+                    granted -> OdinsGolfApp(vm)
+                    else -> PermissionScreen(onRequest = {
                         launcher.launch(
                             arrayOf(
                                 Manifest.permission.ACCESS_FINE_LOCATION,
