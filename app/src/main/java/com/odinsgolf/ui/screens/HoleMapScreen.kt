@@ -65,7 +65,18 @@ fun HoleMapScreen(state: GolfUiState) {
                     return Offset(pt.x, pt.y)
                 }
 
-                // Line: me -> center.
+                // Playing line tee -> green, always drawn so the hole reads even
+                // without a GPS fix (e.g. indoors / before the first fix).
+                if (tee != null && center != null) {
+                    drawLine(
+                        color = OdinGreen.copy(alpha = 0.7f),
+                        start = off(tee),
+                        end = off(center),
+                        strokeWidth = 4f,
+                    )
+                }
+
+                // Your position -> green (dashed); only when a fix is available.
                 if (me != null && center != null) {
                     drawLine(
                         color = lineColor,
@@ -117,6 +128,15 @@ fun HoleMapScreen(state: GolfUiState) {
                 style = MaterialTheme.typography.caption2,
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = 18.dp),
             )
+
+            if (state.gps.point == null) {
+                Text(
+                    text = "waiting for GPS",
+                    color = OdinOnDim,
+                    style = MaterialTheme.typography.caption3,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 18.dp),
+                )
+            }
         }
     }
 }

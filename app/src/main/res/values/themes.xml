@@ -1,8 +1,8 @@
 <resources>
     <!-- Splash/launch theme: solid black window so the app opens cleanly on a dark watch. -->
-    <!-- White to match the logo's field, so the very first frame matches the splash. -->
+    <!-- First frame already shows the full logo on white (no blank/tiny stage). -->
     <style name="OdinsGolfSplash" parent="@android:style/Theme.DeviceDefault">
-        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowBackground">@drawable/splash_window</item>
         <item name="android:colorBackground">@android:color/white</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
