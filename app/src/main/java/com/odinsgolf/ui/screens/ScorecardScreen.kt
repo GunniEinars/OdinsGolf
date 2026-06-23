@@ -24,8 +24,10 @@ import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
 import com.odinsgolf.data.model.FairwayResult
+import com.odinsgolf.data.model.RoundMode
 import com.odinsgolf.scoring.Scoring
 import com.odinsgolf.ui.GolfUiState
+import com.odinsgolf.ui.components.formatHandicap
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
 
@@ -108,21 +110,26 @@ fun ScorecardScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            // Running totals.
+            // Running totals — only the nines relevant to the round mode.
             if (round != null) {
-                SummaryRow("Out (1–9)", round.strokesForRange(1..9), round.parForRange(1..9))
-                SummaryRow("In (10–18)", round.strokesForRange(10..18), round.parForRange(10..18))
+                val mode = state.settings.roundMode
+                if (mode != RoundMode.BACK_9) {
+                    SummaryRow("Out (1–9)", round.strokesForRange(1..9), round.parForRange(1..9))
+                }
+                if (mode != RoundMode.FRONT_9) {
+                    SummaryRow("In (10–18)", round.strokesForRange(10..18), round.parForRange(10..18))
+                }
                 Text(
                     "Total ${round.totalStrokes}  ·  ${Scoring.toParLabel(round.toPar)}",
                     style = MaterialTheme.typography.title3,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    "Stableford ${Scoring.totalStableford(round)} pts  ·  HCP ${round.playerHandicap}",
+                    "Stableford ${Scoring.totalStableford(round)} pts  ·  HCP ${formatHandicap(round.handicapIndex)}",
                     color = OdinOnDim,
                     style = MaterialTheme.typography.caption2,
                 )
-                if (round.playerHandicap > 0) {
+                if (round.handicapIndex > 0) {
                     Text(
                         "Net ${Scoring.toParLabel(Scoring.netToPar(round))}",
                         color = OdinOnDim,

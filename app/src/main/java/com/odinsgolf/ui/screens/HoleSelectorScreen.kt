@@ -28,7 +28,8 @@ fun HoleSelectorScreen(
 ) {
     val listState = rememberScalingLazyListState()
     Scaffold(vignette = { Vignette(VignettePosition.TopAndBottom) }) {
-        val holes = state.course?.holes.orEmpty()
+        val range = state.activeRange
+        val holes = state.course?.holes.orEmpty().filter { it.number in range }
         val round = state.round
         ScalingLazyColumn(state = listState) {
             item { ListHeader { Text("Select hole") } }

@@ -15,6 +15,7 @@ import androidx.wear.compose.material.ToggleChip
 import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.ui.GolfUiState
+import com.odinsgolf.ui.components.formatHandicap
 import com.odinsgolf.ui.theme.OdinOnDim
 
 @Composable
@@ -23,8 +24,8 @@ fun SettingsScreen(
     onSetUnits: (Units) -> Unit,
     onCycleGpsMode: () -> Unit,
     onSetKeepScreenOn: (Boolean) -> Unit,
-    onIncHandicap: () -> Unit,
-    onDecHandicap: () -> Unit,
+    onCycleRoundMode: () -> Unit,
+    onOpenHandicap: () -> Unit,
     onSetDebugGps: (Boolean) -> Unit,
     onOpenSurvey: () -> Unit,
     onResetRound: () -> Unit,
@@ -62,17 +63,19 @@ fun SettingsScreen(
                 Chip(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ChipDefaults.secondaryChipColors(),
-                    onClick = onIncHandicap,
-                    label = { Text("Handicap (tap +, long not needed)") },
-                    secondaryLabel = { Text("${s.handicap}  —  tap to +1, wrap at 54") },
+                    onClick = onCycleRoundMode,
+                    label = { Text("Play") },
+                    secondaryLabel = { Text(s.roundMode.label) },
                 )
             }
+
             item {
                 Chip(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ChipDefaults.secondaryChipColors(),
-                    onClick = onDecHandicap,
-                    label = { Text("Handicap −1") },
+                    onClick = onOpenHandicap,
+                    label = { Text("Handicap") },
+                    secondaryLabel = { Text(formatHandicap(s.handicapIndex)) },
                 )
             }
 

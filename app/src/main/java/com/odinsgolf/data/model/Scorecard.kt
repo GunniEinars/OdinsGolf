@@ -22,15 +22,16 @@ data class HoleScore(
 }
 
 /**
- * A persisted round. [playerHandicap] is the course/playing handicap used for
- * net and Stableford. Stored locally only — never synced anywhere.
+ * A persisted round. [handicapIndex] is the decimal handicap; net and Stableford
+ * use the rounded playing handicap. Stored locally only — never synced anywhere.
  */
 @Serializable
 data class Round(
     val courseId: String,
     val courseName: String,
     val startedEpochMillis: Long,
-    val playerHandicap: Int = 0,
+    /** Decimal handicap index, e.g. 15.7. Allocation uses the rounded playing handicap. */
+    val handicapIndex: Double = 0.0,
     val holes: List<HoleScore>,
 ) {
     val enteredHoles: List<HoleScore> get() = holes.filter { it.entered }

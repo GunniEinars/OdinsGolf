@@ -16,8 +16,10 @@ import com.odinsgolf.data.model.GpsState
 import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.HoleScore
 import com.odinsgolf.data.model.Round
+import com.odinsgolf.data.model.RoundMode
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.location.LocationEngine
+import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +44,10 @@ data class GolfUiState(
     val currentHole: Int get() = settings.currentHole
     val hole get() = course?.holeByNumber(currentHole)
     val currentScore: HoleScore? get() = round?.holes?.firstOrNull { it.holeNumber == currentHole }
+
+    /** Hole-number range for the active round mode. */
+    val activeRange: IntRange
+        get() = settings.roundMode.range(course?.holes?.size ?: 18)
 }
 
 class RoundViewModel(app: Application) : AndroidViewModel(app) {
@@ -118,7 +124,13 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun currentHandicap(): Int = uiState.value.settings.handicap
+    private fun currentHandicap(): Double = uiState.value.settings.handicapIndex
+
+    /** Hole-number range allowed by the current round mode. */
+    private fun activeRange(): IntRange {
+        val total = courseFlow.value?.holes?.size ?: 18
+        return uiState.value.settings.roundMode.range(total)
+    }
 
     // ---- Lifecycle ----------------------------------------------------------
 
@@ -143,8 +155,8 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     fun selectHole(n: Int) = changeHole(n)
 
     private fun changeHole(n: Int) {
-        val max = uiState.value.course?.holes?.size ?: 18
-        val clamped = n.coerceIn(1, max)
+        val range = activeRange()
+        val clamped = n.coerceIn(range.first, range.last)
         viewModelScope.launch { settingsRepo.setCurrentHole(clamped) }
     }
 
@@ -195,12 +207,24 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         location.start(mode)
     }
     fun setKeepScreenOn(value: Boolean) = viewModelScope.launch { settingsRepo.setKeepScreenOn(value) }
-    fun setHandicap(value: Int) = viewModelScope.launch {
-        settingsRepo.setHandicap(value)
-        // Reflect new handicap in the active round's stroke allocation.
-        roundFlow.update { it?.copy(playerHandicap = value.coerceIn(0, 54)) }
+
+    /** Adjust the decimal handicap index by [delta] (e.g. +0.1, -1.0), clamped 0..54. */
+    fun adjustHandicap(delta: Double) = viewModelScope.launch {
+        val next = ((uiState.value.settings.handicapIndex + delta) * 10).roundToInt() / 10.0
+        val clamped = next.coerceIn(0.0, 54.0)
+        settingsRepo.setHandicapIndex(clamped)
+        // Reflect the new index in the active round's stroke allocation.
+        roundFlow.update { it?.copy(handicapIndex = clamped) }
         roundFlow.value?.let { scoreRepo.saveActiveRound(it) }
     }
+
+    fun setRoundMode(mode: RoundMode) = viewModelScope.launch {
+        settingsRepo.setRoundMode(mode)
+        // Jump to the first hole of the new range so navigation stays in bounds.
+        val total = courseFlow.value?.holes?.size ?: 18
+        settingsRepo.setCurrentHole(mode.range(total).first)
+    }
+
     fun setDebugGps(value: Boolean) = viewModelScope.launch { settingsRepo.setDebugGps(value) }
 
     // ---- Survey -------------------------------------------------------------

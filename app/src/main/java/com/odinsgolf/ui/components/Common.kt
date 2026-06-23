@@ -27,6 +27,9 @@ import kotlin.math.roundToInt
 fun formatDistance(meters: Double?, units: Units): String =
     if (meters == null) "—" else units.fromMeters(meters).roundToInt().toString()
 
+/** Handicap index with one decimal, e.g. "15.7". */
+fun formatHandicap(index: Double): String = String.format(java.util.Locale.US, "%.1f", index)
+
 fun statusColor(status: GpsStatus): Color = when (status) {
     GpsStatus.GOOD_FIX -> OdinGreen
     GpsStatus.WEAK_FIX -> OdinAmber

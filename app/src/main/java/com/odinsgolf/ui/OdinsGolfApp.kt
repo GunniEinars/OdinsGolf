@@ -7,7 +7,9 @@ import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.odinsgolf.data.model.GpsUpdateMode
+import com.odinsgolf.data.model.RoundMode
 import com.odinsgolf.ui.screens.DistanceScreen
+import com.odinsgolf.ui.screens.HandicapScreen
 import com.odinsgolf.ui.screens.HoleMapScreen
 import com.odinsgolf.ui.screens.HoleSelectorScreen
 import com.odinsgolf.ui.screens.ScorecardScreen
@@ -21,6 +23,7 @@ private object Routes {
     const val HOLES = "holes"
     const val SETTINGS = "settings"
     const val SURVEY = "survey"
+    const val HANDICAP = "handicap"
 }
 
 @Composable
@@ -75,12 +78,18 @@ fun OdinsGolfApp(vm: RoundViewModel) {
                     vm.setGpsMode(next)
                 },
                 onSetKeepScreenOn = vm::setKeepScreenOn,
-                onIncHandicap = { vm.setHandicap((state.settings.handicap + 1).let { if (it > 54) 0 else it }) },
-                onDecHandicap = { vm.setHandicap((state.settings.handicap - 1).coerceAtLeast(0)) },
+                onCycleRoundMode = {
+                    val modes = RoundMode.entries
+                    vm.setRoundMode(modes[(state.settings.roundMode.ordinal + 1) % modes.size])
+                },
+                onOpenHandicap = { nav.navigate(Routes.HANDICAP) },
                 onSetDebugGps = vm::setDebugGps,
                 onOpenSurvey = { nav.navigate(Routes.SURVEY) },
                 onResetRound = vm::resetRound,
             )
+        }
+        composable(Routes.HANDICAP) {
+            HandicapScreen(index = state.settings.handicapIndex, onAdjust = { vm.adjustHandicap(it) })
         }
         composable(Routes.SURVEY) {
             SurveyScreen(state = state, onCapture = { vm.captureSurveyPoint(it) })

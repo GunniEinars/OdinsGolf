@@ -41,11 +41,11 @@ class ScorecardRepository(private val context: Context) {
     }.getOrNull()
 
     /** Build a fresh empty round seeded with par/stroke index from the course. */
-    fun newRound(course: Course, handicap: Int): Round = Round(
+    fun newRound(course: Course, handicapIndex: Double): Round = Round(
         courseId = course.id,
         courseName = course.name,
         startedEpochMillis = System.currentTimeMillis(),
-        playerHandicap = handicap,
+        handicapIndex = handicapIndex,
         holes = course.holes.map {
             HoleScore(holeNumber = it.number, par = it.par, strokeIndex = it.strokeIndex)
         },

@@ -45,12 +45,19 @@ class ScoringTest {
     }
 
     @Test
+    fun playing_handicap_rounds_index() {
+        assertEquals(16, Scoring.playingHandicap(15.7))
+        assertEquals(15, Scoring.playingHandicap(15.4))
+        assertEquals(0, Scoring.playingHandicap(0.0))
+    }
+
+    @Test
     fun round_totals() {
         val round = Round(
             courseId = "x",
             courseName = "X",
             startedEpochMillis = 0,
-            playerHandicap = 0,
+            handicapIndex = 0.0,
             holes = listOf(
                 HoleScore(1, par = 4, strokeIndex = 1, strokes = 5), // +1
                 HoleScore(2, par = 3, strokeIndex = 2, strokes = 3), // E
