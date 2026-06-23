@@ -96,8 +96,8 @@ Launch **OdinsGolf** from the watch app list. Grant location when asked.
 
 ### Updating to a later build
 
-CI signs every build with a stable cached key, so updates go on **in place** — no uninstall,
-keeps your data:
+CI signs every build with a committed stable keystore, so updates go on **in place** — no
+uninstall, keeps your data:
 
 ```
 adb connect <watch-ip>:<port>          # reconnect; the port changes after a reboot/toggle

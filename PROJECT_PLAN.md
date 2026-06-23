@@ -61,15 +61,16 @@ domain model (`data/model`). Pure math (`geo`, `scoring`) has no Android deps an
 - **Phase 6 — Polish & battery** ✅ Settings, GPS modes, stale handling, survey mode. Ambient = TODO.
 - **Phase 7 — On-watch iteration** ✅ Decimal handicap + editor, round modes (18/Front/Back),
   course picker + Kiðjabergsvöllur, app logo (icon + splash via SplashScreen API), live GPS
-  debug readout, tee→green map line. CI: stable cached debug key (in-place `install -r`),
+  debug readout, tee→green map line. CI: committed stable debug keystore (in-place `install -r`),
   build errors surfaced to the run Summary.
 
 ## CI / install notes
 
 - GitHub Actions builds `app-debug.apk` on every push (no local toolchain needed).
-- A cached debug keystore keeps the signature stable, so the watch updates in place with
-  `adb install -r` — no uninstall, no data loss. (Resetting the watch or losing the Actions
-  cache would change the key and require one uninstall.)
+- A committed debug keystore (`app/odins-debug.keystore`, generated once by CI) keeps the
+  signature stable, so the watch updates in place with `adb install -r` — no uninstall, no
+  data loss. (Only a watch factory-reset would require a one-off uninstall.) A debug keystore
+  is not a secret, so committing it is fine for a private app.
 
 ## What still needs real-world verification
 

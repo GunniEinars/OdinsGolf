@@ -19,8 +19,9 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
-- **CI signs every APK with a stable cached debug key**, so watch updates install in place
-  with `adb install -r` (no uninstall). CI also writes build errors to the run Summary.
+- **CI signs every APK with a committed stable debug keystore** (`app/odins-debug.keystore`),
+  so watch updates install in place with `adb install -r` (no uninstall). CI also writes
+  build errors to the run Summary.
 - Launch uses the AndroidX **SplashScreen API** (white background, no tiny OS icon).
 
 ### Fixed

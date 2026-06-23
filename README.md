@@ -44,7 +44,7 @@ You do **not** need to install Android Studio. The easiest path builds the APK i
 2. Download the APK artifact.
 3. Install on the watch over Wireless Debugging with `adb` (a no-admin ZIP).
 
-CI signs every build with a **stable cached debug key**, so after the first install,
+CI signs every build with a **committed stable debug keystore**, so after the first install,
 updates go on with `adb install -r app-debug.apk` (no uninstall, keeps your data).
 
 Full step-by-step for an admin-restricted Windows laptop is in
