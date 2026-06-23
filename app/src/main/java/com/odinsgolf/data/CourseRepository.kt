@@ -22,9 +22,22 @@ class CourseRepository(private val context: Context) {
         data class Failure(val message: String) : LoadResult
     }
 
+    /** Minimal course descriptor for the picker. */
+    data class CourseSummary(val file: String, val id: String, val name: String, val clubName: String)
+
     fun listCourseFiles(): List<String> =
         runCatching { context.assets.list("courses")?.toList() ?: emptyList() }
             .getOrDefault(emptyList())
+            .filter { it.endsWith(".json", ignoreCase = true) }
+
+    /** Lightweight list of bundled courses for the picker (id/name per file). */
+    fun listCourses(): List<CourseSummary> = listCourseFiles().mapNotNull { file ->
+        runCatching {
+            val text = context.assets.open("courses/$file").bufferedReader().use { it.readText() }
+            val dto = json.decodeFromString<CourseDto>(text)
+            CourseSummary(file = file, id = dto.courseId, name = dto.courseName, clubName = dto.clubName)
+        }.getOrNull()
+    }.sortedBy { it.name }
 
     fun loadCourse(fileName: String = DEFAULT_COURSE_FILE): LoadResult = try {
         val text = context.assets.open("courses/$fileName").bufferedReader().use { it.readText() }

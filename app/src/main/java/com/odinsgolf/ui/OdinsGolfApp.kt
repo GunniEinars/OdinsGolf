@@ -8,6 +8,7 @@ import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.RoundMode
+import com.odinsgolf.ui.screens.CoursePickerScreen
 import com.odinsgolf.ui.screens.DistanceScreen
 import com.odinsgolf.ui.screens.HandicapScreen
 import com.odinsgolf.ui.screens.HoleMapScreen
@@ -24,6 +25,7 @@ private object Routes {
     const val SETTINGS = "settings"
     const val SURVEY = "survey"
     const val HANDICAP = "handicap"
+    const val COURSES = "courses"
 }
 
 @Composable
@@ -83,6 +85,7 @@ fun OdinsGolfApp(vm: RoundViewModel) {
                     vm.setRoundMode(modes[(state.settings.roundMode.ordinal + 1) % modes.size])
                 },
                 onOpenHandicap = { nav.navigate(Routes.HANDICAP) },
+                onOpenCourses = { nav.navigate(Routes.COURSES) },
                 onSetDebugGps = vm::setDebugGps,
                 onOpenSurvey = { nav.navigate(Routes.SURVEY) },
                 onResetRound = vm::resetRound,
@@ -90,6 +93,16 @@ fun OdinsGolfApp(vm: RoundViewModel) {
         }
         composable(Routes.HANDICAP) {
             HandicapScreen(index = state.settings.handicapIndex, onAdjust = { vm.adjustHandicap(it) })
+        }
+        composable(Routes.COURSES) {
+            CoursePickerScreen(
+                courses = vm.courses,
+                selectedFile = state.settings.selectedCourseFile,
+                onSelect = { file ->
+                    vm.selectCourse(file)
+                    nav.popBackStack()
+                },
+            )
         }
         composable(Routes.SURVEY) {
             SurveyScreen(state = state, onCapture = { vm.captureSurveyPoint(it) })

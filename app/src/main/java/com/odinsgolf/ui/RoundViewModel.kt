@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -89,8 +91,17 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), GolfUiState())
 
+    /** Bundled courses available in the picker (assets don't change at runtime). */
+    val courses: List<CourseRepository.CourseSummary> = courseRepo.listCourses()
+
     init {
-        loadCourse()
+        // Load (and reload) the course whenever the selected file changes.
+        viewModelScope.launch {
+            settingsRepo.settings
+                .map { it.selectedCourseFile }
+                .distinctUntilChanged()
+                .collect { loadCourse(it) }
+        }
         // Slow ticker so "last updated" / stale state refreshes without new fixes.
         viewModelScope.launch {
             while (true) {
@@ -100,9 +111,8 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun loadCourse() {
-        // Single course for now; selectedCourseFile is honored when more are added.
-        when (val res = courseRepo.loadCourse()) {
+    private fun loadCourse(file: String) {
+        when (val res = courseRepo.loadCourse(file)) {
             is CourseRepository.LoadResult.Success -> {
                 val overlaid = surveyRepo.overlay(res.course, surveyRepo.load(res.course.id))
                 courseFlow.value = overlaid
@@ -110,6 +120,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
                 ensureRound(overlaid)
             }
             is CourseRepository.LoadResult.Failure -> {
+                courseFlow.value = null
                 loadErrorFlow.value = res.message
             }
         }
@@ -227,6 +238,14 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setDebugGps(value: Boolean) = viewModelScope.launch { settingsRepo.setDebugGps(value) }
 
+    /** Switch the active course. Resets to hole 1 of the current round mode. */
+    fun selectCourse(file: String) = viewModelScope.launch {
+        if (file == uiState.value.settings.selectedCourseFile) return@launch
+        settingsRepo.setCourseFile(file)
+        val total = 18
+        settingsRepo.setCurrentHole(uiState.value.settings.roundMode.range(total).first)
+    }
+
     // ---- Survey -------------------------------------------------------------
 
     fun captureSurveyPoint(kind: SurveyKind, label: String = "") {
@@ -243,9 +262,9 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
             epochMillis = System.currentTimeMillis(),
         )
         val data = surveyRepo.add(course.id, point)
-        // Re-overlay so captured points show immediately. Reload base course first.
+        // Re-overlay so captured points show immediately. Reload the selected base course first.
         viewModelScope.launch {
-            when (val res = courseRepo.loadCourse()) {
+            when (val res = courseRepo.loadCourse(uiState.value.settings.selectedCourseFile)) {
                 is CourseRepository.LoadResult.Success ->
                     courseFlow.value = surveyRepo.overlay(res.course, data)
                 else -> {}
@@ -259,7 +278,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     fun clearSurvey() {
         val course = courseFlow.value ?: return
         surveyRepo.clear(course.id)
-        viewModelScope.launch { loadCourse() }
+        loadCourse(uiState.value.settings.selectedCourseFile)
     }
 
     override fun onCleared() {

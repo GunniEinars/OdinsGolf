@@ -26,6 +26,7 @@ fun SettingsScreen(
     onSetKeepScreenOn: (Boolean) -> Unit,
     onCycleRoundMode: () -> Unit,
     onOpenHandicap: () -> Unit,
+    onOpenCourses: () -> Unit,
     onSetDebugGps: (Boolean) -> Unit,
     onOpenSurvey: () -> Unit,
     onResetRound: () -> Unit,
@@ -35,6 +36,16 @@ fun SettingsScreen(
     Scaffold {
         ScalingLazyColumn(state = listState) {
             item { ListHeader { Text("Settings") } }
+
+            item {
+                Chip(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ChipDefaults.secondaryChipColors(),
+                    onClick = onOpenCourses,
+                    label = { Text("Course") },
+                    secondaryLabel = { Text(state.course?.name ?: "—") },
+                )
+            }
 
             item {
                 Chip(

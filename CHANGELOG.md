@@ -2,6 +2,22 @@
 
 All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 
+## [Unreleased]
+
+### Added
+- Decimal handicap **index** (e.g. 15.7) with a dedicated watch editor (±1 / ±0.1);
+  stroke allocation uses the rounded playing handicap.
+- **Round modes**: 18 holes / Front 9 / Back 9 — controls hole navigation, the hole
+  selector list, the starting hole, and which nines the scorecard totals show.
+- **Multiple courses + in-app course picker** (Settings → Course). Added
+  **Kiðjabergsvöllur** (Golfklúbburinn Kiðjaberg) with real OSM geometry (18 holes, par 71).
+- Tests for playing-handicap rounding and round-mode ranges.
+
+### Notes
+- Leiran (Hólmsvöllur í Leiru) was evaluated but **not added**: OSM has only the course
+  boundary (no hole/green/tee geometry), so it would have no distances.
+- One active round is kept at a time; switching courses starts a fresh round for that course.
+
 ## [0.1.0] — 2026-06-22
 
 Initial standalone Wear OS scaffold for the Galaxy Watch 4. Complete, buildable project.
