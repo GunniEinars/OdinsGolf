@@ -1,6 +1,5 @@
 package com.odinsgolf.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,38 +13,25 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.graphics.drawscope.drawLayer
-import androidx.compose.ui.graphics.rememberGraphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.wear.compose.material.CompactChip
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
-import com.odinsgolf.data.MediaExport
 import com.odinsgolf.data.model.HoleScore
 import com.odinsgolf.data.model.Round
 import com.odinsgolf.scoring.Scoring
 import com.odinsgolf.ui.components.rotaryScroll
 import com.odinsgolf.ui.theme.OdinAmber
-import com.odinsgolf.ui.theme.OdinBg
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
 import com.odinsgolf.ui.theme.OdinRed
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -56,11 +42,7 @@ fun RoundSummaryScreen(round: Round?) {
         Scaffold { Box(Modifier.fillMaxSize(), Alignment.Center) { Text("No round") } }
         return
     }
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val graphicsLayer = rememberGraphicsLayer()
     val scroll = rememberScrollState()
-    var msg by remember { mutableStateOf("") }
     val fmt = remember { SimpleDateFormat("d MMM yyyy", Locale.getDefault()) }
 
     Scaffold {
@@ -69,61 +51,33 @@ fun RoundSummaryScreen(round: Round?) {
                 .fillMaxSize()
                 .verticalScroll(scroll)
                 .rotaryScroll(scroll)
-                .padding(vertical = 24.dp),
+                .padding(horizontal = 14.dp, vertical = 26.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // The capturable card.
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .drawWithContent {
-                        graphicsLayer.record { this@drawWithContent.drawContent() }
-                        drawLayer(graphicsLayer)
-                    }
-                    .background(OdinBg)
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(round.courseName, style = MaterialTheme.typography.title3, fontWeight = FontWeight.SemiBold)
-                Text(fmt.format(Date(round.startedEpochMillis)), color = OdinOnDim, style = MaterialTheme.typography.caption3)
+            Text(round.courseName, style = MaterialTheme.typography.title3, fontWeight = FontWeight.SemiBold)
+            Text(fmt.format(Date(round.startedEpochMillis)), color = OdinOnDim, style = MaterialTheme.typography.caption3)
 
-                Spacer(Modifier.height(6.dp))
-                Text(Scoring.toParLabel(round.toPar), color = OdinGreen, fontSize = 44.sp, fontWeight = FontWeight.Bold)
-                Text("to par", color = OdinOnDim, style = MaterialTheme.typography.caption3)
+            Spacer(Modifier.height(6.dp))
+            Text(Scoring.toParLabel(round.toPar), color = OdinGreen, fontSize = 44.sp, fontWeight = FontWeight.Bold)
+            Text("to par", color = OdinOnDim, style = MaterialTheme.typography.caption3)
 
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    "${round.totalStrokes} strokes · ${Scoring.totalStableford(round)} pts",
-                    style = MaterialTheme.typography.caption1,
-                )
-                if (round.handicapIndex > 0) {
-                    Text(
-                        "Net ${Scoring.toParLabel(Scoring.netToPar(round))} · HCP ${"%.1f".format(Locale.US, round.handicapIndex)}",
-                        color = OdinOnDim,
-                        style = MaterialTheme.typography.caption2,
-                    )
-                }
-
-                Spacer(Modifier.height(8.dp))
-                NineRow("OUT", 1..9, round)
-                Spacer(Modifier.height(3.dp))
-                NineRow("IN", 10..18, round)
-            }
-
-            Spacer(Modifier.height(10.dp))
-            CompactChip(
-                label = { Text("Save image") },
-                onClick = {
-                    scope.launch {
-                        val bmp = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                        val ok = MediaExport.saveToGallery(context, bmp, "OdinsGolf_${round.startedEpochMillis}")
-                        msg = if (ok) "Saved to Gallery ✓" else "Save failed"
-                    }
-                },
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "${round.totalStrokes} strokes · ${Scoring.totalStableford(round)} pts",
+                style = MaterialTheme.typography.caption1,
             )
-            if (msg.isNotEmpty()) {
-                Text(msg, color = OdinGreen, style = MaterialTheme.typography.caption2)
+            if (round.handicapIndex > 0) {
+                Text(
+                    "Net ${Scoring.toParLabel(Scoring.netToPar(round))} · HCP ${"%.1f".format(Locale.US, round.handicapIndex)}",
+                    color = OdinOnDim,
+                    style = MaterialTheme.typography.caption2,
+                )
             }
+
+            Spacer(Modifier.height(8.dp))
+            NineRow("OUT", 1..9, round)
+            Spacer(Modifier.height(3.dp))
+            NineRow("IN", 10..18, round)
         }
     }
 }
