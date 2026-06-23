@@ -10,11 +10,16 @@ First course: **Setbergsvöllur** (Golfklúbburinn Setberg, Hafnarfjörður, Ice
 
 - Front / **center** / back green distances (center is the hero number).
 - Up to 3 hazard/target distances + green depth.
-- GPS accuracy + status: `Live` / `Weak` / `Stale` / `Searching` / `Paused`.
-- A lightweight vector **hole map** (tee, green, your dot, line to green) — no map tiles.
+- GPS accuracy + status: `Live` / `Weak` / `Stale` / `Searching` / `Paused`, with fix age,
+  plus an optional live **debug GPS readout** (Settings → Debug GPS info).
+- A lightweight vector **hole map** (tee→green line, your dot, hazards) — no map tiles.
 - A fast **scorecard**: strokes/putts/fairway/GIR, running totals, **to-par, Stableford and net** (Icelandic club style).
+- **Decimal handicap index** (e.g. 15.7); allocation uses the rounded playing handicap.
+- **Round modes**: 18 holes / Front 9 / Back 9.
+- **Course picker** (Settings → Course): **Setbergsvöllur** + **Kiðjabergsvöllur**, more added as JSON.
 - **Survey mode** to capture real green/tee/hazard coordinates by walking the course.
 - Battery-first GPS (spaced updates, pauses when not visible).
+- App **logo** as launcher icon + opening splash.
 
 ## The Setberg "9 played as 18" model
 
@@ -38,6 +43,9 @@ You do **not** need to install Android Studio. The easiest path builds the APK i
 1. Push this project to a GitHub repo → **GitHub Actions** builds `app-debug.apk` automatically.
 2. Download the APK artifact.
 3. Install on the watch over Wireless Debugging with `adb` (a no-admin ZIP).
+
+CI signs every build with a **stable cached debug key**, so after the first install,
+updates go on with `adb install -r app-debug.apk` (no uninstall, keeps your data).
 
 Full step-by-step for an admin-restricted Windows laptop is in
 **[SETUP_WINDOWS_NOADMIN.md](SETUP_WINDOWS_NOADMIN.md)**.
@@ -63,5 +71,7 @@ Preferences DataStore · Gradle Kotlin DSL + version catalog. Single module, no 
 
 ## Status
 
-v0.1.0 — complete, buildable scaffold with real OSM geometry. Green front/back and exact
-stroke index need one field-verification round (Survey mode). See PROJECT_PLAN.
+Running on a real Galaxy Watch 4. Two courses (Setberg, Kiðjaberg) with real OSM geometry;
+handicap, round modes, course picker, logo, and GPS debug readout are in. Green front/back and
+exact stroke index still need one field-verification round (Survey mode). Next up: bezel
+scrolling and round history. See [CHANGELOG.md](CHANGELOG.md) and [PROJECT_PLAN.md](PROJECT_PLAN.md).

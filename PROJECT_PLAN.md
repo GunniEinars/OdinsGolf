@@ -59,8 +59,35 @@ domain model (`data/model`). Pure math (`geo`, `scoring`) has no Android deps an
 - **Phase 4 — Scorecard** ✅ Local state, entry UI, totals, to-par/Stableford/net, persistence, reset/export.
 - **Phase 5 — Hole map** ✅ Canvas vector map with safe handling of missing geometry.
 - **Phase 6 — Polish & battery** ✅ Settings, GPS modes, stale handling, survey mode. Ambient = TODO.
+- **Phase 7 — On-watch iteration** ✅ Decimal handicap + editor, round modes (18/Front/Back),
+  course picker + Kiðjabergsvöllur, app logo (icon + splash via SplashScreen API), live GPS
+  debug readout, tee→green map line. CI: stable cached debug key (in-place `install -r`),
+  build errors surfaced to the run Summary.
+
+## CI / install notes
+
+- GitHub Actions builds `app-debug.apk` on every push (no local toolchain needed).
+- A cached debug keystore keeps the signature stable, so the watch updates in place with
+  `adb install -r` — no uninstall, no data loss. (Resetting the watch or losing the Actions
+  cache would change the key and require one uninstall.)
 
 ## What still needs real-world verification
+
+1. **Green front/back edges** — not in OSM. Walk each course once in Survey mode (capture
+   FRONT/BACK on each green) or hand-edit the JSON. Until then those values show `—`.
+2. **Stroke index** — OSM tags are slightly inconsistent (Setberg: holes 9 & 10 both SI 3,
+   SI 10 missing; Kiðjaberg: holes 11 & 13 both SI 6, SI 4 missing). Correct from the printed
+   scorecards. Par is correct (Setberg 72, Kiðjaberg 71).
+3. **Tee sets** — one tee per playing hole today; multiple tee sets (red/yellow/white/blue)
+   can be added later.
+
+## Next up (high-value, low-risk)
+
+1. **Rotary/bezel scrolling** for the Settings, Hole-selector and Course-picker lists
+   (`rotaryScrollable`) — the biggest "feels native on Wear" gap.
+2. **Round history** — completed rounds auto-saved to a scrollable list (date/course/score/Stableford).
+3. **Persistence off the main thread** (score saves / course load on a background dispatcher).
+4. **Scope the 5 s stale-tick** so the hole map doesn't recompose when nothing moved.
 
 1. **Green front/back edges** — not in OSM. Walk the course once in Survey mode (capture FRONT/BACK
    on each green) or hand-edit the JSON. Until then those values show `—`.
@@ -69,10 +96,9 @@ domain model (`data/model`). Pure math (`geo`, `scoring`) has no Android deps an
 3. **Tee sets** — OSM has 31 tee polygons; we currently use one tee per playing hole. Multiple tee
    sets (red/yellow/white/blue) can be added later.
 
-## Future phases (not in v1)
+## Future phases (later)
 
 - Wear **Tile** with glanceable center-green distance.
 - **Plays-like** elevation distance using the Galaxy Watch 4 barometer.
-- Multiple courses / course picker UI.
 - Hazard carry/lay-up distances (front & back of hazard).
-- Round history list on-watch.
+- Auto-advance to the nearest hole by GPS.

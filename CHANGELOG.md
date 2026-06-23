@@ -5,18 +5,40 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ## [Unreleased]
 
 ### Added
-- Decimal handicap **index** (e.g. 15.7) with a dedicated watch editor (±1 / ±0.1);
-  stroke allocation uses the rounded playing handicap.
+- Decimal handicap **index** (e.g. 15.7) with a dedicated watch editor (single centered
+  row: −1 / −0.1 / +0.1 / +1); stroke allocation uses the rounded playing handicap.
 - **Round modes**: 18 holes / Front 9 / Back 9 — controls hole navigation, the hole
   selector list, the starting hole, and which nines the scorecard totals show.
 - **Multiple courses + in-app course picker** (Settings → Course). Added
   **Kiðjabergsvöllur** (Golfklúbburinn Kiðjaberg) with real OSM geometry (18 holes, par 71).
+- **App logo**: launcher icon + opening splash screen (full-size emblem on white).
+- **Live GPS debug readout** (Settings → Debug GPS info): raw status, lat/lon, accuracy,
+  fix age; status pill now shows "Live · ±6 m · 3s".
+- Hole map now always draws the tee→green playing line (reads even without a fix);
+  "you" dot + dashed line appear with a GPS fix, "waiting for GPS" hint otherwise.
 - Tests for playing-handicap rounding and round-mode ranges.
+
+### Changed
+- **CI signs every APK with a stable cached debug key**, so watch updates install in place
+  with `adb install -r` (no uninstall). CI also writes build errors to the run Summary.
+- Launch uses the AndroidX **SplashScreen API** (white background, no tiny OS icon).
+
+### Fixed
+- Unclosed-comment compile error in CourseRepository (nested `/*` in a KDoc).
+- Wrong Stableford assertion in the round-totals test.
+- Permission screen showed a giant logo bleeding through (launch windowBackground had
+  been set to the logo drawable; reverted to solid black).
 
 ### Notes
 - Leiran (Hólmsvöllur í Leiru) was evaluated but **not added**: OSM has only the course
   boundary (no hole/green/tee geometry), so it would have no distances.
 - One active round is kept at a time; switching courses starts a fresh round for that course.
+
+### Next (planned)
+- Rotary/bezel scrolling for the Settings, Hole-selector and Course-picker lists.
+- Round history (completed rounds saved to a scrollable list).
+- Move score/course persistence off the main thread.
+- Optional: auto-advance to the nearest hole by GPS.
 
 ## [0.1.0] — 2026-06-22
 

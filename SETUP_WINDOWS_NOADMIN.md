@@ -94,6 +94,26 @@ adb install -r app-debug.apk
 
 Launch **OdinsGolf** from the watch app list. Grant location when asked.
 
+### Updating to a later build
+
+CI signs every build with a stable cached key, so updates go on **in place** — no uninstall,
+keeps your data:
+
+```
+adb connect <watch-ip>:<port>          # reconnect; the port changes after a reboot/toggle
+adb install -r app-debug.apk
+```
+
+Tips:
+- Pairing persists across Wi-Fi drops/reboots — you only `connect` again (the watch shows the
+  computer under "Paired devices"). You'd only re-`pair` after a factory reset or revoking
+  debugging authorizations.
+- If you've connected a few times this session and adb says **"more than one device"**, target
+  the watch explicitly: `adb -s <watch-ip>:<port> install -r app-debug.apk` (clear stale entries
+  with `adb disconnect` first).
+- A signature-mismatch error (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`) only happens when moving
+  between differently-signed builds — `adb uninstall com.odinsgolf` once, then install.
+
 ---
 
 ## Pulling files off the watch (survey points & exported rounds)
