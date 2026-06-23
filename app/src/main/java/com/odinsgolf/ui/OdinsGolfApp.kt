@@ -14,6 +14,7 @@ import com.odinsgolf.ui.screens.HandicapScreen
 import com.odinsgolf.ui.screens.HistoryScreen
 import com.odinsgolf.ui.screens.HoleMapScreen
 import com.odinsgolf.ui.screens.HoleSelectorScreen
+import com.odinsgolf.ui.screens.RoundSummaryScreen
 import com.odinsgolf.ui.screens.ScorecardScreen
 import com.odinsgolf.ui.screens.SettingsScreen
 import com.odinsgolf.ui.screens.SurveyScreen
@@ -28,6 +29,7 @@ private object Routes {
     const val HANDICAP = "handicap"
     const val COURSES = "courses"
     const val HISTORY = "history"
+    const val SUMMARY = "summary"
 }
 
 @Composable
@@ -61,7 +63,11 @@ fun OdinsGolfApp(vm: RoundViewModel) {
                 onNextHole = vm::nextHole,
                 onReset = vm::resetRound,
                 onExport = { vm.exportRound() },
-                onSaveRound = { vm.saveRoundToHistory() },
+                onSaveRound = {
+                    val ok = vm.saveRoundToHistory()
+                    if (ok) nav.navigate(Routes.SUMMARY)
+                    ok
+                },
             )
         }
         composable(Routes.HOLES) {
@@ -113,7 +119,17 @@ fun OdinsGolfApp(vm: RoundViewModel) {
         }
         composable(Routes.HISTORY) {
             val rounds by vm.history.collectAsStateWithLifecycle()
-            HistoryScreen(rounds = rounds)
+            HistoryScreen(
+                rounds = rounds,
+                onOpenRound = { r ->
+                    vm.selectSummary(r)
+                    nav.navigate(Routes.SUMMARY)
+                },
+            )
+        }
+        composable(Routes.SUMMARY) {
+            val round by vm.summaryRound.collectAsStateWithLifecycle()
+            RoundSummaryScreen(round = round)
         }
     }
 }

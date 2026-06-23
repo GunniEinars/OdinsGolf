@@ -69,6 +69,12 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     /** Saved rounds (newest first). */
     val history: StateFlow<List<Round>> = historyFlow.asStateFlow()
 
+    private val summaryFlow = MutableStateFlow<Round?>(null)
+    /** Round currently shown on the summary card (active save or a history item). */
+    val summaryRound: StateFlow<Round?> = summaryFlow.asStateFlow()
+
+    fun selectSummary(round: Round) { summaryFlow.value = round }
+
     private val courseFlow = MutableStateFlow<Course?>(null)
     private val loadErrorFlow = MutableStateFlow<String?>(null)
     private val roundFlow = MutableStateFlow<Round?>(null)
@@ -213,11 +219,12 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
 
     fun exportRound(): String? = roundFlow.value?.let { scoreRepo.exportRound(it) }
 
-    /** Manually save the current round to history. Returns false if nothing entered. */
+    /** Manually save the current round to history and queue it for the summary card. */
     fun saveRoundToHistory(): Boolean {
         val round = roundFlow.value ?: return false
         if (round.enteredHoles.isEmpty()) return false
         historyFlow.value = historyRepo.add(round)
+        summaryFlow.value = round
         return true
     }
 

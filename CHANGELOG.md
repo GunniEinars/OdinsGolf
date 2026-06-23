@@ -19,6 +19,10 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - **Bezel/rotary scrolling** on all scrollable screens (rotating/touch bezel scrolls lists).
 - **Round history (manual save)**: a "Save round" action on the scorecard keeps the round in
   a scrollable history list (Settings → Round history); rounds are saved only when you choose.
+- **Round Summary card**: a sleek card (course, date, to-par, Stableford, net, color-coded
+  Out/In mini-grid). Save round opens it; tapping a history entry reopens it.
+- **Save image**: renders the summary card to a PNG in Pictures/OdinsGolf via MediaStore, so
+  it appears in the watch Gallery. JSON export remains as a quiet backup.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed

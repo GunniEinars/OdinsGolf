@@ -22,7 +22,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun HistoryScreen(rounds: List<Round>) {
+fun HistoryScreen(rounds: List<Round>, onOpenRound: (Round) -> Unit) {
     val listState = rememberScalingLazyListState()
     val fmt = remember { SimpleDateFormat("d MMM yyyy · HH:mm", Locale.getDefault()) }
     Scaffold {
@@ -41,7 +41,7 @@ fun HistoryScreen(rounds: List<Round>) {
                 Chip(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ChipDefaults.secondaryChipColors(),
-                    onClick = {},
+                    onClick = { onOpenRound(r) },
                     label = { Text("${r.courseName} · ${Scoring.toParLabel(r.toPar)}") },
                     secondaryLabel = {
                         Text(
