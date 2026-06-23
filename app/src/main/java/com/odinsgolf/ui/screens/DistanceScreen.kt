@@ -31,6 +31,7 @@ import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.DebugGpsReadout
 import com.odinsgolf.ui.components.GpsStatusPill
 import com.odinsgolf.ui.components.formatDistance
+import com.odinsgolf.ui.components.rotaryScroll
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
 import kotlin.math.roundToInt
@@ -52,6 +53,7 @@ fun DistanceScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scroll)
+                .rotaryScroll(scroll)
                 .padding(horizontal = 14.dp, vertical = 26.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

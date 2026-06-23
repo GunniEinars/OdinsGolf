@@ -18,6 +18,7 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.Vignette
 import androidx.wear.compose.material.VignettePosition
 import com.odinsgolf.ui.GolfUiState
+import com.odinsgolf.ui.components.rotaryScroll
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
 
@@ -31,7 +32,7 @@ fun HoleSelectorScreen(
         val range = state.activeRange
         val holes = state.course?.holes.orEmpty().filter { it.number in range }
         val round = state.round
-        ScalingLazyColumn(state = listState) {
+        ScalingLazyColumn(state = listState, modifier = Modifier.rotaryScroll(listState)) {
             item { ListHeader { Text("Select hole") } }
             items(holes) { hole ->
                 val entered = round?.holes?.firstOrNull { it.holeNumber == hole.number }?.entered == true

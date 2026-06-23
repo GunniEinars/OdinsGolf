@@ -23,13 +23,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.odinsgolf.ui.OdinsGolfApp
 import com.odinsgolf.ui.RoundViewModel
 import com.odinsgolf.ui.screens.PermissionScreen
-import com.odinsgolf.ui.screens.SplashScreen
 import com.odinsgolf.ui.theme.OdinsGolfTheme
 
 class MainActivity : ComponentActivity() {
 
+    // Keeps the system splash (our logo) up briefly so it's reliably seen.
+    private var keepSplashOnScreen = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splash = installSplashScreen()
+        splash.setKeepOnScreenCondition { keepSplashOnScreen }
         super.onCreate(savedInstanceState)
         setContent {
             OdinsGolfTheme {
@@ -76,16 +79,16 @@ class MainActivity : ComponentActivity() {
                     onDispose { }
                 }
 
-                var showSplash by remember { mutableStateOf(true) }
+                // Release the system splash shortly after first composition.
                 LaunchedEffect(Unit) {
-                    kotlinx.coroutines.delay(1300)
-                    showSplash = false
+                    kotlinx.coroutines.delay(700)
+                    keepSplashOnScreen = false
                 }
 
-                when {
-                    showSplash -> SplashScreen()
-                    granted -> OdinsGolfApp(vm)
-                    else -> PermissionScreen(onRequest = {
+                if (granted) {
+                    OdinsGolfApp(vm)
+                } else {
+                    PermissionScreen(onRequest = {
                         launcher.launch(
                             arrayOf(
                                 Manifest.permission.ACCESS_FINE_LOCATION,

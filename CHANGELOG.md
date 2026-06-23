@@ -16,13 +16,18 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   fix age; status pill now shows "Live · ±6 m · 3s".
 - Hole map now always draws the tee→green playing line (reads even without a fix);
   "you" dot + dashed line appear with a GPS fix, "waiting for GPS" hint otherwise.
+- **Bezel/rotary scrolling** on all scrollable screens (rotating/touch bezel scrolls lists).
+- **Round history (manual save)**: a "Save round" action on the scorecard keeps the round in
+  a scrollable history list (Settings → Round history); rounds are saved only when you choose.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
 - **CI signs every APK with a committed stable debug keystore** (`app/odins-debug.keystore`),
   so watch updates install in place with `adb install -r` (no uninstall). CI also writes
   build errors to the run Summary.
-- Launch uses the AndroidX **SplashScreen API** (white background, no tiny OS icon).
+- Launch now uses the AndroidX **SplashScreen API** to show the **logo** at the standard
+  splash size on white, then opens straight into the app (the separate in-app splash page
+  was removed).
 
 ### Fixed
 - Unclosed-comment compile error in CourseRepository (nested `/*` in a KDoc).
@@ -36,9 +41,8 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - One active round is kept at a time; switching courses starts a fresh round for that course.
 
 ### Next (planned)
-- Rotary/bezel scrolling for the Settings, Hole-selector and Course-picker lists.
-- Round history (completed rounds saved to a scrollable list).
 - Move score/course persistence off the main thread.
+- Scope the 5 s stale-tick so the hole map doesn't recompose when nothing moved.
 - Optional: auto-advance to the nearest hole by GPS.
 
 ## [0.1.0] — 2026-06-22

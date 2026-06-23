@@ -28,6 +28,7 @@ import com.odinsgolf.data.model.RoundMode
 import com.odinsgolf.scoring.Scoring
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.formatHandicap
+import com.odinsgolf.ui.components.rotaryScroll
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
 
@@ -43,9 +44,11 @@ fun ScorecardScreen(
     onNextHole: () -> Unit,
     onReset: () -> Unit,
     onExport: () -> Unit,
+    onSaveRound: () -> Boolean,
 ) {
     Scaffold(timeText = { TimeText() }) {
         val scroll = rememberScrollState()
+        val saveMsg = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
         val hole = state.hole
         val score = state.currentScore
         val round = state.round
@@ -53,6 +56,7 @@ fun ScorecardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scroll)
+                .rotaryScroll(scroll)
                 .padding(horizontal = 14.dp, vertical = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -140,6 +144,14 @@ fun ScorecardScreen(
 
             Spacer(Modifier.height(10.dp))
             CompactChip(label = { Text("Next hole ›") }, onClick = onNextHole)
+            Spacer(Modifier.height(4.dp))
+            CompactChip(
+                label = { Text("Save round") },
+                onClick = { saveMsg.value = if (onSaveRound()) "Saved ✓" else "No score yet" },
+            )
+            if (saveMsg.value.isNotEmpty()) {
+                Text(saveMsg.value, color = OdinGreen, style = MaterialTheme.typography.caption2)
+            }
             Spacer(Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 CompactChip(label = { Text("Export") }, onClick = onExport)

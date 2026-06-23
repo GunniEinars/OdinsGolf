@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.odinsgolf.data.AppSettings
 import com.odinsgolf.data.CourseRepository
+import com.odinsgolf.data.HistoryRepository
 import com.odinsgolf.data.ScorecardRepository
 import com.odinsgolf.data.SettingsRepository
 import com.odinsgolf.data.SurveyKind
@@ -24,6 +25,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -58,9 +60,14 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     private val settingsRepo = SettingsRepository(app)
     private val scoreRepo = ScorecardRepository(app)
     private val surveyRepo = SurveyRepository(app)
+    private val historyRepo = HistoryRepository(app)
     private val location = LocationEngine(app)
 
     val gpsState: StateFlow<GpsState> get() = location.state
+
+    private val historyFlow = MutableStateFlow(historyRepo.load())
+    /** Saved rounds (newest first). */
+    val history: StateFlow<List<Round>> = historyFlow.asStateFlow()
 
     private val courseFlow = MutableStateFlow<Course?>(null)
     private val loadErrorFlow = MutableStateFlow<String?>(null)
@@ -205,6 +212,18 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun exportRound(): String? = roundFlow.value?.let { scoreRepo.exportRound(it) }
+
+    /** Manually save the current round to history. Returns false if nothing entered. */
+    fun saveRoundToHistory(): Boolean {
+        val round = roundFlow.value ?: return false
+        if (round.enteredHoles.isEmpty()) return false
+        historyFlow.value = historyRepo.add(round)
+        return true
+    }
+
+    fun deleteHistoryRound(startedEpochMillis: Long) {
+        historyFlow.value = historyRepo.delete(startedEpochMillis)
+    }
 
     // ---- Settings -----------------------------------------------------------
 

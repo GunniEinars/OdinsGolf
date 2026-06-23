@@ -16,6 +16,7 @@ import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.formatHandicap
+import com.odinsgolf.ui.components.rotaryScroll
 import com.odinsgolf.ui.theme.OdinOnDim
 
 @Composable
@@ -27,6 +28,7 @@ fun SettingsScreen(
     onCycleRoundMode: () -> Unit,
     onOpenHandicap: () -> Unit,
     onOpenCourses: () -> Unit,
+    onOpenHistory: () -> Unit,
     onSetDebugGps: (Boolean) -> Unit,
     onOpenSurvey: () -> Unit,
     onResetRound: () -> Unit,
@@ -34,7 +36,7 @@ fun SettingsScreen(
     val s = state.settings
     val listState = rememberScalingLazyListState()
     Scaffold {
-        ScalingLazyColumn(state = listState) {
+        ScalingLazyColumn(state = listState, modifier = Modifier.rotaryScroll(listState)) {
             item { ListHeader { Text("Settings") } }
 
             item {
@@ -113,6 +115,15 @@ fun SettingsScreen(
                     toggleControl = {
                         androidx.wear.compose.material.Switch(checked = s.debugGps)
                     },
+                )
+            }
+
+            item {
+                Chip(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ChipDefaults.secondaryChipColors(),
+                    onClick = onOpenHistory,
+                    label = { Text("Round history") },
                 )
             }
 

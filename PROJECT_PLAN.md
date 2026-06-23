@@ -82,13 +82,15 @@ domain model (`data/model`). Pure math (`geo`, `scoring`) has no Android deps an
 3. **Tee sets** — one tee per playing hole today; multiple tee sets (red/yellow/white/blue)
    can be added later.
 
+- **Phase 8 — Native-feel polish** ✅ Bezel/rotary scrolling on every scrollable screen;
+  round history with manual save (Settings → Round history); launch via the system
+  SplashScreen API showing the logo (separate in-app splash page removed).
+
 ## Next up (high-value, low-risk)
 
-1. **Rotary/bezel scrolling** for the Settings, Hole-selector and Course-picker lists
-   (`rotaryScrollable`) — the biggest "feels native on Wear" gap.
-2. **Round history** — completed rounds auto-saved to a scrollable list (date/course/score/Stableford).
-3. **Persistence off the main thread** (score saves / course load on a background dispatcher).
-4. **Scope the 5 s stale-tick** so the hole map doesn't recompose when nothing moved.
+1. **Persistence off the main thread** (score saves / course load on a background dispatcher).
+2. **Scope the 5 s stale-tick** so the hole map doesn't recompose when nothing moved.
+3. **Auto-advance to the nearest hole by GPS** (optional convenience).
 
 1. **Green front/back edges** — not in OSM. Walk the course once in Survey mode (capture FRONT/BACK
    on each green) or hand-edit the JSON. Until then those values show `—`.

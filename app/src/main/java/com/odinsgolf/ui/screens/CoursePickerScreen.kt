@@ -12,6 +12,7 @@ import androidx.wear.compose.material.ListHeader
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import com.odinsgolf.data.CourseRepository
+import com.odinsgolf.ui.components.rotaryScroll
 
 @Composable
 fun CoursePickerScreen(
@@ -21,7 +22,7 @@ fun CoursePickerScreen(
 ) {
     val listState = rememberScalingLazyListState()
     Scaffold {
-        ScalingLazyColumn(state = listState) {
+        ScalingLazyColumn(state = listState, modifier = Modifier.rotaryScroll(listState)) {
             item { ListHeader { Text("Course") } }
             items(courses) { c ->
                 val isCurrent = c.file == selectedFile

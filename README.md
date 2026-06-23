@@ -17,9 +17,10 @@ First course: **Setbergsvöllur** (Golfklúbburinn Setberg, Hafnarfjörður, Ice
 - **Decimal handicap index** (e.g. 15.7); allocation uses the rounded playing handicap.
 - **Round modes**: 18 holes / Front 9 / Back 9.
 - **Course picker** (Settings → Course): **Setbergsvöllur** + **Kiðjabergsvöllur**, more added as JSON.
+- **Round history**: manually save rounds you want to keep to a scrollable list.
 - **Survey mode** to capture real green/tee/hazard coordinates by walking the course.
 - Battery-first GPS (spaced updates, pauses when not visible).
-- App **logo** as launcher icon + opening splash.
+- App **logo** as launcher icon + system splash; **bezel/rotary scrolling** on all lists.
 
 ## The Setberg "9 played as 18" model
 

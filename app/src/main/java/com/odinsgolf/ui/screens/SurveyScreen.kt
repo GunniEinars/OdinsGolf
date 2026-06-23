@@ -25,6 +25,7 @@ import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.location.effectiveStatus
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.GpsStatusPill
+import com.odinsgolf.ui.components.rotaryScroll
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
 
@@ -43,6 +44,7 @@ fun SurveyScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scroll)
+                .rotaryScroll(scroll)
                 .padding(horizontal = 14.dp, vertical = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
