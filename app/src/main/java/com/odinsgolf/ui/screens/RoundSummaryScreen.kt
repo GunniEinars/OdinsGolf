@@ -13,20 +13,31 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.wear.compose.material.CompactChip
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
+import com.odinsgolf.data.MediaExport
+import com.odinsgolf.data.RoundCardRenderer
 import com.odinsgolf.data.model.HoleScore
 import com.odinsgolf.data.model.Round
 import com.odinsgolf.scoring.Scoring
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.odinsgolf.ui.components.rotaryScroll
 import com.odinsgolf.ui.theme.OdinAmber
 import com.odinsgolf.ui.theme.OdinGreen
@@ -44,6 +55,9 @@ fun RoundSummaryScreen(round: Round?) {
     }
     val scroll = rememberScrollState()
     val fmt = remember { SimpleDateFormat("d MMM yyyy", Locale.getDefault()) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var msg by remember { mutableStateOf("") }
 
     Scaffold {
         Column(
@@ -78,6 +92,23 @@ fun RoundSummaryScreen(round: Round?) {
             NineRow("OUT", 1..9, round)
             Spacer(Modifier.height(3.dp))
             NineRow("IN", 10..18, round)
+
+            Spacer(Modifier.height(12.dp))
+            CompactChip(
+                label = { Text("Save image") },
+                onClick = {
+                    scope.launch {
+                        val ok = withContext(Dispatchers.IO) {
+                            val bmp = RoundCardRenderer.render(round)
+                            MediaExport.saveToGallery(context, bmp, "OdinsGolf_${round.startedEpochMillis}")
+                        }
+                        msg = if (ok) "Saved to Gallery ✓" else "Save failed"
+                    }
+                },
+            )
+            if (msg.isNotEmpty()) {
+                Text(msg, color = OdinGreen, style = MaterialTheme.typography.caption2)
+            }
         }
     }
 }
