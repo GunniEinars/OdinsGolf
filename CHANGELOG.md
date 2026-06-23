@@ -19,8 +19,12 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   work. A real Survey capture overrides them.
 - **Survey capture confirmation**: each capture confirms on screen with accuracy (e.g.
   "Hazard captured ✓ (±5 m)"); the "Known for this hole" list shows a live hazard count.
+- **Satellite base map** under the hole schematic: Esri World Imagery tiles in Web-Mercator,
+  downloaded on demand and cached to disk (view a hole once with connectivity and it works
+  offline after). Falls back to the schematic on the dark background when offline.
 - Hole map enriched: green drawn as a body with front/back edge dots, hazards larger and
-  numbered, and a live Front/Centre/Back yardage strip along the bottom.
+  numbered, white playing line + your-position marker over imagery, and a live
+  Front/Centre/Back yardage strip along the bottom.
 - Decimal handicap **index** (e.g. 15.7) with a dedicated watch editor (single centered
   row: −1 / −0.1 / +0.1 / +1); stroke allocation uses the rounded playing handicap.
 - **Round modes**: 18 holes / Front 9 / Back 9 — controls hole navigation, the hole
@@ -42,9 +46,10 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
-- **Opening splash no longer double-takes**: the OS launch screen itself shows the OdinsGolf
-  logo (held ~0.75 s) and the app appears directly — replacing the previous
-  blank-white-then-Compose-logo sequence. The standalone Compose splash screen was removed.
+- **Opening splash**: the logo is shown **large and uncropped** full-screen (Compose) on
+  white. The OS launch screen shows the same logo (small, circle-masked) only to bridge cold
+  start, so there's no blank-white flash before it. (The system splash icon can't be made big
+  without the circular mask clipping the wordmark — hence the full-screen Compose logo.)
 - Scorecard **"Export" is now "Save card"**: renders the round PNG to the watch Gallery with
   on-screen feedback ("Card saved to Gallery ✓" / "Save failed" / "No score yet"), plus the
   quiet JSON backup. Previously a silent JSON write that looked like nothing happened.

@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,22 +23,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.odinsgolf.ui.OdinsGolfApp
 import com.odinsgolf.ui.RoundViewModel
 import com.odinsgolf.ui.screens.PermissionScreen
+import com.odinsgolf.ui.screens.SplashScreen
 import com.odinsgolf.ui.theme.OdinsGolfTheme
 
 class MainActivity : ComponentActivity() {
 
-    // Keeps the branded system splash (the logo on white) on screen for a
-    // moment after the first frame is ready, so the logo reads as the app's
-    // opening instead of flashing past. Flipped to false by a delayed post.
-    private var keepSplashOn = true
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        // The OS splash shows the OdinsGolf logo; hold it briefly, then reveal
-        // the app directly — no second Compose logo, so no double take.
-        val splash = installSplashScreen()
-        splash.setKeepOnScreenCondition { keepSplashOn }
+        // The OS launch splash shows the logo (small, circle-masked) on white,
+        // purely to bridge cold start without a blank flash. Our full-screen
+        // Compose SplashScreen then shows the same logo big and uncropped.
+        installSplashScreen()
         super.onCreate(savedInstanceState)
-        window.decorView.postDelayed({ keepSplashOn = false }, 750)
         setContent {
             OdinsGolfTheme {
                 val vm: RoundViewModel = viewModel()
@@ -83,7 +79,14 @@ class MainActivity : ComponentActivity() {
                     onDispose { }
                 }
 
+                var showSplash by remember { mutableStateOf(true) }
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(1000)
+                    showSplash = false
+                }
+
                 when {
+                    showSplash -> SplashScreen()
                     granted -> OdinsGolfApp(vm)
                     else -> PermissionScreen(onRequest = {
                         launcher.launch(

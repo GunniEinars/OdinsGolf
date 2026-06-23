@@ -82,6 +82,16 @@ out center tags;
 Kiðjaberg ≈ `63.9895,-20.7925,64.0040,-20.7575`. Overpass needs a `User-Agent` header (a bare
 request gets HTTP 406). Then run `node tools/bake_hazards.mjs`.
 
+## Map imagery (hole map base layer)
+
+The hole map draws a **satellite base layer** from **Esri "World Imagery"** raster tiles
+(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`),
+no API key, fine for low-volume personal use. Tiles are cached under `cacheDir/tiles` so a hole
+viewed once works offline afterward; the schematic still draws (on the dark background) when a
+tile can't be fetched. Attribution shown on the map: **Source: Esri, Maxar, Earthstar
+Geographics**. This is map *imagery*, not course data — it's drawn under our own OSM/field
+geometry, never traced into the course JSON.
+
 ## OSM attribution (required)
 
 This project uses data from **OpenStreetMap**, © OpenStreetMap contributors, licensed under the
