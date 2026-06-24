@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.odinsgolf.data.model.GpsUpdateMode
+import com.odinsgolf.data.model.MapStyle
 import com.odinsgolf.data.model.RoundMode
 import com.odinsgolf.data.model.Units
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +27,7 @@ data class AppSettings(
     val debugGps: Boolean = false,
     val selectedCourseFile: String = CourseRepository.DEFAULT_COURSE_FILE,
     val currentHole: Int = 1,
+    val mapStyle: MapStyle = MapStyle.VECTOR,
 )
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "odins_settings")
@@ -41,6 +43,7 @@ class SettingsRepository(private val context: Context) {
         val DEBUG_GPS = booleanPreferencesKey("debug_gps")
         val COURSE_FILE = stringPreferencesKey("course_file")
         val CURRENT_HOLE = intPreferencesKey("current_hole")
+        val MAP_STYLE = stringPreferencesKey("map_style")
     }
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { p ->
@@ -53,6 +56,7 @@ class SettingsRepository(private val context: Context) {
             debugGps = p[Keys.DEBUG_GPS] ?: false,
             selectedCourseFile = p[Keys.COURSE_FILE] ?: CourseRepository.DEFAULT_COURSE_FILE,
             currentHole = p[Keys.CURRENT_HOLE] ?: 1,
+            mapStyle = MapStyle.fromName(p[Keys.MAP_STYLE]),
         )
     }
 
@@ -65,6 +69,7 @@ class SettingsRepository(private val context: Context) {
     suspend fun setDebugGps(value: Boolean) = edit { it[Keys.DEBUG_GPS] = value }
     suspend fun setCourseFile(file: String) = edit { it[Keys.COURSE_FILE] = file }
     suspend fun setCurrentHole(hole: Int) = edit { it[Keys.CURRENT_HOLE] = hole }
+    suspend fun setMapStyle(style: MapStyle) = edit { it[Keys.MAP_STYLE] = style.name }
 
     private suspend fun edit(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
         context.dataStore.edit(block)

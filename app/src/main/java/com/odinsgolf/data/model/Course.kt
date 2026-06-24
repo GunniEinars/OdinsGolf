@@ -27,6 +27,10 @@ data class Hole(
     val hazards: List<Hazard>,
     val path: List<GeoPoint>,
     val notes: String,
+    /** OSM area polygons (green/fairway/bunker/water/tee) for the vector hole map. */
+    val features: List<HoleFeature> = emptyList(),
+    /** Ground elevation in metres sampled evenly tee→green (EU-DEM). Empty if unknown. */
+    val elevationProfile: List<Double> = emptyList(),
 ) {
     /**
      * True when we have enough real geometry to show meaningful distances.
@@ -35,6 +39,12 @@ data class Hole(
     val hasGeometry: Boolean
         get() = green.center != null
 }
+
+/** Kinds of mapped golf areas, drawn back-to-front in that order. */
+enum class FeatureKind { FAIRWAY, GREEN, BUNKER, WATER, TEE }
+
+/** A closed area polygon (the ring is not repeated at the end; close it when drawing). */
+data class HoleFeature(val kind: FeatureKind, val ring: List<GeoPoint>)
 
 /**
  * A green. [center] is the shared physical green center (same for hole N and N+9).

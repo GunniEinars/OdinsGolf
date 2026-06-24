@@ -26,12 +26,15 @@ import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
 import com.odinsgolf.data.model.Units
+import com.odinsgolf.geo.Carry
 import com.odinsgolf.geo.Distances
+import com.odinsgolf.geo.PlaysLike
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.DebugGpsReadout
 import com.odinsgolf.ui.components.GpsStatusPill
 import com.odinsgolf.ui.components.formatDistance
 import com.odinsgolf.ui.components.rotaryScroll
+import com.odinsgolf.ui.theme.OdinAmber
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
 import kotlin.math.roundToInt
@@ -104,6 +107,18 @@ fun DistanceScreen(
                 )
                 Text("center · ${units.suffix}", color = OdinOnDim, style = MaterialTheme.typography.caption2)
 
+                // Plays-like (elevation), shown only when the change is meaningful.
+                val pl = PlaysLike.toCenter(hole, state.gps.point)
+                if (pl != null && pl.significant) {
+                    val arrow = if (pl.deltaMeters > 0) "↑" else "↓"
+                    Text(
+                        "plays ${formatDistance(pl.playsLikeMeters, units)} $arrow",
+                        color = OdinAmber,
+                        style = MaterialTheme.typography.title3,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+
                 Spacer(Modifier.height(6.dp))
 
                 // Front / Back row.
@@ -122,7 +137,20 @@ fun DistanceScreen(
                     )
                 }
 
-                // Up to 3 hazards/targets.
+                // Carry distances over hazards ahead on the line of play.
+                val carries = Carry.ahead(hole, state.gps.point)
+                if (carries.isNotEmpty()) {
+                    Spacer(Modifier.height(4.dp))
+                    carries.forEach { c ->
+                        Text(
+                            "carry ${c.label}  ${formatDistance(c.carryMeters, units)} ${units.suffix}",
+                            color = OdinAmber,
+                            style = MaterialTheme.typography.caption2,
+                        )
+                    }
+                }
+
+                // Up to 3 hazards/targets (distance to nearest point).
                 val hazards = Distances.toHazards(hole, state.gps.point).take(3)
                 if (hazards.isNotEmpty()) {
                     Spacer(Modifier.height(4.dp))

@@ -16,6 +16,7 @@ import com.odinsgolf.data.model.FairwayResult
 import com.odinsgolf.data.model.GpsState
 import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.HoleScore
+import com.odinsgolf.data.model.MapStyle
 import com.odinsgolf.data.model.Round
 import com.odinsgolf.data.model.RoundMode
 import com.odinsgolf.data.model.Units
@@ -264,6 +265,12 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         location.start(mode)
     }
     fun setKeepScreenOn(value: Boolean) = viewModelScope.launch { settingsRepo.setKeepScreenOn(value) }
+
+    /** Toggle the hole-map base layer between the offline vector drawing and satellite. */
+    fun toggleMapStyle() = viewModelScope.launch {
+        val next = if (uiState.value.settings.mapStyle == MapStyle.VECTOR) MapStyle.SATELLITE else MapStyle.VECTOR
+        settingsRepo.setMapStyle(next)
+    }
 
     /** Adjust the decimal handicap index by [delta] (e.g. +0.1, -1.0), clamped 0..54. */
     fun adjustHandicap(delta: Double) = viewModelScope.launch {

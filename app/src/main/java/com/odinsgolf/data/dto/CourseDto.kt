@@ -1,10 +1,12 @@
 package com.odinsgolf.data.dto
 
 import com.odinsgolf.data.model.Course
+import com.odinsgolf.data.model.FeatureKind
 import com.odinsgolf.data.model.GeoPoint
 import com.odinsgolf.data.model.Green
 import com.odinsgolf.data.model.Hazard
 import com.odinsgolf.data.model.Hole
+import com.odinsgolf.data.model.HoleFeature
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.geo.Geo
 import kotlinx.serialization.Serializable
@@ -83,6 +85,16 @@ data class HazardDto(
 )
 
 @Serializable
+data class FeatureDto(
+    val kind: String,
+    /** Polygon ring as [[lat,lon], …], not repeated at the end. */
+    val ring: List<List<Double>> = emptyList(),
+)
+
+@Serializable
+data class ElevationDto(val profile: List<Double> = emptyList())
+
+@Serializable
 data class HoleDto(
     val number: Int,
     val displayNumber: String? = null,
@@ -95,6 +107,8 @@ data class HoleDto(
     val greenBack: CoordDto? = null,
     val hazardRefs: List<String> = emptyList(),
     val path: List<CoordDto> = emptyList(),
+    val features: List<FeatureDto> = emptyList(),
+    val elevation: ElevationDto? = null,
     val notes: String = "",
 ) {
     fun toDomain(
@@ -120,6 +134,11 @@ data class HoleDto(
                 h.point.toGeoPointOrNull()?.let { p -> Hazard(h.id, h.name, h.type, p) }
             }
         }
+        val resolvedFeatures = features.mapNotNull { f ->
+            val kind = runCatching { FeatureKind.valueOf(f.kind.uppercase()) }.getOrNull() ?: return@mapNotNull null
+            val ring = f.ring.mapNotNull { if (it.size >= 2) GeoPoint(it[0], it[1]) else null }
+            if (ring.size >= 3) HoleFeature(kind, ring) else null
+        }
         return Hole(
             number = number,
             displayNumber = displayNumber ?: number.toString(),
@@ -130,6 +149,8 @@ data class HoleDto(
             hazards = resolvedHazards,
             path = path.mapNotNull { it.toGeoPointOrNull() },
             notes = notes,
+            features = resolvedFeatures,
+            elevationProfile = elevation?.profile ?: emptyList(),
         )
     }
 

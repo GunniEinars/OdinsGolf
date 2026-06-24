@@ -82,6 +82,21 @@ out center tags;
 Kiðjaberg ≈ `63.9895,-20.7925,64.0040,-20.7575`. Overpass needs a `User-Agent` header (a bare
 request gets HTTP 406). Then run `node tools/bake_hazards.mjs`.
 
+## Hole feature polygons + elevation (vector map, carry, plays-like)
+
+`tools/bake_geometry.mjs` pulls OSM **area polygons** for both courses — `golf=green`,
+`golf=fairway`, `golf=bunker`, `golf=tee`, `natural=water`/`golf=*water_hazard` — simplifies
+each ring (Douglas-Peucker, ~1–2 m), assigns it to the nearest hole(s) by playing line, and
+writes them per hole (`features`) plus a regenerated point-hazard list. These drive the
+offline **vector hole map** and **hazard carry** distances. Flagged `FEATURES_FROM_OSM`.
+
+Each hole also gets an **elevation profile** (`elevation.profile`, 9 samples tee→green) from
+**Copernicus EU-DEM 25 m** via OpenTopoData. EU-DEM was chosen because it covers Iceland
+(>60°N, where SRTM does not) and agreed with ASTER GDEM to ~1 m on test points; the
+*delta* along a hole (what "plays like" uses) is internally consistent. Flagged
+`ELEVATION_FROM_EUDEM`. Plays-like is elevation-only and gated to ≥3 m — no wind/weather,
+which would need live data and be less reliable.
+
 ## Map imagery (hole map base layer)
 
 The hole map draws a **satellite base layer** from **Esri "World Imagery"** raster tiles

@@ -5,6 +5,16 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ## [Unreleased]
 
 ### Added
+- **Offline vector hole map** (now the default): real OSM area polygons — fairway, green,
+  bunkers, water, tees — drawn as filled shapes in Web-Mercator, fully offline and battery
+  cheap. Tap the map to switch to **satellite** and back (`MapStyle`, persisted). Pulled +
+  simplified by `tools/bake_geometry.mjs` and baked per hole (`FEATURES_FROM_OSM`).
+- **"Plays like" distance (elevation)**: uphill plays longer, downhill shorter, from a baked
+  **EU-DEM** elevation profile sampled along each hole (your ground height read at your
+  projected position — no flaky GPS altitude, no wind guesswork). Shown only when the change
+  is ≥3 m so it's never noise. Elevation only, deliberately **not** wind.
+- **Hazard carry distances**: "carry Water 178" / "carry Bunker 142" for hazards ahead on the
+  line of play, computed from the bunker/water polygons. Shown on the Distance screen and map.
 - **Stableford pick-up**: press "–" past 1 (the slot before 0) to mark a hole picked up
   ("PU") — 0 Stableford points, excluded from gross totals, shown as PU/P on the scorecard,
   summary card and hole list. Press "+" to un-pick.

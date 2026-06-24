@@ -50,7 +50,7 @@ fun OdinsGolfApp(vm: RoundViewModel) {
                 onOpenSettings = { nav.navigate(Routes.SETTINGS) },
             )
         }
-        composable(Routes.MAP) { HoleMapScreen(state = state) }
+        composable(Routes.MAP) { HoleMapScreen(state = state, onToggleMapStyle = vm::toggleMapStyle) }
         composable(Routes.SCORECARD) {
             ScorecardScreen(
                 state = state,
