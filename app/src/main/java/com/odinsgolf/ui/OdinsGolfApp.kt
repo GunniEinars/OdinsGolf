@@ -109,7 +109,11 @@ fun OdinsGolfApp(vm: RoundViewModel) {
     }
 }
 
-/** Distance ⇄ Map ⇄ Card, swiped horizontally. Pushed screens (Settings etc.) sit above this. */
+/**
+ * Distance ⇄ Card ⇄ Map, swiped horizontally. Card is the first swipe-left (you
+ * score every hole); the Map is one further (you go there deliberately). Pushed
+ * screens (Settings etc.) sit above this.
+ */
 @Composable
 private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavController) {
     val pagerState = rememberPagerState(pageCount = { 3 })
@@ -121,8 +125,7 @@ private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavControlle
                 onNextHole = vm::nextHole,
                 onOpenMore = { nav.navigate(Routes.SETTINGS) },
             )
-            1 -> HoleMapScreen(state = state, onToggleMapStyle = vm::toggleMapStyle)
-            else -> ScorecardScreen(
+            1 -> ScorecardScreen(
                 state = state,
                 onIncStrokes = vm::incStrokes,
                 onDecStrokes = vm::decStrokes,
@@ -140,6 +143,7 @@ private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavControlle
                     ok
                 },
             )
+            else -> HoleMapScreen(state = state, onToggleMapStyle = vm::toggleMapStyle)
         }
     }
 }

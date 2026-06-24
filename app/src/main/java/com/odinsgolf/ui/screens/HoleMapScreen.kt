@@ -175,16 +175,10 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(9f, 7f)),
                 )
             }
-            // Dogleg corner: mark it and label tee→corner / corner→green.
-            if (cornerIdx in 1 until hole.path.size - 1 && tee != null && center != null) {
-                val corner = hole.path[cornerIdx]
-                val co = off(corner)
-                drawCircle(Color.White, radius = 4f, center = co)
-                val d1 = Geo.distanceMeters(tee, corner)
-                val d2 = Geo.distanceMeters(corner, center)
-                drawContext.canvas.nativeCanvas.drawText(
-                    "${formatDistance(d1, units)}/${formatDistance(d2, units)}", co.x + 9f, co.y + 6f, gray,
-                )
+            // Dogleg corner: a subtle aim dot only. The bent line shows the shape and
+            // the rings give the distances, so no number here (it overlapped the rings).
+            if (cornerIdx in 1 until hole.path.size - 1) {
+                drawCircle(Color.White.copy(alpha = 0.7f), radius = 4f, center = off(hole.path[cornerIdx]))
             }
 
             // Tee marker.

@@ -59,11 +59,15 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
-- **Navigation is now a 3-screen swipe pager**: the on-course core is **Distance ⇄ Map ⇄
-  Card**, swiped left/right (no bezel needed). Everything occasional — course, units, GPS mode,
-  handicap, round history, survey, jump-to-hole — moved behind a single **More** chip
-  (Settings). The **Distance screen was slimmed to one glanceable page** (hero centre distance,
-  front/back, plays-like, carry, GPS), dropping the old chip rows.
+- **Navigation is now a 3-screen swipe pager**: the on-course core is **Distance ⇄ Card ⇄
+  Map**, swiped left/right (no bezel needed). Card is the first swipe-left (you score every
+  hole); the map is one further. Everything occasional — course, units, GPS mode, handicap,
+  round history, survey, jump-to-hole — moved behind a single **More** chip (Settings). The
+  **Distance screen was slimmed to one glanceable page** (hero centre distance, front/back,
+  plays-like, carry, GPS), dropping the old chip rows.
+- **Map dogleg label removed**: the corner's "tee→corner / corner→green" number (e.g. 245/160)
+  was correct but cryptic and overlapped the ring labels. The bent playing line shows the
+  dogleg shape and the rings give the distances, so the corner is now just a subtle aim dot.
 - **Stale-fix honesty**: the hero distance (and the map's big number) **dims and shows
   "stale"** when the GPS fix is older than 30 s, so an out-of-date yardage never looks live.
 - **Opening splash**: a single system splash showing the OdinsGolf **emblem** (wordmark
