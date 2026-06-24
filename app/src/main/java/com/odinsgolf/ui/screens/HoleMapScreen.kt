@@ -143,7 +143,7 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
                 val o = off(arcOrigin)
                 var v = 50.0
                 while (units.toMeters(v) <= toGreen + 12.0) {
-                    val rPx = (units.toMeters(v) * sc)
+                    val rPx = (units.toMeters(v) * sc).toFloat()
                     drawCircle(Color.White.copy(alpha = 0.22f), radius = rPx, center = o, style = Stroke(width = 2f))
                     drawContext.canvas.nativeCanvas.drawText(v.toInt().toString(), o.x - 10f, o.y - rPx + 7f, gray)
                     v += 50.0
