@@ -88,5 +88,6 @@ Running on a real Galaxy Watch 4. Two courses (Setberg, Kiðjaberg) with real OS
 (centerlines, greens, fairways, bunkers, water) and EU-DEM elevation. Vector hole map with
 satellite toggle, plays-like, hazard carry, handicap, round modes, course picker, round
 history, and the scorecard (with pick-up) are all in. A unit test parses every bundled course
-so a data/schema drift fails CI rather than the watch. Exact stroke index and surveyed
-front/back edges are the remaining field-verification items. See [CHANGELOG.md](CHANGELOG.md).
+so a data/schema drift fails CI rather than the watch. Par and stroke index are verified
+against the official scorecards (Rástímar); surveyed green front/back edges are the only
+remaining field-verification item. See [CHANGELOG.md](CHANGELOG.md).

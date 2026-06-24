@@ -89,6 +89,10 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Stroke index verified** against the official scorecards (Rástímar) for both courses, fixing
+  an OSM mistag on each that skewed Stableford/net allocation: **Setberg hole 9** is SI 10 (was
+  SI 3, duplicating hole 10) and **Kiðjaberg hole 13** is SI 4 (was SI 6, duplicating hole 11).
+  Both now have a complete, unique 1–18 stroke index; flag is `STROKE_INDEX_VERIFIED`.
 - **Map label overlap & round-display clipping**: the hole is oriented green-at-top, so the
   hole number sits top-left and the big distance top-right, flanking the green. Both are
   dropped out of the round display's clipped top corners into the wider band (and inset from

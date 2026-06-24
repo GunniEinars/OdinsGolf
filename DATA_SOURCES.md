@@ -35,12 +35,13 @@ Queried golf features around it:
 hole 8 par 3 → hole 17 par 4 (exactly the shared-green/different-par structure).
 
 **Data-quality flags in the JSON:**
-`GEOMETRY_FROM_OSM`, `PAR_VERIFIED_OSM`, `STROKE_INDEX_NEEDS_VERIFICATION`,
+`GEOMETRY_FROM_OSM`, `PAR_VERIFIED_OSM`, `STROKE_INDEX_VERIFIED`,
 `GREEN_FRONT_BACK_NEEDS_FIELD_VERIFICATION`.
 
-> ⚠️ The OSM `handicap` (stroke index) tags are internally inconsistent (holes 9 and 10 both
-> tagged SI 3; SI 10 absent). Verify against the printed scorecard and fix `strokeIndex` in
-> `app/src/main/assets/courses/setbergsvollur.json`.
+> ✅ Stroke index **verified against the official scorecard** on [Rástímar](https://rastimar.golf.is/vellir/setbergsvollur).
+> OSM had mistagged **hole 9 as SI 3** (duplicating hole 10); it is **SI 10**. Both courses had
+> exactly one such OSM stroke-index error — Kiðjaberg's **hole 13** is **SI 4** (OSM had SI 6).
+> Pars on both courses match the official cards.
 
 ## Hazards from OSM (done, both courses)
 

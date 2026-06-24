@@ -16,18 +16,19 @@
     "No data was taken from any proprietary commercial golf-GPS app or database.",
     "Hazards (bunkers, water) derived from OpenStreetMap and assigned to the nearest hole(s) by playing line. Map data © OpenStreetMap contributors, ODbL.",
     "Hole feature polygons (greens, fairways, bunkers, water, tees) from OpenStreetMap, ODbL. Elevation from Copernicus EU-DEM (25 m) via OpenTopoData.",
-    "Hole centerlines + feature polygons (greens, fairways, bunkers, water, tees) from OpenStreetMap, ODbL. Elevation from Copernicus EU-DEM (25 m) via OpenTopoData."
+    "Hole centerlines + feature polygons (greens, fairways, bunkers, water, tees) from OpenStreetMap, ODbL. Elevation from Copernicus EU-DEM (25 m) via OpenTopoData.",
+    "Par and stroke index verified against the official scorecard on Rástímar (rastimar.golf.is)."
   ],
   "dataQuality": [
     "GEOMETRY_FROM_OSM",
     "PAR_VERIFIED_OSM",
-    "STROKE_INDEX_NEEDS_VERIFICATION",
+    "STROKE_INDEX_VERIFIED",
     "GREEN_FRONT_BACK_NEEDS_FIELD_VERIFICATION",
     "HAZARDS_FROM_OSM",
     "FEATURES_FROM_OSM",
     "ELEVATION_FROM_EUDEM"
   ],
-  "notes": "Setbergsvöllur is physically 9 holes played as 18 from different tees. Hole N and hole N+9 share the same physical green (greenId) but have their own tee, par and stroke index. The OSM stroke-index tags contain an inconsistency (holes 9 and 10 both tagged SI 3; SI 10 missing) — verify against the printed scorecard and correct strokeIndex values below.",
+  "notes": "Setbergsvöllur is physically 9 holes played as 18 from different tees: hole N and hole N+9 share the same physical green (greenId) but have their own tee, par and stroke index. Par and stroke index verified against the official scorecard (Rástímar); hole 9 is SI 10 (OSM had mistagged it SI 3).",
   "greens": [
     {
       "id": "G1",
@@ -2556,7 +2557,7 @@
       "number": 9,
       "displayNumber": "9",
       "par": 5,
-      "strokeIndex": 3,
+      "strokeIndex": 10,
       "greenId": "G9",
       "lengthMeters": null,
       "tee": {
@@ -3002,7 +3003,7 @@
           -21.929002
         ]
       ],
-      "notes": "OSM stroke index duplicates hole 9 (SI 3); verify on scorecard.",
+      "notes": "",
       "features": [
         {
           "kind": "bunker",

@@ -15,18 +15,19 @@
     "No data was taken from any proprietary commercial golf-GPS app or database.",
     "Hazards (bunkers, water) derived from OpenStreetMap and assigned to the nearest hole(s) by playing line. Map data © OpenStreetMap contributors, ODbL.",
     "Hole feature polygons (greens, fairways, bunkers, water, tees) from OpenStreetMap, ODbL. Elevation from Copernicus EU-DEM (25 m) via OpenTopoData.",
-    "Hole centerlines + feature polygons (greens, fairways, bunkers, water, tees) from OpenStreetMap, ODbL. Elevation from Copernicus EU-DEM (25 m) via OpenTopoData."
+    "Hole centerlines + feature polygons (greens, fairways, bunkers, water, tees) from OpenStreetMap, ODbL. Elevation from Copernicus EU-DEM (25 m) via OpenTopoData.",
+    "Par and stroke index verified against the official scorecard on Rástímar (rastimar.golf.is)."
   ],
   "dataQuality": [
     "GEOMETRY_FROM_OSM",
     "PAR_FROM_OSM",
-    "STROKE_INDEX_NEEDS_VERIFICATION",
+    "STROKE_INDEX_VERIFIED",
     "GREEN_FRONT_BACK_NEEDS_FIELD_VERIFICATION",
     "HAZARDS_FROM_OSM",
     "FEATURES_FROM_OSM",
     "ELEVATION_FROM_EUDEM"
   ],
-  "notes": "18 distinct holes. OSM stroke-index tags are slightly inconsistent (holes 11 and 13 both tagged SI 6; SI 4 missing) — verify against the printed scorecard.",
+  "notes": "18 distinct holes. Par and stroke index verified against the official scorecard (Rástímar); hole 13 is SI 4 (OSM had mistagged it SI 6).",
   "greens": [
     {
       "id": "G1",
@@ -3967,7 +3968,7 @@
           -20.784181
         ]
       ],
-      "notes": "OSM stroke index duplicates hole 13 (SI 6); verify on scorecard.",
+      "notes": "",
       "features": [
         {
           "kind": "tee",
@@ -4535,7 +4536,7 @@
       "number": 13,
       "displayNumber": "13",
       "par": 5,
-      "strokeIndex": 6,
+      "strokeIndex": 4,
       "greenId": "G13",
       "tee": {
         "lat": 63.9947391,
@@ -4563,7 +4564,7 @@
           -20.790223
         ]
       ],
-      "notes": "OSM stroke index duplicates hole 11 (SI 6); verify on scorecard.",
+      "notes": "",
       "features": [
         {
           "kind": "green",
