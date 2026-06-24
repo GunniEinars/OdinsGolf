@@ -11,6 +11,12 @@ enum class Units(val suffix: String) {
         YARDS -> meters * 1.0936132983
     }
 
+    /** Convert a value in this unit back to meters. */
+    fun toMeters(value: Double): Double = when (this) {
+        METERS -> value
+        YARDS -> value / 1.0936132983
+    }
+
     companion object {
         fun parse(value: String?): Units =
             if (value?.lowercase()?.startsWith("yard") == true || value?.lowercase() == "yd") YARDS else METERS

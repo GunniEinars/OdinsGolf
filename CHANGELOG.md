@@ -6,9 +6,12 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 
 ### Added
 - **Offline vector hole map** (now the default): real OSM area polygons — fairway, green,
-  bunkers, water, tees — drawn as filled shapes in Web-Mercator, fully offline and battery
-  cheap. Tap the map to switch to **satellite** and back (`MapStyle`, persisted). Pulled +
-  simplified by `tools/bake_geometry.mjs` and baked per hole (`FEATURES_FROM_OSM`).
+  bunkers, water, tees — drawn as filled shapes, fully offline and battery cheap. Pulled +
+  simplified by `tools/bake_geometry.mjs` and baked per hole (`FEATURES_FROM_OSM`). The hole
+  is oriented **playing-line-up** (tee bottom, green top) with **range rings** every 50 around
+  you, a **pin flag**, a you-are-here marker, and a big distance-to-green with a plays-like
+  arrow — a golf-watch hole view. Tap the map to switch to **satellite** and back (`MapStyle`,
+  persisted).
 - **"Plays like" distance (elevation)**: uphill plays longer, downhill shorter, from a baked
   **EU-DEM** elevation profile sampled along each hole (your ground height read at your
   projected position — no flaky GPS altitude, no wind guesswork). Shown only when the change
