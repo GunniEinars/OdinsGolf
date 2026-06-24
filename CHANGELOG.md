@@ -78,6 +78,12 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Course failed to load ("Could not load course … Unexpected JSON token … $.holes[0].path[0]")**:
+  baking centerlines wrote `path` as compact `[[lat,lon]]` arrays while the parser still
+  expected `{lat,lon}` objects, so the whole course failed to parse. `path` now parses as
+  `[[lat,lon]]` (matching feature rings). Added a unit test (`CourseDataTest`) that parses every
+  bundled course through the real DTO pipeline, so a JSON⇄DTO schema drift fails CI instead of
+  the watch.
 - **Vector map accuracy**: features are now assigned to the hole whose **OSM centerline**
   they sit on (tight, mostly single-hole; shared greens/fairways attach to both holes that
   play them), so parallel holes no longer bleed in and on-line bunkers aren't missed. The

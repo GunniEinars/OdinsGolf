@@ -106,7 +106,8 @@ data class HoleDto(
     val greenFront: CoordDto? = null,
     val greenBack: CoordDto? = null,
     val hazardRefs: List<String> = emptyList(),
-    val path: List<CoordDto> = emptyList(),
+    /** Hole centerline as [[lat,lon], …] (tee→green), matching feature rings. */
+    val path: List<List<Double>> = emptyList(),
     val features: List<FeatureDto> = emptyList(),
     val elevation: ElevationDto? = null,
     val notes: String = "",
@@ -147,7 +148,7 @@ data class HoleDto(
             tee = teePoint,
             green = green,
             hazards = resolvedHazards,
-            path = path.mapNotNull { it.toGeoPointOrNull() },
+            path = path.mapNotNull { if (it.size >= 2) GeoPoint(it[0], it[1]) else null },
             notes = notes,
             features = resolvedFeatures,
             elevationProfile = elevation?.profile ?: emptyList(),
