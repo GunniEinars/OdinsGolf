@@ -83,8 +83,12 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   play them), so parallel holes no longer bleed in and on-line bunkers aren't missed. The
   playing line **follows the centerline** (doglegs bend), with the dogleg corner marked and
   tee→corner / corner→green distances shown. Range rings reduced to **150 & 100 to the green**
-  (none on par 3). Hazard **carry** now ignores hazards off the corridor (fixes bogus short
-  carries). Off-line/ornamental water (e.g. Setberg's left pond) no longer attaches to a hole.
+  (none on par 3). Hazard **carry** now only shows hazards on the corridor **and within reach**
+  (≤240 m), so a far greenside bunker no longer shows a meaningless tee "carry"; the generic
+  nearest-hazard list was dropped from the Distance screen (the map shows hazards visually).
+  Off-line/ornamental water (e.g. Setberg's left pond) no longer attaches to a hole. Verified
+  the EU-DEM plays-like deltas against a second model (ASTER) — they agree, incl. Kiðjaberg
+  h14's real ~+39 m climb.
 - **Hole map rendered blank** (only the tee→green line on an empty screen) when a GPS fix was
   far from the hole — the emulator default location or a stale fix from another course blew up
   the map scale and collapsed the hole to a dot. Fixes more than 2 km from the green are now

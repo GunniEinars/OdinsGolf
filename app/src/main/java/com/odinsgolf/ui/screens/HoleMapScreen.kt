@@ -104,6 +104,7 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
         center?.let { add(it) }
         me?.let { add(it) }
         hole.features.forEach { addAll(it.ring) }
+        addAll(hole.path)
         addAll(hole.hazards.map { it.point })
     }
 

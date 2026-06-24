@@ -86,13 +86,17 @@ object Carry {
                 if (along > far) far = along
                 if (perp < minPerp) minPerp = perp
             }
-            // A real carry: ahead, finishing before the green, and on the corridor
-            // (not a hazard off to the side, which projects to a bogus short carry).
-            if (near > 10.0 && far < toGreen - 5.0 && minPerp < 22.0) {
+            // A real carry: ahead, within reach (so far greenside bunkers don't show
+            // as a meaningless tee "carry"), finishing before the green, and on the
+            // corridor (not off to the side, which projects to a bogus short carry).
+            if (near in 10.0..REACH_M && far < toGreen - 5.0 && minPerp < 22.0) {
                 val label = if (f.kind == FeatureKind.WATER) "Water" else "Bunker"
                 result.add(HazardCarry(label, far))
             }
         }
-        return result.sortedBy { it.carryMeters }.take(3)
+        return result.sortedBy { it.carryMeters }.take(2)
     }
+
+    /** Hazards whose near edge is beyond this (m) aren't a carry you can attempt yet. */
+    private const val REACH_M = 240.0
 }

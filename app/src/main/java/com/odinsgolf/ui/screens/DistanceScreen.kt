@@ -137,7 +137,8 @@ fun DistanceScreen(
                     )
                 }
 
-                // Carry distances over hazards ahead on the line of play.
+                // Carry distances over hazards ahead and within reach — the actionable
+                // hazard info. (The map shows every hazard visually.)
                 val carries = Carry.ahead(hole, state.gps.point)
                 if (carries.isNotEmpty()) {
                     Spacer(Modifier.height(4.dp))
@@ -145,19 +146,6 @@ fun DistanceScreen(
                         Text(
                             "carry ${c.label}  ${formatDistance(c.carryMeters, units)} ${units.suffix}",
                             color = OdinAmber,
-                            style = MaterialTheme.typography.caption2,
-                        )
-                    }
-                }
-
-                // Up to 3 hazards/targets (distance to nearest point).
-                val hazards = Distances.toHazards(hole, state.gps.point).take(3)
-                if (hazards.isNotEmpty()) {
-                    Spacer(Modifier.height(4.dp))
-                    hazards.forEach { (name, m) ->
-                        Text(
-                            "$name  ${formatDistance(m, units)} ${units.suffix}",
-                            color = OdinOnDim,
                             style = MaterialTheme.typography.caption2,
                         )
                     }
