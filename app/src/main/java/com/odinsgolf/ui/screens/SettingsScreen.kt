@@ -26,6 +26,7 @@ fun SettingsScreen(
     onCycleGpsMode: () -> Unit,
     onSetKeepScreenOn: (Boolean) -> Unit,
     onCycleRoundMode: () -> Unit,
+    onOpenHoles: () -> Unit,
     onOpenHandicap: () -> Unit,
     onOpenCourses: () -> Unit,
     onOpenHistory: () -> Unit,
@@ -37,7 +38,17 @@ fun SettingsScreen(
     val listState = rememberScalingLazyListState()
     Scaffold {
         ScalingLazyColumn(state = listState, modifier = Modifier.rotaryScroll(listState)) {
-            item { ListHeader { Text("Settings") } }
+            item { ListHeader { Text("More") } }
+
+            item {
+                Chip(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ChipDefaults.secondaryChipColors(),
+                    onClick = onOpenHoles,
+                    label = { Text("Jump to hole") },
+                    secondaryLabel = { Text("H${state.hole?.displayNumber ?: "—"}") },
+                )
+            }
 
             item {
                 Chip(

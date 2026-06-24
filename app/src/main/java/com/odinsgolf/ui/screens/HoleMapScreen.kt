@@ -39,8 +39,10 @@ import androidx.wear.compose.material.Text
 import com.odinsgolf.data.TileRepository
 import com.odinsgolf.data.model.FeatureKind
 import com.odinsgolf.data.model.GeoPoint
+import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.Hole
 import com.odinsgolf.data.model.MapStyle
+import com.odinsgolf.location.effectiveStatus
 import com.odinsgolf.geo.Carry
 import com.odinsgolf.geo.Distances
 import com.odinsgolf.geo.Geo
@@ -216,9 +218,14 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
             modifier = Modifier.align(Alignment.TopEnd).padding(top = 54.dp, end = 24.dp),
             horizontalAlignment = Alignment.End,
         ) {
+            // Dim the number when the fix is stale, so it never looks live.
+            val stale = state.gps.effectiveStatus(state.nowElapsed) == GpsStatus.STALE_FIX
             Text(
                 text = toGreen?.let { formatDistance(it, units) } ?: "—",
-                style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White, shadow = MapShadow),
+                style = TextStyle(
+                    fontSize = 32.sp, fontWeight = FontWeight.Bold,
+                    color = if (stale) OdinOnDim else Color.White, shadow = MapShadow,
+                ),
             )
             val pl = PlaysLike.toCenter(hole, me)
             if (pl != null && pl.significant) {

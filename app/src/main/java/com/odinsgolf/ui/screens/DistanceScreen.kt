@@ -1,7 +1,6 @@
 package com.odinsgolf.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,10 +24,11 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
-import com.odinsgolf.data.model.Units
+import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.geo.Carry
 import com.odinsgolf.geo.Distances
 import com.odinsgolf.geo.PlaysLike
+import com.odinsgolf.location.effectiveStatus
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.DebugGpsReadout
 import com.odinsgolf.ui.components.GpsStatusPill
@@ -37,18 +37,18 @@ import com.odinsgolf.ui.components.rotaryScroll
 import com.odinsgolf.ui.theme.OdinAmber
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
-import kotlin.math.roundToInt
 
+/**
+ * The glanceable home: hole + the hero centre distance, front/back, plays-like and
+ * any carry — one screen. Map and scorecard are a swipe away (the pager), and
+ * everything occasional is behind the single More chip.
+ */
 @Composable
 fun DistanceScreen(
     state: GolfUiState,
     onPrevHole: () -> Unit,
     onNextHole: () -> Unit,
-    onToggleUnits: () -> Unit,
-    onOpenMap: () -> Unit,
-    onOpenScorecard: () -> Unit,
-    onOpenHoles: () -> Unit,
-    onOpenSettings: () -> Unit,
+    onOpenMore: () -> Unit,
 ) {
     Scaffold(timeText = { TimeText() }) {
         val scroll = rememberScrollState()
@@ -57,20 +57,13 @@ fun DistanceScreen(
                 .fillMaxSize()
                 .verticalScroll(scroll)
                 .rotaryScroll(scroll)
-                .padding(horizontal = 14.dp, vertical = 26.dp),
+                .padding(horizontal = 14.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             val hole = state.hole
             val units = state.settings.units
 
-            Text(
-                text = state.course?.name ?: "Loading…",
-                color = OdinOnDim,
-                style = MaterialTheme.typography.caption2,
-                maxLines = 1,
-            )
-
-            // Hole navigation: ◀  H7 · Par 4  ▶
+            // Hole navigation: ‹  H7 · Par 4  ›
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -84,7 +77,7 @@ fun DistanceScreen(
                 NavArrow("›", onNextHole)
             }
 
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(4.dp))
 
             if (state.loadError != null) {
                 Text(state.loadError, color = MaterialTheme.colors.error, textAlign = TextAlign.Center)
@@ -97,17 +90,25 @@ fun DistanceScreen(
                 )
             } else if (hole != null) {
                 val d = Distances.toGreen(hole, state.gps.point)
+                // Honest hero: a stale or absent fix is dimmed and flagged, so an
+                // out-of-date yardage never looks live.
+                val stale = state.gps.effectiveStatus(state.nowElapsed) == GpsStatus.STALE_FIX
+                val hasFix = state.gps.point != null
+                val heroColor = if (!hasFix || stale) OdinOnDim else OdinGreen
 
-                // Hero: center-green distance.
                 Text(
                     text = formatDistance(d.centerMeters, units),
-                    color = OdinGreen,
+                    color = heroColor,
                     fontSize = 60.sp,
                     fontWeight = FontWeight.Bold,
                 )
-                Text("center · ${units.suffix}", color = OdinOnDim, style = MaterialTheme.typography.caption2)
+                Text(
+                    if (stale) "stale fix · center" else "center · ${units.suffix}",
+                    color = if (stale) OdinAmber else OdinOnDim,
+                    style = MaterialTheme.typography.caption2,
+                )
 
-                // Plays-like (elevation), shown only when the change is meaningful.
+                // Plays-like (elevation), only when the change is meaningful.
                 val pl = PlaysLike.toCenter(hole, state.gps.point)
                 if (pl != null && pl.significant) {
                     val arrow = if (pl.deltaMeters > 0) "↑" else "↓"
@@ -121,7 +122,7 @@ fun DistanceScreen(
 
                 Spacer(Modifier.height(6.dp))
 
-                // Front / Back row.
+                // Front / Back.
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -129,16 +130,8 @@ fun DistanceScreen(
                     LabeledValue("Front", formatDistance(d.frontMeters, units))
                     LabeledValue("Back", formatDistance(d.backMeters, units))
                 }
-                d.depthMeters?.let {
-                    Text(
-                        "depth ${units.fromMeters(it).roundToInt()} ${units.suffix}",
-                        color = OdinOnDim,
-                        style = MaterialTheme.typography.caption3,
-                    )
-                }
 
-                // Carry distances over hazards ahead and within reach — the actionable
-                // hazard info. (The map shows every hazard visually.)
+                // Carry over hazards ahead and within reach (the actionable hazard info).
                 val carries = Carry.ahead(hole, state.gps.point)
                 if (carries.isNotEmpty()) {
                     Spacer(Modifier.height(4.dp))
@@ -160,18 +153,7 @@ fun DistanceScreen(
             }
 
             Spacer(Modifier.height(10.dp))
-
-            // Action chips.
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                CompactChip(label = { Text("Map") }, onClick = onOpenMap)
-                CompactChip(label = { Text("Card") }, onClick = onOpenScorecard)
-            }
-            Spacer(Modifier.height(4.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                CompactChip(label = { Text("Holes") }, onClick = onOpenHoles)
-                CompactChip(label = { Text(units.suffix) }, onClick = onToggleUnits)
-                CompactChip(label = { Text("⚙") }, onClick = onOpenSettings)
-            }
+            CompactChip(label = { Text("More") }, onClick = onOpenMore)
         }
     }
 }
@@ -181,7 +163,7 @@ private fun NavArrow(symbol: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         colors = ButtonDefaults.secondaryButtonColors(),
-        modifier = Modifier.height(34.dp),
+        modifier = Modifier.height(36.dp),
     ) {
         Text(symbol, fontSize = 20.sp)
     }

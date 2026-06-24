@@ -1,8 +1,13 @@
 package com.odinsgolf.ui
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
@@ -20,16 +25,14 @@ import com.odinsgolf.ui.screens.SettingsScreen
 import com.odinsgolf.ui.screens.SurveyScreen
 
 private object Routes {
-    const val DISTANCE = "distance"
-    const val MAP = "map"
-    const val SCORECARD = "scorecard"
-    const val HOLES = "holes"
+    const val ROUND = "round"      // the 3-screen pager: Distance ⇄ Map ⇄ Card
     const val SETTINGS = "settings"
-    const val SURVEY = "survey"
+    const val HOLES = "holes"
     const val HANDICAP = "handicap"
     const val COURSES = "courses"
     const val HISTORY = "history"
     const val SUMMARY = "summary"
+    const val SURVEY = "survey"
 }
 
 @Composable
@@ -37,22 +40,89 @@ fun OdinsGolfApp(vm: RoundViewModel) {
     val nav = rememberSwipeDismissableNavController()
     val state by vm.uiState.collectAsStateWithLifecycle()
 
-    SwipeDismissableNavHost(navController = nav, startDestination = Routes.DISTANCE) {
-        composable(Routes.DISTANCE) {
-            DistanceScreen(
+    SwipeDismissableNavHost(navController = nav, startDestination = Routes.ROUND) {
+        // The on-course core: swipe between Distance, Map and Card.
+        composable(Routes.ROUND) { RoundPager(state, vm, nav) }
+
+        composable(Routes.SETTINGS) {
+            SettingsScreen(
+                state = state,
+                onSetUnits = vm::setUnits,
+                onCycleGpsMode = {
+                    val modes = GpsUpdateMode.entries
+                    vm.setGpsMode(modes[(state.settings.gpsMode.ordinal + 1) % modes.size])
+                },
+                onSetKeepScreenOn = vm::setKeepScreenOn,
+                onCycleRoundMode = {
+                    val modes = RoundMode.entries
+                    vm.setRoundMode(modes[(state.settings.roundMode.ordinal + 1) % modes.size])
+                },
+                onOpenHoles = { nav.navigate(Routes.HOLES) },
+                onOpenHandicap = { nav.navigate(Routes.HANDICAP) },
+                onOpenCourses = { nav.navigate(Routes.COURSES) },
+                onOpenHistory = { nav.navigate(Routes.HISTORY) },
+                onSetDebugGps = vm::setDebugGps,
+                onOpenSurvey = { nav.navigate(Routes.SURVEY) },
+                onResetRound = vm::resetRound,
+            )
+        }
+        composable(Routes.HOLES) {
+            HoleSelectorScreen(
+                state = state,
+                onSelectHole = { n ->
+                    vm.selectHole(n)
+                    // Jump straight back to the dashboard on the chosen hole.
+                    nav.popBackStack(Routes.ROUND, inclusive = false)
+                },
+            )
+        }
+        composable(Routes.HANDICAP) {
+            HandicapScreen(index = state.settings.handicapIndex, onAdjust = { vm.adjustHandicap(it) })
+        }
+        composable(Routes.COURSES) {
+            CoursePickerScreen(
+                courses = vm.courses,
+                selectedFile = state.settings.selectedCourseFile,
+                onSelect = { file ->
+                    vm.selectCourse(file)
+                    nav.popBackStack()
+                },
+            )
+        }
+        composable(Routes.HISTORY) {
+            val rounds by vm.history.collectAsStateWithLifecycle()
+            HistoryScreen(
+                rounds = rounds,
+                onOpenRound = { r ->
+                    vm.selectSummary(r)
+                    nav.navigate(Routes.SUMMARY)
+                },
+            )
+        }
+        composable(Routes.SUMMARY) {
+            val round by vm.summaryRound.collectAsStateWithLifecycle()
+            RoundSummaryScreen(round = round)
+        }
+        composable(Routes.SURVEY) {
+            SurveyScreen(state = state, onCapture = { vm.captureSurveyPoint(it) })
+        }
+    }
+}
+
+/** Distance ⇄ Map ⇄ Card, swiped horizontally. Pushed screens (Settings etc.) sit above this. */
+@Composable
+private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavController) {
+    val pagerState = rememberPagerState(pageCount = { 3 })
+    HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+        when (page) {
+            0 -> DistanceScreen(
                 state = state,
                 onPrevHole = vm::prevHole,
                 onNextHole = vm::nextHole,
-                onToggleUnits = vm::toggleUnits,
-                onOpenMap = { nav.navigate(Routes.MAP) },
-                onOpenScorecard = { nav.navigate(Routes.SCORECARD) },
-                onOpenHoles = { nav.navigate(Routes.HOLES) },
-                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                onOpenMore = { nav.navigate(Routes.SETTINGS) },
             )
-        }
-        composable(Routes.MAP) { HoleMapScreen(state = state, onToggleMapStyle = vm::toggleMapStyle) }
-        composable(Routes.SCORECARD) {
-            ScorecardScreen(
+            1 -> HoleMapScreen(state = state, onToggleMapStyle = vm::toggleMapStyle)
+            else -> ScorecardScreen(
                 state = state,
                 onIncStrokes = vm::incStrokes,
                 onDecStrokes = vm::decStrokes,
@@ -70,67 +140,6 @@ fun OdinsGolfApp(vm: RoundViewModel) {
                     ok
                 },
             )
-        }
-        composable(Routes.HOLES) {
-            HoleSelectorScreen(
-                state = state,
-                onSelectHole = { n ->
-                    vm.selectHole(n)
-                    nav.popBackStack()
-                },
-            )
-        }
-        composable(Routes.SETTINGS) {
-            SettingsScreen(
-                state = state,
-                onSetUnits = vm::setUnits,
-                onCycleGpsMode = {
-                    val modes = GpsUpdateMode.entries
-                    val next = modes[(state.settings.gpsMode.ordinal + 1) % modes.size]
-                    vm.setGpsMode(next)
-                },
-                onSetKeepScreenOn = vm::setKeepScreenOn,
-                onCycleRoundMode = {
-                    val modes = RoundMode.entries
-                    vm.setRoundMode(modes[(state.settings.roundMode.ordinal + 1) % modes.size])
-                },
-                onOpenHandicap = { nav.navigate(Routes.HANDICAP) },
-                onOpenCourses = { nav.navigate(Routes.COURSES) },
-                onOpenHistory = { nav.navigate(Routes.HISTORY) },
-                onSetDebugGps = vm::setDebugGps,
-                onOpenSurvey = { nav.navigate(Routes.SURVEY) },
-                onResetRound = vm::resetRound,
-            )
-        }
-        composable(Routes.HANDICAP) {
-            HandicapScreen(index = state.settings.handicapIndex, onAdjust = { vm.adjustHandicap(it) })
-        }
-        composable(Routes.COURSES) {
-            CoursePickerScreen(
-                courses = vm.courses,
-                selectedFile = state.settings.selectedCourseFile,
-                onSelect = { file ->
-                    vm.selectCourse(file)
-                    nav.popBackStack()
-                },
-            )
-        }
-        composable(Routes.SURVEY) {
-            SurveyScreen(state = state, onCapture = { vm.captureSurveyPoint(it) })
-        }
-        composable(Routes.HISTORY) {
-            val rounds by vm.history.collectAsStateWithLifecycle()
-            HistoryScreen(
-                rounds = rounds,
-                onOpenRound = { r ->
-                    vm.selectSummary(r)
-                    nav.navigate(Routes.SUMMARY)
-                },
-            )
-        }
-        composable(Routes.SUMMARY) {
-            val round by vm.summaryRound.collectAsStateWithLifecycle()
-            RoundSummaryScreen(round = round)
         }
     }
 }

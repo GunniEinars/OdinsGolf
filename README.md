@@ -8,7 +8,10 @@ First course: **Setbergsvöllur** (Golfklúbburinn Setberg, Hafnarfjörður, Ice
 
 ## What it does
 
-- Front / **center** / back green distances (center is the hero number).
+- **Swipe navigation**: the on-course core is a 3-screen pager — **Distance ⇄ Map ⇄ Card** —
+  flicked left/right (no bezel). Everything occasional sits behind one **More** chip.
+- Front / **center** / back green distances (center is the hero number); the number **dims and
+  flags "stale"** when the GPS fix is old, so it never looks live when it isn't.
 - **"Plays like" distance** — elevation-adjusted (uphill plays longer), from a baked EU-DEM
   profile; shown only when the change is ≥3 m. Elevation only, no wind.
 - **Hazard carry** distances — clear the bunker/water ahead, within reach of your shot.
