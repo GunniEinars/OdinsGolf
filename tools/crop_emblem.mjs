@@ -59,17 +59,33 @@ function chunk(type, data) {
 }
 
 const bpp = 3;
+const DOWN = parseInt(process.argv[6] ?? "2"); // box-downsample factor to keep the asset light
 const { width, height, raw } = readPng(SRC);
 const px = unfilter(raw, width, height, bpp);
 const wc = Math.min(size, width - x0), hc = Math.min(size, height - y0);
-const cstride = wc * bpp, stride = width * bpp;
-const rawF = Buffer.alloc(hc * (cstride + 1));
-for (let y = 0; y < hc; y++) {
-  rawF[y * (cstride + 1)] = 0;
-  px.copy(rawF, y * (cstride + 1) + 1, (y0 + y) * stride + x0 * bpp, (y0 + y) * stride + (x0 + wc) * bpp);
+const stride = width * bpp;
+
+// Crop, then box-average downsample by DOWN (the splash only renders ~384 px).
+const ow = Math.floor(wc / DOWN), oh = Math.floor(hc / DOWN);
+const ostride = ow * bpp;
+const rawF = Buffer.alloc(oh * (ostride + 1));
+for (let oy = 0; oy < oh; oy++) {
+  rawF[oy * (ostride + 1)] = 0;
+  for (let ox = 0; ox < ow; ox++) {
+    for (let ch = 0; ch < bpp; ch++) {
+      let sum = 0;
+      for (let dy = 0; dy < DOWN; dy++) {
+        for (let dx = 0; dx < DOWN; dx++) {
+          const sy = y0 + oy * DOWN + dy, sx = x0 + ox * DOWN + dx;
+          sum += px[sy * stride + sx * bpp + ch];
+        }
+      }
+      rawF[oy * (ostride + 1) + 1 + ox * bpp + ch] = Math.round(sum / (DOWN * DOWN));
+    }
+  }
 }
 const ihdr = Buffer.alloc(13);
-ihdr.writeUInt32BE(wc, 0); ihdr.writeUInt32BE(hc, 4); ihdr[8] = 8; ihdr[9] = 2;
+ihdr.writeUInt32BE(ow, 0); ihdr.writeUInt32BE(oh, 4); ihdr[8] = 8; ihdr[9] = 2;
 const png = Buffer.concat([
   Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
   chunk("IHDR", ihdr),
@@ -77,4 +93,4 @@ const png = Buffer.concat([
   chunk("IEND", Buffer.alloc(0)),
 ]);
 fs.writeFileSync(out, png);
-console.log(`wrote ${out} (${wc}x${hc}) from crop x0=${x0} y0=${y0} size=${size}`);
+console.log(`wrote ${out} (${ow}x${oh}, downsampled /${DOWN}) from crop x0=${x0} y0=${y0} size=${size}`);

@@ -25,12 +25,4 @@ object Distances {
             backMeters = d(hole.green.back),
         )
     }
-
-    /** Distance to each hazard, sorted nearest first. */
-    fun toHazards(hole: Hole, from: GeoPoint?): List<Pair<String, Double>> {
-        if (from == null) return emptyList()
-        return hole.hazards
-            .map { it.name.ifBlank { it.type } to Geo.distanceMeters(from, it.point) }
-            .sortedBy { it.second }
-    }
 }

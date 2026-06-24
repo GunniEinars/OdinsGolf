@@ -24,8 +24,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -61,6 +63,8 @@ private val BunkerFill = Color(0xFFE6CE9A)
 private val WaterFill = Color(0xFF3E82C2)
 private val TeeFill = Color(0xFF6E7C58)
 private val FlagRed = Color(0xFFE5484D)
+// Soft shadow so white overlay text stays legible over the bright vector map.
+private val MapShadow = Shadow(Color(0xCC000000), Offset(0f, 1f), 5f)
 
 @Composable
 fun HoleMapScreen(state: GolfUiState, onToggleMapStyle: () -> Unit) {
@@ -75,11 +79,12 @@ fun HoleMapScreen(state: GolfUiState, onToggleMapStyle: () -> Unit) {
         val satellite = state.settings.mapStyle == MapStyle.SATELLITE
         Box(Modifier.fillMaxSize().clickable(onClick = onToggleMapStyle)) {
             if (satellite) SatelliteHoleMap(hole, state) else VectorHoleMap(hole, state)
+            // Hole number flanks the green (which sits top-centre) on the left.
             Text(
-                text = "Hole ${hole.displayNumber}",
+                text = "H${hole.displayNumber}",
                 color = Color.White,
-                style = MaterialTheme.typography.caption2,
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 14.dp),
+                style = MaterialTheme.typography.caption1.copy(shadow = MapShadow, fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.align(Alignment.TopStart).padding(top = 20.dp, start = 20.dp),
             )
         }
     }
@@ -146,7 +151,7 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
             if (hole.par > 3 && center != null && tee != null) {
                 val og = off(center)
                 val teeGreen = Geo.distanceMeters(tee, center)
-                for (ringVal in intArrayOf(150, 100)) {
+                for (ringVal in intArrayOf(250, 150, 100)) {
                     val rM = units.toMeters(ringVal.toDouble())
                     if (rM > teeGreen - 8.0) continue
                     val rPx = (rM * sc).toFloat()
@@ -204,16 +209,14 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
             }
         }
 
-        // Big distance to the green + direction arrow (top-right).
+        // Big distance to the green (top-right, flanking the green) + plays-like.
         Column(
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = 30.dp, end = 14.dp),
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = 18.dp, end = 18.dp),
             horizontalAlignment = Alignment.End,
         ) {
             Text(
                 text = toGreen?.let { formatDistance(it, units) } ?: "—",
-                color = Color.White,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
+                style = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold, color = Color.White, shadow = MapShadow),
             )
             val pl = PlaysLike.toCenter(hole, me)
             if (pl != null && pl.significant) {
@@ -221,10 +224,10 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
                 Text(
                     "plays ${formatDistance(pl.playsLikeMeters, units)} $arrow",
                     color = OdinAmber,
-                    style = MaterialTheme.typography.caption2,
+                    style = MaterialTheme.typography.caption2.copy(shadow = MapShadow),
                 )
             } else {
-                Text(units.suffix, color = OdinOnDim, style = MaterialTheme.typography.caption3)
+                Text(units.suffix, color = Color.White, style = MaterialTheme.typography.caption3.copy(shadow = MapShadow))
             }
         }
 
@@ -237,11 +240,11 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
             carries.forEach { c ->
                 Text(
                     "carry ${c.label} ${formatDistance(c.carryMeters, units)}",
-                    color = OdinAmber, style = MaterialTheme.typography.caption3,
+                    color = OdinAmber, style = MaterialTheme.typography.caption2.copy(shadow = MapShadow),
                 )
             }
             if (me == null) {
-                Text("waiting for GPS", color = OdinOnDim, style = MaterialTheme.typography.caption3)
+                Text("waiting for GPS", color = Color.White, style = MaterialTheme.typography.caption3.copy(shadow = MapShadow))
             }
         }
     }

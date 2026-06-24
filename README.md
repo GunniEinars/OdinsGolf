@@ -9,18 +9,25 @@ First course: **Setbergsvöllur** (Golfklúbburinn Setberg, Hafnarfjörður, Ice
 ## What it does
 
 - Front / **center** / back green distances (center is the hero number).
-- Up to 3 hazard/target distances + green depth.
+- **"Plays like" distance** — elevation-adjusted (uphill plays longer), from a baked EU-DEM
+  profile; shown only when the change is ≥3 m. Elevation only, no wind.
+- **Hazard carry** distances — clear the bunker/water ahead, within reach of your shot.
+- An offline **vector hole map**: the hole oriented playing-line-up (tee bottom, green top)
+  with filled fairway/green/bunkers/water/tees, a pin flag, your position, **150/100 (and 250
+  on long holes) distance-to-green rings**, and the playing line following the real centerline
+  (doglegs bend). **Tap** to switch to a **satellite** layer and back.
 - GPS accuracy + status: `Live` / `Weak` / `Stale` / `Searching` / `Paused`, with fix age,
   plus an optional live **debug GPS readout** (Settings → Debug GPS info).
-- A lightweight vector **hole map** (tee→green line, your dot, hazards) — no map tiles.
-- A fast **scorecard**: strokes/putts/fairway/GIR, running totals, **to-par, Stableford and net** (Icelandic club style).
+- A fast **scorecard**: strokes start on par (tap to keep par; "–" past 1 = **pick up**),
+  putts/fairway/GIR, running totals, **to-par, Stableford and net** (Icelandic club style),
+  and a shareable round card PNG to the watch Gallery.
 - **Decimal handicap index** (e.g. 15.7); allocation uses the rounded playing handicap.
 - **Round modes**: 18 holes / Front 9 / Back 9.
 - **Course picker** (Settings → Course): **Setbergsvöllur** + **Kiðjabergsvöllur**, more added as JSON.
 - **Round history**: manually save rounds you want to keep to a scrollable list.
 - **Survey mode** to capture real green/tee/hazard coordinates by walking the course.
 - Battery-first GPS (spaced updates, pauses when not visible).
-- App **logo** as launcher icon + system splash; **bezel/rotary scrolling** on all lists.
+- App **emblem** as launcher icon + system splash; **bezel/rotary scrolling** on all lists.
 
 ## The Setberg "9 played as 18" model
 
@@ -32,10 +39,12 @@ as hole 17 par 4). OdinsGolf models this correctly: 9 greens + 18 playing holes.
 
 ## Data honesty
 
-Tees, green centers, par and stroke index are real, derived from **OpenStreetMap**
-(© OpenStreetMap contributors, ODbL). Green **front/back edges are not in OSM** — they show
-`—` until you capture them in Survey mode. **The app never invents yardages from placeholder
-coordinates.** See [DATA_SOURCES.md](DATA_SOURCES.md).
+Tees, green centers, hole centerlines, fairway/green/bunker/water shapes, par and stroke index
+are real, derived from **OpenStreetMap** (© OpenStreetMap contributors, ODbL). Elevation is
+**Copernicus EU-DEM** (via OpenTopoData); the satellite layer is **Esri World Imagery**. Green
+**front/back edges aren't in OSM**, so they're **approximated** (green centre ±~11 m along the
+playing line) and clearly labelled as such — a real Survey capture overrides them. The app
+never copies data from any commercial golf-GPS database. See [DATA_SOURCES.md](DATA_SOURCES.md).
 
 ## Build & install (no admin rights needed)
 
@@ -72,7 +81,9 @@ Preferences DataStore · Gradle Kotlin DSL + version catalog. Single module, no 
 
 ## Status
 
-Running on a real Galaxy Watch 4. Two courses (Setberg, Kiðjaberg) with real OSM geometry;
-handicap, round modes, course picker, logo, and GPS debug readout are in. Green front/back and
-exact stroke index still need one field-verification round (Survey mode). Next up: bezel
-scrolling and round history. See [CHANGELOG.md](CHANGELOG.md) and [PROJECT_PLAN.md](PROJECT_PLAN.md).
+Running on a real Galaxy Watch 4. Two courses (Setberg, Kiðjaberg) with real OSM geometry
+(centerlines, greens, fairways, bunkers, water) and EU-DEM elevation. Vector hole map with
+satellite toggle, plays-like, hazard carry, handicap, round modes, course picker, round
+history, and the scorecard (with pick-up) are all in. A unit test parses every bundled course
+so a data/schema drift fails CI rather than the watch. Exact stroke index and surveyed
+front/back edges are the remaining field-verification items. See [CHANGELOG.md](CHANGELOG.md).
