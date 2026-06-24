@@ -46,10 +46,11 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
-- **Opening splash**: the logo is shown **large and uncropped** full-screen (Compose) on
-  white. The OS launch screen shows the same logo (small, circle-masked) only to bridge cold
-  start, so there's no blank-white flash before it. (The system splash icon can't be made big
-  without the circular mask clipping the wordmark — hence the full-screen Compose logo.)
+- **Opening splash**: a single system splash showing the OdinsGolf **emblem** (wordmark
+  cropped off, `odins_emblem.png` via `tools/crop_emblem.mjs`) on white, held ~0.65 s. The
+  emblem is roughly circular so it fills the splash's circular mask and renders big and
+  uncropped — unlike the square logo+wordmark, which the mask shrank to fit. No Compose splash
+  afterwards, so there is no second logo and no double take.
 - Scorecard **"Export" is now "Save card"**: renders the round PNG to the watch Gallery with
   on-screen feedback ("Card saved to Gallery ✓" / "Save failed" / "No score yet"), plus the
   quiet JSON backup. Previously a silent JSON write that looked like nothing happened.
