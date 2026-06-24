@@ -79,12 +79,13 @@ fun HoleMapScreen(state: GolfUiState, onToggleMapStyle: () -> Unit) {
         val satellite = state.settings.mapStyle == MapStyle.SATELLITE
         Box(Modifier.fillMaxSize().clickable(onClick = onToggleMapStyle)) {
             if (satellite) SatelliteHoleMap(hole, state) else VectorHoleMap(hole, state)
-            // Hole number flanks the green (which sits top-centre) on the left.
+            // Hole number flanks the green (top-centre) on the left, lowered out of
+            // the clipped top corner of the round display.
             Text(
                 text = "H${hole.displayNumber}",
                 color = Color.White,
                 style = MaterialTheme.typography.caption1.copy(shadow = MapShadow, fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.align(Alignment.TopStart).padding(top = 20.dp, start = 20.dp),
+                modifier = Modifier.align(Alignment.TopStart).padding(top = 44.dp, start = 26.dp),
             )
         }
     }
@@ -209,14 +210,15 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
             }
         }
 
-        // Big distance to the green (top-right, flanking the green) + plays-like.
+        // Big distance to the green — kept out of the round display's clipped
+        // top-right corner: dropped into the wider band and inset from the edge.
         Column(
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = 18.dp, end = 18.dp),
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = 54.dp, end = 24.dp),
             horizontalAlignment = Alignment.End,
         ) {
             Text(
                 text = toGreen?.let { formatDistance(it, units) } ?: "—",
-                style = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold, color = Color.White, shadow = MapShadow),
+                style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White, shadow = MapShadow),
             )
             val pl = PlaysLike.toCenter(hole, me)
             if (pl != null && pl.significant) {
@@ -299,17 +301,22 @@ private fun SatelliteHoleMap(hole: Hole, state: GolfUiState) {
         }
         val units = state.settings.units
         val d = Distances.toGreen(hole, me)
-        Text(
-            text = if (me != null && d.centerMeters != null) "C ${formatDistance(d.centerMeters, units)} ${units.suffix}" else "waiting for GPS",
-            color = Color.White,
-            style = MaterialTheme.typography.caption2,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 14.dp),
-        )
-        Text(
-            "Esri, Maxar", color = Color.White.copy(alpha = 0.6f),
-            style = MaterialTheme.typography.caption3,
-            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 8.dp, bottom = 4.dp),
-        )
+        // Distance + attribution centred (the round display clips bottom corners).
+        Column(
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = if (me != null && d.centerMeters != null) "C ${formatDistance(d.centerMeters, units)} ${units.suffix}" else "waiting for GPS",
+                color = Color.White,
+                style = MaterialTheme.typography.caption2.copy(shadow = MapShadow),
+            )
+            Text(
+                "Esri, Maxar",
+                color = Color.White.copy(alpha = 0.7f),
+                style = MaterialTheme.typography.caption3.copy(shadow = MapShadow),
+            )
+        }
     }
 }
 

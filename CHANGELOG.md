@@ -78,9 +78,11 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
-- **Map label overlap & polish**: the hole is oriented green-at-top, so the hole number now
-  sits top-left and the big distance top-right, flanking the green instead of overlapping it;
-  all map overlay text has a shadow for legibility over the bright vector fills. Added a **250
+- **Map label overlap & round-display clipping**: the hole is oriented green-at-top, so the
+  hole number sits top-left and the big distance top-right, flanking the green. Both are
+  dropped out of the round display's clipped top corners into the wider band (and inset from
+  the edge) so the full distance number is never cut off; all map overlay text has a shadow for
+  legibility over the bright vector fills. Added a **250
   distance-to-green ring** on long holes (150/100 still on others, none on par 3). Dropped dead
   code (`Distances.toHazards`) and **downscaled the splash emblem 950→475 px (878 KB→242 KB)**
   to keep the app light.
