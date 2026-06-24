@@ -78,6 +78,13 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Vector map accuracy**: features are now assigned to the hole whose **OSM centerline**
+  they sit on (tight, mostly single-hole; shared greens/fairways attach to both holes that
+  play them), so parallel holes no longer bleed in and on-line bunkers aren't missed. The
+  playing line **follows the centerline** (doglegs bend), with the dogleg corner marked and
+  tee→corner / corner→green distances shown. Range rings reduced to **150 & 100 to the green**
+  (none on par 3). Hazard **carry** now ignores hazards off the corridor (fixes bogus short
+  carries). Off-line/ornamental water (e.g. Setberg's left pond) no longer attaches to a hole.
 - **Hole map rendered blank** (only the tee→green line on an empty screen) when a GPS fix was
   far from the hole — the emulator default location or a stale fix from another course blew up
   the map scale and collapsed the hole to a dot. Fixes more than 2 km from the green are now

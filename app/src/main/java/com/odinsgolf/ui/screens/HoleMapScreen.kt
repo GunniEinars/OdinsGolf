@@ -51,6 +51,7 @@ import com.odinsgolf.ui.theme.OdinAmber
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 // Vibrant golf palette; rough is the dark background showing through.
@@ -114,6 +115,7 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
         val proj = remember(hole.number, wPx, hPx, points.size) {
             HoleProjection.build(hole, points, wPx, hPx, padPx)
         }
+        val cornerIdx = remember(hole.number) { doglegCorner(hole.path) }
 
         Canvas(Modifier.fillMaxSize()) {
             val p = proj ?: return@Canvas
@@ -137,27 +139,42 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
                 alpha = 210
             }
 
-            // Range rings around the player (or tee), every 50 display units.
+            // Distance-to-green rings: 150 then 100 (display units). Skipped on par 3 —
+            // the big number is enough, and short holes don't need markers.
             val sc = p.metersToPx
-            if (arcOrigin != null && toGreen != null) {
-                val o = off(arcOrigin)
-                var v = 50.0
-                while (units.toMeters(v) <= toGreen + 12.0) {
-                    val rPx = (units.toMeters(v) * sc).toFloat()
-                    drawCircle(Color.White.copy(alpha = 0.22f), radius = rPx, center = o, style = Stroke(width = 2f))
-                    drawContext.canvas.nativeCanvas.drawText(v.toInt().toString(), o.x - 10f, o.y - rPx + 7f, gray)
-                    v += 50.0
+            if (hole.par > 3 && center != null && tee != null) {
+                val og = off(center)
+                val teeGreen = Geo.distanceMeters(tee, center)
+                for (ringVal in intArrayOf(150, 100)) {
+                    val rM = units.toMeters(ringVal.toDouble())
+                    if (rM > teeGreen - 8.0) continue
+                    val rPx = (rM * sc).toFloat()
+                    drawCircle(Color.White.copy(alpha = 0.20f), radius = rPx, center = og, style = Stroke(width = 2f))
+                    drawContext.canvas.nativeCanvas.drawText(ringVal.toString(), og.x - 10f, og.y + rPx + 7f, gray)
                 }
             }
 
-            // Playing line + your line to the green.
-            if (tee != null && center != null) {
-                drawLine(Color.White.copy(alpha = 0.6f), off(tee), off(center), strokeWidth = 3f)
+            // Playing line follows the OSM centerline, so doglegs bend correctly.
+            val playLine = hole.path.ifEmpty { listOfNotNull(tee, center) }
+            for (i in 0 until playLine.size - 1) {
+                drawLine(Color.White.copy(alpha = 0.6f), off(playLine[i]), off(playLine[i + 1]), strokeWidth = 3f)
             }
+            // Your line to the green (dashed).
             if (me != null && center != null) {
                 drawLine(
                     Color.White, off(me), off(center), strokeWidth = 2f,
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(9f, 7f)),
+                )
+            }
+            // Dogleg corner: mark it and label tee→corner / corner→green.
+            if (cornerIdx in 1 until hole.path.size - 1 && tee != null && center != null) {
+                val corner = hole.path[cornerIdx]
+                val co = off(corner)
+                drawCircle(Color.White, radius = 4f, center = co)
+                val d1 = Geo.distanceMeters(tee, corner)
+                val d2 = Geo.distanceMeters(corner, center)
+                drawContext.canvas.nativeCanvas.drawText(
+                    "${formatDistance(d1, units)}/${formatDistance(d2, units)}", co.x + 9f, co.y + 6f, gray,
                 )
             }
 
@@ -290,6 +307,23 @@ private fun SatelliteHoleMap(hole: Hole, state: GolfUiState) {
             modifier = Modifier.align(Alignment.BottomEnd).padding(end = 8.dp, bottom = 4.dp),
         )
     }
+}
+
+/** Index of the dogleg corner in [path] (max turn vertex), or -1 if the hole is straight. */
+private fun doglegCorner(path: List<GeoPoint>): Int {
+    if (path.size < 3) return -1
+    var best = -1
+    var bestTurn = 22.0
+    for (i in 1 until path.size - 1) {
+        val b1 = Geo.bearingDegrees(path[i - 1], path[i])
+        val b2 = Geo.bearingDegrees(path[i], path[i + 1])
+        var turn = abs(b2 - b1) % 360.0
+        if (turn > 180.0) turn = 360.0 - turn
+        val l1 = Geo.distanceMeters(path[i - 1], path[i])
+        val l2 = Geo.distanceMeters(path[i], path[i + 1])
+        if (turn > bestTurn && l1 > 40.0 && l2 > 40.0) { bestTurn = turn; best = i }
+    }
+    return best
 }
 
 private fun DrawScope.fillRing(ring: List<GeoPoint>, color: Color, off: (GeoPoint) -> Offset) {

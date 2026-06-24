@@ -3,7 +3,9 @@ package com.odinsgolf.geo
 import com.odinsgolf.data.model.FeatureKind
 import com.odinsgolf.data.model.GeoPoint
 import com.odinsgolf.data.model.Hole
+import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * Elevation-adjusted "plays like" distance. Uphill plays longer, downhill shorter
@@ -74,24 +76,23 @@ object Carry {
             if (f.kind != FeatureKind.WATER && f.kind != FeatureKind.BUNKER) continue
             var near = Double.MAX_VALUE
             var far = -Double.MAX_VALUE
+            var minPerp = Double.MAX_VALUE
             for (v in f.ring) {
-                val d = alongDistance(origin, v, bearing)
-                if (d < near) near = d
-                if (d > far) far = d
+                val dist = Geo.distanceMeters(origin, v)
+                val ang = Math.toRadians(Geo.bearingDegrees(origin, v) - bearing)
+                val along = dist * cos(ang)
+                val perp = abs(dist * sin(ang))
+                if (along < near) near = along
+                if (along > far) far = along
+                if (perp < minPerp) minPerp = perp
             }
-            // Ahead of the player and finishing before the green (a real carry).
-            if (near > 10.0 && far < toGreen - 5.0) {
+            // A real carry: ahead, finishing before the green, and on the corridor
+            // (not a hazard off to the side, which projects to a bogus short carry).
+            if (near > 10.0 && far < toGreen - 5.0 && minPerp < 22.0) {
                 val label = if (f.kind == FeatureKind.WATER) "Water" else "Bunker"
                 result.add(HazardCarry(label, far))
             }
         }
         return result.sortedBy { it.carryMeters }.take(3)
-    }
-
-    /** Signed distance of [v] from [origin] projected onto [bearingDeg]. */
-    private fun alongDistance(origin: GeoPoint, v: GeoPoint, bearingDeg: Double): Double {
-        val dist = Geo.distanceMeters(origin, v)
-        val b = Geo.bearingDegrees(origin, v)
-        return dist * cos(Math.toRadians(b - bearingDeg))
     }
 }
