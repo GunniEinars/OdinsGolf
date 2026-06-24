@@ -11,23 +11,27 @@ Single Activity → Compose for Wear OS, MVVM with one `RoundViewModel` exposing
 `GolfUiState` via `StateFlow`. No DI framework, no Room, no background services.
 
 ```
-MainActivity (permission gate + lifecycle)
+MainActivity (system splash + permission gate + lifecycle)
   └─ OdinsGolfApp (SwipeDismissableNavHost)
-       ├─ DistanceScreen   (hero center distance, F/B, hazards, GPS pill)
-       ├─ HoleMapScreen    (Compose Canvas vector map)
-       ├─ ScorecardScreen  (steppers, totals, Stableford/net)
-       ├─ HoleSelectorScreen
-       ├─ SettingsScreen
-       └─ SurveyScreen     (field capture of coordinates)
+       ├─ RoundPager (HorizontalPager)  ← the on-course core
+       │    ├─ DistanceScreen  (hero centre distance, F/B, plays-like, carry, GPS)
+       │    ├─ ScorecardScreen (steppers, totals, Stableford/net, pick-up)
+       │    └─ HoleMapScreen   (vector hole + satellite toggle)
+       └─ pushed: SettingsScreen ("More"), HoleSelectorScreen, HandicapScreen,
+            CoursePickerScreen, HistoryScreen, RoundSummaryScreen, SurveyScreen
 
-RoundViewModel
+RoundViewModel  →  single GolfUiState (settings + course + gps + round + tick)
   ├─ CourseRepository    (assets/courses/*.json → domain Course)
   ├─ SettingsRepository  (Preferences DataStore)
   ├─ ScorecardRepository (active round JSON in filesDir)
   ├─ SurveyRepository    (captured points + live overlay onto Course)
+  ├─ HistoryRepository   (saved rounds JSON)
+  ├─ TileRepository      (satellite tiles, disk-cached)
   └─ LocationEngine      (FusedLocationProvider, lifecycle-driven)
 
-geo/   Geo (Haversine, bearing), CanvasProjector (cos-lat equirectangular), Distances
+geo/   Geo (Haversine, bearing, destination), Distances, Terrain (PlaysLike + Carry),
+       HoleProjection (playing-line-up vector), SlippyMap/MapPlan (Web-Mercator tiles),
+       CanvasProjector (cos-lat, unit-tested)
 scoring/ Scoring (handicap allocation, Stableford, net, to-par)
 ```
 
@@ -72,36 +76,31 @@ domain model (`data/model`). Pure math (`geo`, `scoring`) has no Android deps an
   data loss. (Only a watch factory-reset would require a one-off uninstall.) A debug keystore
   is not a secret, so committing it is fine for a private app.
 
+- **Phase 8 — Native-feel polish** ✅ Bezel/rotary scrolling; round history with manual save;
+  system SplashScreen with the emblem.
+- **Phase 9 — Vector course map + offline data** ✅ Real OSM polygons (fairway/green/bunker/
+  water/tee) + hole centrelines baked per hole (`tools/bake_geometry.mjs`); playing-line-up
+  vector hole map with 150/100/250 rings, pin flag and satellite toggle; **plays-like**
+  (EU-DEM elevation, cross-checked vs ASTER) and **hazard carry**; **par + stroke index
+  verified against the official scorecards** (Rástímar — Setberg h9 SI 10, Kiðjaberg h13 SI 4).
+- **Phase 10 — Navigation + glance polish** ✅ 3-screen swipe pager (Distance ⇄ Card ⇄ Map);
+  slimmed one-glance Distance screen; single **More** menu; **stale-fix honesty** (old yardages
+  dim + flag); round-display-safe label placement; lighter APK. `CourseDataTest` parses every
+  bundled course in CI.
+
 ## What still needs real-world verification
 
-1. **Green front/back edges** — not in OSM. Walk each course once in Survey mode (capture
-   FRONT/BACK on each green) or hand-edit the JSON. Until then those values show `—`.
-2. **Stroke index** — OSM tags are slightly inconsistent (Setberg: holes 9 & 10 both SI 3,
-   SI 10 missing; Kiðjaberg: holes 11 & 13 both SI 6, SI 4 missing). Correct from the printed
-   scorecards. Par is correct (Setberg 72, Kiðjaberg 71).
-3. **Tee sets** — one tee per playing hole today; multiple tee sets (red/yellow/white/blue)
-   can be added later.
+1. **Green front/back edges** — not in OSM; **approximated** (centre ±~11 m along the playing
+   line) until captured in Survey mode. Centre distances are accurate now.
+2. **Tee sets** — one tee per playing hole today; multiple sets (red/yellow/white/blue) later.
 
-- **Phase 8 — Native-feel polish** ✅ Bezel/rotary scrolling on every scrollable screen;
-  round history with manual save (Settings → Round history); launch via the system
-  SplashScreen API showing the logo (separate in-app splash page removed).
+(Par and stroke index are now verified against the official cards — no longer open.)
 
-## Next up (high-value, low-risk)
+## Possible next steps (optional, only if wanted)
 
-1. **Persistence off the main thread** (score saves / course load on a background dispatcher).
-2. **Scope the 5 s stale-tick** so the hole map doesn't recompose when nothing moved.
-3. **Auto-advance to the nearest hole by GPS** (optional convenience).
-
-1. **Green front/back edges** — not in OSM. Walk the course once in Survey mode (capture FRONT/BACK
-   on each green) or hand-edit the JSON. Until then those values show `—`.
-2. **Stroke index** — OSM tags are internally inconsistent (holes 9 & 10 both SI 3; SI 10 missing).
-   Correct from the printed Setberg scorecard in `setbergsvollur.json`. Par is correct (sums to 72).
-3. **Tee sets** — OSM has 31 tee polygons; we currently use one tee per playing hole. Multiple tee
-   sets (red/yellow/white/blue) can be added later.
-
-## Future phases (later)
-
-- Wear **Tile** with glanceable center-green distance.
-- **Plays-like** elevation distance using the Galaxy Watch 4 barometer.
-- Hazard carry/lay-up distances (front & back of hazard).
-- Auto-advance to the nearest hole by GPS.
+- **Round stats** over saved history (FW %, GIR %, putts, scoring average by par).
+- **Shot-distance measure** (mark ball → walk → carry) to learn club distances; **club book**
+  + suggestion tying into plays-like.
+- Wear **Tile** with a glanceable centre-green distance.
+- Persistence fully off the main thread; scope the 5 s stale-tick so the map doesn't recompose
+  while idle.
