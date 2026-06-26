@@ -152,6 +152,7 @@ data class HoleDto(
             notes = notes,
             features = resolvedFeatures,
             elevationProfile = elevation?.profile ?: emptyList(),
+            greenId = greenId,
         )
     }
 

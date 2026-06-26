@@ -89,6 +89,12 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Surveyed green centre now applies to the shared physical green.** Setberg plays 9 greens
+  as 18 holes (hole N and N+9 share a green); a Survey CENTER capture on one hole now also
+  updates its sibling, matching the shared-green model instead of only the captured hole. The
+  domain `Hole` carries its `greenId`, and `SurveyRepository.overlayOnto` propagates a centre
+  capture by greenId (newest wins; a hole's own capture still takes priority). Covered by
+  `SurveyOverlayTest`.
 - **Stroke index verified** against the official scorecards (Rástímar) for both courses, fixing
   an OSM mistag on each that skewed Stableford/net allocation: **Setberg hole 9** is SI 10 (was
   SI 3, duplicating hole 10) and **Kiðjaberg hole 13** is SI 4 (was SI 6, duplicating hole 11).

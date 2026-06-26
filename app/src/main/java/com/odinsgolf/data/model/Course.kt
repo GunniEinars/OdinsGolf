@@ -31,6 +31,11 @@ data class Hole(
     val features: List<HoleFeature> = emptyList(),
     /** Ground elevation in metres sampled evenly tee→green (EU-DEM). Empty if unknown. */
     val elevationProfile: List<Double> = emptyList(),
+    /**
+     * Id of the shared physical green. Setberg plays 9 greens as 18 holes, so hole N
+     * and N+9 carry the same [greenId]; a surveyed green centre applies to both.
+     */
+    val greenId: String? = null,
 ) {
     /**
      * True when we have enough real geometry to show meaningful distances.
