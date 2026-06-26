@@ -50,7 +50,9 @@ Course files live in `app/src/main/assets/courses/<courseId>.json` and are parse
 }
 ```
 
-- `greenId` resolves to the shared green's `center`.
+- `greenId` resolves to the shared green's `center`. Because hole *N* and *N+9* point at the
+  same `greenId` (one physical green), a green **centre** captured in Survey mode is applied to
+  **both** of those holes, not just the one you stood on.
 - `greenFront` / `greenBack` are **per hole**. When `null`, the app **approximates** them
   (green centre ±~11 m along the tee→green line) so approach yardages show without field work;
   a real Survey capture overrides them.
@@ -91,7 +93,9 @@ front/back are approximated until field-captured (the one remaining `NEEDS_FIELD
 
 **Option A — Survey mode (recommended).** On the course, open Settings → Survey, stand on the
 spot, wait for a `Live` fix, tap CAPTURE TEE / GREEN FRONT / CENTER / BACK / HAZARD. Captures
-save to `files/survey_<courseId>.json` and overlay onto the course immediately. Pull the file:
+save to `files/survey_<courseId>.json` and overlay onto the course immediately. A **CENTER**
+capture applies to both holes sharing that green (e.g. Setberg 1 and 10); TEE / FRONT / BACK are
+per playing hole. Pull the file:
 
 ```
 adb pull /data/data/com.odinsgolf/files/survey_setbergsvollur.json

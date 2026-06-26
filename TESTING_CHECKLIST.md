@@ -62,6 +62,8 @@
 
 - [ ] Capture buttons disabled until a usable fix.
 - [ ] Capturing FRONT/BACK makes those values appear on the Distance screen immediately.
+- [ ] Capturing **green CENTER** updates **both** holes that share that green (e.g. Setberg
+      hole 1 and hole 10) — the centre distance changes on both, not just the captured hole.
 - [ ] `survey_setbergsvollur.json` is pullable via adb.
 
 ## Battery / lifecycle
