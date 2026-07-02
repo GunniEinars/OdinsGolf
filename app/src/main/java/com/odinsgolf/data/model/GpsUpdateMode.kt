@@ -15,6 +15,14 @@ enum class GpsUpdateMode(
     NORMAL("Normal", 12_000L, 6_000L, false),
     PRECISE("Precise", 5_000L, 3_000L, true);
 
+    /**
+     * A fix older than this counts as **stale**: the update interval plus slack. A live fix
+     * arriving on schedule never false-dims (the threshold is above the interval), but a fix
+     * that aged — e.g. while you walked to the ball with the wrist down — flags sooner than a
+     * flat 30 s (Normal → 20 s), so the number never masquerades as live after you've moved.
+     */
+    val staleAfterMillis: Long get() = intervalMillis + 8_000L
+
     companion object {
         fun fromName(name: String?): GpsUpdateMode =
             entries.firstOrNull { it.name == name } ?: NORMAL

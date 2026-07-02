@@ -19,11 +19,16 @@ class ScorecardRepository(private val context: Context) {
     private val activeFile: File get() = File(context.filesDir, ACTIVE_ROUND_FILE)
     private val exportsDir: File get() = File(context.filesDir, "rounds").apply { mkdirs() }
 
+    // @Synchronized: the active round is written by the off-main persistence collector and can
+    // also be flushed on pause; serialising read/write on the repo monitor prevents two
+    // concurrent writeText calls from corrupting the file.
+    @Synchronized
     fun loadActiveRound(): Round? = runCatching {
         if (!activeFile.exists()) return null
         json.decodeFromString<Round>(activeFile.readText())
     }.getOrNull()
 
+    @Synchronized
     fun saveActiveRound(round: Round) {
         runCatching { activeFile.writeText(json.encodeToString(round)) }
     }

@@ -27,7 +27,9 @@ sparingly while still being accurate when you glance.
 5. **No wake locks. No background service. Let the watch sleep.** Scorecard entry needs no GPS.
 
 6. **Cheap rendering.** No continuous animations. The hole map (Compose Canvas) re-renders only
-   when the hole or your position changes. A 5 s ticker refreshes only the "stale" indicator.
+   when the hole or your position changes. A 5 s ticker refreshes the fix "age"/stale indicator,
+   and it is **started on resume and stopped on pause** — so it never wakes the CPU or recomposes
+   the screen while the wrist is down. The "stale" threshold is the GPS interval + 8 s (mode-aware).
 
 7. **Keep-screen-on is OFF by default.** Optional toggle in Settings (`FLAG_KEEP_SCREEN_ON`) for
    walking to your ball; turn it off to save battery.

@@ -102,6 +102,19 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Interval-aware "stale" GPS flag.** A fix now counts as stale after the update interval + 8 s
+  (Normal → 20 s, not a flat 30 s), so a fix that aged while you walked to the ball with the
+  wrist down flags as "refreshing" instead of briefly masquerading as live — while a live fix
+  arriving on schedule never false-dims. `GpsUpdateMode.staleAfterMillis`, surfaced via
+  `GolfUiState.gpsStatus`.
+- **The 5 s stale/age ticker is paused while the wrist is down.** It now starts on resume and
+  stops on pause, so it can't wake the CPU (or recompose the screen) while the app isn't
+  visible — a small battery win. Resume also refreshes the age immediately.
+- **Active-round saves moved off the main thread.** Each score tap wrote the round JSON on the
+  UI thread; now a single off-main collector persists round changes (StateFlow-conflated and
+  serialised — no concurrent writes), the card is flushed synchronously on pause so a kill can't
+  lose the last score, and `ScorecardRepository` read/write is `@Synchronized` so nothing can
+  corrupt the file.
 - **Fixed a slow-startup crash on the watch (Galaxy Watch 4).** Course JSON (~120 KB each),
   round history and the active round were parsed on the **main thread** at launch — on the
   GW4's CPU that blocked the UI thread for ~10 s, long enough for the system to kill the app

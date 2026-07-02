@@ -14,6 +14,7 @@ import com.odinsgolf.data.SurveyRepository
 import com.odinsgolf.data.model.Course
 import com.odinsgolf.data.model.FairwayResult
 import com.odinsgolf.data.model.GpsState
+import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.HoleScore
 import com.odinsgolf.data.model.MapStyle
@@ -22,7 +23,9 @@ import com.odinsgolf.data.model.RoundMode
 import com.odinsgolf.data.model.ScoringFormat
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.location.LocationEngine
+import com.odinsgolf.location.effectiveStatus
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -52,6 +55,9 @@ data class GolfUiState(
     val currentHole: Int get() = settings.currentHole
     val hole get() = course?.holeByNumber(currentHole)
     val currentScore: HoleScore? get() = round?.holes?.firstOrNull { it.holeNumber == currentHole }
+
+    /** GPS status with interval-aware staleness applied (the mode's threshold, not a flat 30 s). */
+    val gpsStatus: GpsStatus get() = gps.effectiveStatus(nowElapsed, settings.gpsMode.staleAfterMillis)
 
     /** Hole-number range for the active round mode. */
     val activeRange: IntRange
@@ -137,13 +143,30 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
                 .distinctUntilChanged()
                 .collect { loadCourse(it) }
         }
-        // Slow ticker so "last updated" / stale state refreshes without new fixes.
-        viewModelScope.launch {
+        // Persist the active round off the main thread whenever it changes. One collector
+        // serialises the writes (no concurrent writeText) and StateFlow conflation means only
+        // the latest state is written — so rapid score taps never race the file or jank the UI.
+        viewModelScope.launch(Dispatchers.Default) {
+            roundFlow.collect { r -> if (r != null) runCatching { scoreRepo.saveActiveRound(r) } }
+        }
+        // The stale/age ticker is started on resume and stopped on pause (see onResume/onPause),
+        // so it never wakes the CPU while the wrist is down.
+    }
+
+    // Refreshes "age"/stale display every 5 s while the screen is on. Off while paused.
+    private var tickerJob: Job? = null
+    private fun startTicker() {
+        if (tickerJob?.isActive == true) return
+        tickerJob = viewModelScope.launch {
             while (true) {
                 delay(5_000)
                 tickFlow.value = SystemClock.elapsedRealtime()
             }
         }
+    }
+    private fun stopTicker() {
+        tickerJob?.cancel()
+        tickerJob = null
     }
 
     // Parses course JSON (~120 KB) + survey/active-round files off the main thread; only
@@ -171,7 +194,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         return if (existing != null && existing.courseId == course.id) {
             existing
         } else {
-            scoreRepo.newRound(course, currentHandicap(), currentAllowance()).also { scoreRepo.saveActiveRound(it) }
+            scoreRepo.newRound(course, currentHandicap(), currentAllowance())
         }
     }
 
@@ -189,11 +212,17 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     fun onResume() {
         val mode = uiState.value.settings.gpsMode
         location.start(mode)
+        tickFlow.value = SystemClock.elapsedRealtime() // refresh age/stale immediately on glance
+        startTicker()
         viewModelScope.launch { location.requestBurst() }
     }
 
     fun onPause() {
         location.pause()
+        stopTicker()
+        // Flush the card before the app backgrounds, so a kill can't lose the last score
+        // (the off-main collector handles the smooth per-tap saves during play).
+        roundFlow.value?.let { scoreRepo.saveActiveRound(it) }
     }
 
     fun restartLocation() {
@@ -254,15 +283,12 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         val updated = round.copy(
             holes = round.holes.map { if (it.holeNumber == hole) transform(it) else it },
         )
-        roundFlow.value = updated
-        scoreRepo.saveActiveRound(updated)
+        roundFlow.value = updated // persisted off-main by the roundFlow collector in init
     }
 
     fun resetRound() {
         val course = courseFlow.value ?: return
-        val fresh = scoreRepo.newRound(course, currentHandicap(), currentAllowance())
-        roundFlow.value = fresh
-        scoreRepo.saveActiveRound(fresh)
+        roundFlow.value = scoreRepo.newRound(course, currentHandicap(), currentAllowance())
     }
 
     fun exportRound(): String? = roundFlow.value?.let { scoreRepo.exportRound(it) }
@@ -303,9 +329,8 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         val next = ((uiState.value.settings.handicapIndex + delta) * 10).roundToInt() / 10.0
         val clamped = next.coerceIn(0.0, 54.0)
         settingsRepo.setHandicapIndex(clamped)
-        // Reflect the new index in the active round's stroke allocation.
+        // Reflect the new index in the active round's stroke allocation (collector persists it).
         roundFlow.update { it?.copy(handicapIndex = clamped) }
-        roundFlow.value?.let { scoreRepo.saveActiveRound(it) }
     }
 
     fun setRoundMode(mode: RoundMode) = viewModelScope.launch {
@@ -323,8 +348,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     fun setHandicapAllowance(percent: Int) = viewModelScope.launch {
         val clamped = percent.coerceIn(50, 100)
         settingsRepo.setHandicapAllowance(clamped)
-        roundFlow.update { it?.copy(handicapAllowancePercent = clamped) }
-        roundFlow.value?.let { scoreRepo.saveActiveRound(it) }
+        roundFlow.update { it?.copy(handicapAllowancePercent = clamped) } // collector persists it
     }
 
     fun setDebugGps(value: Boolean) = viewModelScope.launch { settingsRepo.setDebugGps(value) }

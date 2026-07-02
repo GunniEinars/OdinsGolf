@@ -69,8 +69,8 @@ fun fixAgeSeconds(gps: GpsState, nowElapsed: Long): Long? {
 
 /** Compact "● Live · ±6 m · 3s" status row. */
 @Composable
-fun GpsStatusPill(gps: GpsState, nowElapsed: Long, debug: Boolean) {
-    val status = gps.effectiveStatus(nowElapsed)
+fun GpsStatusPill(gps: GpsState, nowElapsed: Long, staleAfterMillis: Long, debug: Boolean) {
+    val status = gps.effectiveStatus(nowElapsed, staleAfterMillis)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),

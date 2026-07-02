@@ -22,7 +22,6 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
 import com.odinsgolf.data.SurveyKind
 import com.odinsgolf.data.model.GpsStatus
-import com.odinsgolf.location.effectiveStatus
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.GpsStatusPill
 import com.odinsgolf.ui.components.rotaryScroll
@@ -38,7 +37,7 @@ fun SurveyScreen(
         val scroll = rememberScrollState()
         val hole = state.hole
         val captureMsg = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
-        val canCapture = state.gps.effectiveStatus(state.nowElapsed).let {
+        val canCapture = state.gpsStatus.let {
             it == GpsStatus.GOOD_FIX || it == GpsStatus.WEAK_FIX
         }
         // Confirm a capture with the kind and the accuracy at the moment it lands.
@@ -67,7 +66,7 @@ fun SurveyScreen(
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(6.dp))
-            GpsStatusPill(state.gps, state.nowElapsed, state.settings.debugGps)
+            GpsStatusPill(state.gps, state.nowElapsed, state.settings.gpsMode.staleAfterMillis, state.settings.debugGps)
             Spacer(Modifier.height(10.dp))
 
             CaptureChip("Capture TEE", canCapture) { capture(SurveyKind.TEE, "Tee") }

@@ -29,7 +29,6 @@ import com.odinsgolf.geo.Carry
 import com.odinsgolf.geo.Distances
 import com.odinsgolf.geo.PlaysLike
 import com.odinsgolf.scoring.Scoring
-import com.odinsgolf.location.effectiveStatus
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.DebugGpsReadout
 import com.odinsgolf.ui.components.GpsStatusPill
@@ -103,7 +102,7 @@ fun DistanceScreen(
                 val d = Distances.toGreen(hole, state.gps.point)
                 // Honest hero: a stale or absent fix is dimmed and flagged, so an
                 // out-of-date yardage never looks live.
-                val stale = state.gps.effectiveStatus(state.nowElapsed) == GpsStatus.STALE_FIX
+                val stale = state.gpsStatus == GpsStatus.STALE_FIX
                 val hasFix = state.gps.point != null
                 val heroColor = if (!hasFix || stale) OdinOnDim else OdinGreen
 
@@ -157,7 +156,7 @@ fun DistanceScreen(
             }
 
             Spacer(Modifier.height(8.dp))
-            GpsStatusPill(state.gps, state.nowElapsed, state.settings.debugGps)
+            GpsStatusPill(state.gps, state.nowElapsed, state.settings.gpsMode.staleAfterMillis, state.settings.debugGps)
             if (state.settings.debugGps) {
                 Spacer(Modifier.height(4.dp))
                 DebugGpsReadout(state.gps, state.nowElapsed)

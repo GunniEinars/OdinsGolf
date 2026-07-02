@@ -97,7 +97,11 @@ domain model (`data/model`). Pure math (`geo`, `scoring`) has no Android deps an
   **two-tap Reset confirm**. **Startup crash fixed** — course/history/round JSON now parse **off
   the main thread** (was blocking the UI ~11 s on the GW4 and getting the app killed; now cold
   ~5.5 s, warm ~0.5 s, never killed — verified on-watch over adb). Setberg CR 70.8 / Slope 130
-  baked in from the official card.
+  baked in from the official card. On-course polish: **interval-aware "stale"** GPS flag
+  (mode interval + 8 s, not a flat 30 s), the **5 s ticker paused while the wrist is down**, and
+  **active-round saves off the main thread** (serialised collector + `@Synchronized` file access
+  + synchronous flush on pause, so the card can't jank the UI, race the file, or lose the last
+  score). Course-picker list also loaded off-main.
 
 ## What still needs real-world verification
 
@@ -117,7 +121,10 @@ domain model (`data/model`). Pure math (`geo`, `scoring`) has no Android deps an
 - **Shot-distance measure** (mark ball → walk → carry) to learn club distances; **club book**
   + suggestion tying into plays-like.
 - Wear **Tile** with a glanceable centre-green distance.
-- **Faster cold start** (~5.5 s on the GW4): baseline profiles and/or a minified build — most of
-  the remaining time is Compose class-loading, not app work (parsing is already off-main).
-- Course *saves* (history/active round) off the main thread too; scope the 5 s stale-tick so the
-  map doesn't recompose while idle. (Course/history/round *loading* is now off-main — Phase 11.)
+- **Faster cold start** (~5.5 s on the GW4): needs a **non-debuggable release build** for a
+  baseline profile to take effect (a baseline profile does nothing on the installed debug APK).
+  A non-minified release (signed with the committed keystore) would get the AOT win without R8
+  serialization risk — deferred as a post-tournament change to avoid altering the build type.
+- History *saves* off the main thread too (active-round saves already are — Phase 11). Course/
+  history/round *loading*, the course-picker list, the 5 s stale-tick (now resume-scoped), and
+  the active-round save are all off the main thread / scoped as of Phase 11.

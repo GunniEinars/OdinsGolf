@@ -42,7 +42,6 @@ import com.odinsgolf.data.model.GeoPoint
 import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.Hole
 import com.odinsgolf.data.model.MapStyle
-import com.odinsgolf.location.effectiveStatus
 import com.odinsgolf.geo.Carry
 import com.odinsgolf.geo.Distances
 import com.odinsgolf.geo.Geo
@@ -213,7 +212,7 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
             horizontalAlignment = Alignment.End,
         ) {
             // Dim the number when the fix is stale, so it never looks live.
-            val stale = state.gps.effectiveStatus(state.nowElapsed) == GpsStatus.STALE_FIX
+            val stale = state.gpsStatus == GpsStatus.STALE_FIX
             Text(
                 text = toGreen?.let { formatDistance(it, units) } ?: "—",
                 style = TextStyle(
