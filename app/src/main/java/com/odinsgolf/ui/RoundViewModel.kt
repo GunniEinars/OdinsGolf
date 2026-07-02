@@ -118,15 +118,17 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), GolfUiState())
 
-    /**
-     * Bundled courses for the picker. Parsed lazily (on first open of the picker), not at
-     * startup — parsing every course JSON at construction blocked launch on the watch.
-     */
-    val courses: List<CourseRepository.CourseSummary> by lazy { courseRepo.listCourses() }
+    // Bundled courses for the picker, loaded off the main thread in init. Parsing every
+    // course JSON (~120 KB each) on the UI thread froze the watch (same class of bug as the
+    // old startup hang), so it never runs on the main thread.
+    private val coursesFlow = MutableStateFlow<List<CourseRepository.CourseSummary>>(emptyList())
+    val courses: StateFlow<List<CourseRepository.CourseSummary>> = coursesFlow.asStateFlow()
 
     init {
-        // Read saved history off the main thread (JSON parse would block launch).
+        // Read saved history + the course-picker list off the main thread (JSON parse
+        // would block launch / freeze the picker on the watch).
         viewModelScope.launch(Dispatchers.Default) { historyFlow.value = historyRepo.load() }
+        viewModelScope.launch(Dispatchers.Default) { coursesFlow.value = courseRepo.listCourses() }
         // Load (and reload) the course whenever the selected file changes. The heavy
         // parse happens inside loadCourse on a background dispatcher.
         viewModelScope.launch {

@@ -93,8 +93,9 @@ fun OdinsGolfApp(vm: RoundViewModel) {
             )
         }
         composable(Routes.COURSES) {
+            val courses by vm.courses.collectAsStateWithLifecycle()
             CoursePickerScreen(
-                courses = vm.courses,
+                courses = courses,
                 selectedFile = state.settings.selectedCourseFile,
                 onSelect = { file ->
                     vm.selectCourse(file)
