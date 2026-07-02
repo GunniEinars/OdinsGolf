@@ -31,6 +31,8 @@
 - [ ] Front/Back show numbers with a fix (approximate ±~11 m until captured); `—` with no fix.
 - [ ] **Plays-like** appears (amber, with ↑/↓) only on holes that climb/drop ≥3 m.
 - [ ] **Carry** lines show only for hazards ahead and within reach.
+- [ ] **"+N shot here"** (amber) shows on holes where your playing handicap gives you a stroke
+      (stroke index ≤ playing handicap); absent on the holes you don't get one.
 - [ ] **Stale honesty:** standing still >30 s dims the hero to grey and shows "stale fix".
 - [ ] Missing geometry shows "Course geometry missing", **never a fake number**.
 
@@ -54,7 +56,9 @@
 - [ ] **Course handicap** (More → Handicap): off 15.7 at Setberg the screen shows **course 17 ·
       playing 16 (95%)**; toggling More → Hcp allowance to 100% shows **playing 17**. Net/Stableford
       use the playing number.
-- [ ] Survives relaunch (active round persisted). Reset clears. **Save card** writes a PNG to the
+- [ ] **Reset is a two-tap confirm**: first tap shows "Confirm reset?", second tap clears; it
+      auto-disarms after ~3 s. One stray tap can't wipe the card. (Same on More → Reset scorecard.)
+- [ ] Survives relaunch (active round persisted). **Save card** writes a PNG to the
       watch Gallery with feedback; Save round → summary.
 
 ## More (Settings) + Jump to hole
@@ -72,6 +76,14 @@
 - [ ] Capturing **green CENTER** updates **both** holes that share that green (e.g. Setberg
       hole 1 and hole 10) — the centre distance changes on both, not just the captured hole.
 - [ ] `survey_setbergsvollur.json` is pullable via adb.
+
+## Startup / performance (Galaxy Watch 4)
+
+- [ ] **Cold launch opens (shows the emblem splash, then the app) and is never killed.** All
+      course/history/round JSON parses off the main thread, so the UI thread isn't blocked.
+      Measured on a GW4: cold ~5.5 s, warm/raise-wrist resume ~0.5 s (was ~11 s and getting
+      killed when parsing ran on the main thread).
+- [ ] Enter a score, fully close the app, reopen → score + current hole restored (persisted).
 
 ## Battery / lifecycle
 

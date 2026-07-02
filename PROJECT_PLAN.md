@@ -89,12 +89,25 @@ domain model (`data/model`). Pure math (`geo`, `scoring`) has no Android deps an
   slimmed one-glance Distance screen; single **More** menu; **stale-fix honesty** (old yardages
   dim + flag); round-display-safe label placement; lighter APK. `CourseDataTest` parses every
   bundled course in CI.
+- **Phase 11 — Tournament-ready (Setberg)** ✅ Survey **green-centre propagates across the shared
+  physical green** (hole N ⇄ N+9); hole map **always opens on the vector view** (map style held
+  in memory, not persisted); **WHS course handicap** from the course's slope/rating + a handicap
+  **allowance** (95% default / 100%), so entering an index (15.7 → playing 16) gives correct
+  net; **Stroke play / Stableford format toggle**; **"+N shot here"** handicap-stroke cue;
+  **two-tap Reset confirm**. **Startup crash fixed** — course/history/round JSON now parse **off
+  the main thread** (was blocking the UI ~11 s on the GW4 and getting the app killed; now cold
+  ~5.5 s, warm ~0.5 s, never killed — verified on-watch over adb). Setberg CR 70.8 / Slope 130
+  baked in from the official card.
 
 ## What still needs real-world verification
 
 1. **Green front/back edges** — not in OSM; **approximated** (centre ±~11 m along the playing
    line) until captured in Survey mode. Centre distances are accurate now.
 2. **Tee sets** — one tee per playing hole today; multiple sets (red/yellow/white/blue) later.
+   OSM's tee for **Setberg H15** is a forward tee (~66–95 m short of the 56 markers vs the card's
+   439 m), so its map tee marker / plays-like origin are off on that one hole (centre distance is
+   GPS-based and unaffected). Survey-capture the 56 tee to correct it. Par/SI/lengths for all 18
+   holes match the official card (tee 56); CR 70.8 / Slope 130 baked in.
 
 (Par and stroke index are now verified against the official cards — no longer open.)
 
@@ -104,5 +117,7 @@ domain model (`data/model`). Pure math (`geo`, `scoring`) has no Android deps an
 - **Shot-distance measure** (mark ball → walk → carry) to learn club distances; **club book**
   + suggestion tying into plays-like.
 - Wear **Tile** with a glanceable centre-green distance.
-- Persistence fully off the main thread; scope the 5 s stale-tick so the map doesn't recompose
-  while idle.
+- **Faster cold start** (~5.5 s on the GW4): baseline profiles and/or a minified build — most of
+  the remaining time is Compose class-loading, not app work (parsing is already off-main).
+- Course *saves* (history/active round) off the main thread too; scope the 5 s stale-tick so the
+  map doesn't recompose while idle. (Course/history/round *loading* is now off-main — Phase 11.)

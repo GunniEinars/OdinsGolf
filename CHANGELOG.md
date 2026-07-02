@@ -107,8 +107,9 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   GW4's CPU that blocked the UI thread for ~10 s, long enough for the system to kill the app
   ("won't open"). All of it now parses on a background dispatcher: the course picker list is
   lazy (parsed on first open, not at launch), history loads asynchronously, and `loadCourse`
-  does its parse in `Dispatchers.Default`, publishing only the results back to the UI. Launch
-  is now fast and the app can't be killed for a slow start.
+  does its parse in `Dispatchers.Default`, publishing only the results back to the UI. Verified
+  on the watch over adb: cold launch ~11 s → **~5.5 s** (shows the branded splash, never frozen,
+  no longer killed), warm / raise-wrist resume **~0.5 s**, and zero ANR/kill entries in logcat.
 - **Reset needs a confirm.** The scorecard/Settings "Reset" now arms on the first tap
   ("Confirm reset?") and only wipes the card on a second tap (auto-disarms after 3 s), so an
   accidental tap can't destroy an in-progress round.
