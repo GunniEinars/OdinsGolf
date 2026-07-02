@@ -12,6 +12,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.MapStyle
 import com.odinsgolf.data.model.RoundMode
+import com.odinsgolf.data.model.ScoringFormat
 import com.odinsgolf.data.model.Units
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -28,6 +29,9 @@ data class AppSettings(
     val selectedCourseFile: String = CourseRepository.DEFAULT_COURSE_FILE,
     val currentHole: Int = 1,
     val mapStyle: MapStyle = MapStyle.VECTOR,
+    val scoringFormat: ScoringFormat = ScoringFormat.STABLEFORD,
+    /** WHS handicap allowance as a percent (95 = singles standard, 100 = full course handicap). */
+    val handicapAllowancePercent: Int = 95,
 )
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "odins_settings")
@@ -44,6 +48,8 @@ class SettingsRepository(private val context: Context) {
         val COURSE_FILE = stringPreferencesKey("course_file")
         val CURRENT_HOLE = intPreferencesKey("current_hole")
         val MAP_STYLE = stringPreferencesKey("map_style")
+        val SCORING_FORMAT = stringPreferencesKey("scoring_format")
+        val HCP_ALLOWANCE = intPreferencesKey("handicap_allowance_percent")
     }
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { p ->
@@ -57,6 +63,8 @@ class SettingsRepository(private val context: Context) {
             selectedCourseFile = p[Keys.COURSE_FILE] ?: CourseRepository.DEFAULT_COURSE_FILE,
             currentHole = p[Keys.CURRENT_HOLE] ?: 1,
             mapStyle = MapStyle.fromName(p[Keys.MAP_STYLE]),
+            scoringFormat = ScoringFormat.fromName(p[Keys.SCORING_FORMAT]),
+            handicapAllowancePercent = p[Keys.HCP_ALLOWANCE] ?: 95,
         )
     }
 
@@ -70,6 +78,9 @@ class SettingsRepository(private val context: Context) {
     suspend fun setCourseFile(file: String) = edit { it[Keys.COURSE_FILE] = file }
     suspend fun setCurrentHole(hole: Int) = edit { it[Keys.CURRENT_HOLE] = hole }
     suspend fun setMapStyle(style: MapStyle) = edit { it[Keys.MAP_STYLE] = style.name }
+    suspend fun setScoringFormat(format: ScoringFormat) = edit { it[Keys.SCORING_FORMAT] = format.name }
+    suspend fun setHandicapAllowance(percent: Int) =
+        edit { it[Keys.HCP_ALLOWANCE] = percent.coerceIn(50, 100) }
 
     private suspend fun edit(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
         context.dataStore.edit(block)

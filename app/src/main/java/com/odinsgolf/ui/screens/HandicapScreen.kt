@@ -19,7 +19,9 @@ import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
+import com.odinsgolf.data.model.Course
 import com.odinsgolf.scoring.Scoring
+import kotlin.math.roundToInt
 import com.odinsgolf.ui.components.formatHandicap
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
@@ -28,6 +30,8 @@ import com.odinsgolf.ui.theme.OdinOnDim
 @Composable
 fun HandicapScreen(
     index: Double,
+    course: Course?,
+    allowancePercent: Int,
     onAdjust: (Double) -> Unit,
 ) {
     Scaffold {
@@ -36,15 +40,30 @@ fun HandicapScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Text("Handicap", color = OdinOnDim, style = MaterialTheme.typography.caption1)
+            Text("Handicap index", color = OdinOnDim, style = MaterialTheme.typography.caption1)
             Text(
                 formatHandicap(index),
                 color = OdinGreen,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold,
             )
+            // Show the WHS course handicap for this course, then the playing handicap
+            // after the allowance — the number that actually allocates strokes.
+            val slope = course?.slopeRating
+            val cr = course?.courseRating
+            val par = course?.par
+            val courseHcp = if (slope != null && cr != null && par != null) {
+                Scoring.courseHandicap(index, slope, cr, par)
+            } else {
+                index.roundToInt() // matches the rating-less scoring fallback
+            }
+            val playing = Scoring.playingHandicap(courseHcp, allowancePercent)
             Text(
-                "playing ${Scoring.playingHandicap(index)}",
+                if (slope != null && cr != null && par != null) {
+                    "course $courseHcp · playing $playing ($allowancePercent%)"
+                } else {
+                    "playing $playing ($allowancePercent%)"
+                },
                 color = OdinOnDim,
                 style = MaterialTheme.typography.caption2,
             )

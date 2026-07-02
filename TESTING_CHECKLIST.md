@@ -49,13 +49,19 @@
 - [ ] Putts +/-; fairway chip only par 4/5 (–/✓/✗); GIR toggles.
 - [ ] Out/In/Total + to-par correct; **Stableford correct** (verify a handicap stroke lands on
       the right SI hole); net shown when HCP > 0; PU scores 0 and shows "P".
+- [ ] **Format toggle** (More → Format): Stroke play headlines **Net total + net-to-par**;
+      Stableford headlines **points**. Gross Total + to-par shows in both.
+- [ ] **Course handicap** (More → Handicap): off 15.7 at Setberg the screen shows **course 17 ·
+      playing 16 (95%)**; toggling More → Hcp allowance to 100% shows **playing 17**. Net/Stableford
+      use the playing number.
 - [ ] Survives relaunch (active round persisted). Reset clears. **Save card** writes a PNG to the
       watch Gallery with feedback; Save round → summary.
 
 ## More (Settings) + Jump to hole
 
 - [ ] **More** opens the menu: Jump-to-hole, Course, Units (m/yd), GPS mode (battery warning on
-      Precise), Play (18/Front/Back), Handicap, keep-screen-on, debug GPS, history, survey, reset.
+      Precise), Play (18/Front/Back), Format (Stroke/Stableford), Handicap, Hcp allowance (95/100%),
+      keep-screen-on, debug GPS, history, survey, reset.
 - [ ] **Jump to hole** lists all holes (current highlighted) and returns to the dashboard on tap.
 - [ ] Switching **Course → Kiðjabergsvöllur** loads it and persists.
 

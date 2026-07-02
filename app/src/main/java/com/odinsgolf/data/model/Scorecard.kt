@@ -37,8 +37,18 @@ data class Round(
     val courseId: String,
     val courseName: String,
     val startedEpochMillis: Long,
-    /** Decimal handicap index, e.g. 15.7. Allocation uses the rounded playing handicap. */
+    /** Decimal handicap index, e.g. 15.7. Allocation uses the derived playing handicap. */
     val handicapIndex: Double = 0.0,
+    /**
+     * Course rating context captured when the round started, so the playing handicap
+     * can be derived by WHS: Course Handicap = Index x Slope/113 + (CR - Par). Null
+     * when the course has no ratings (falls back to the rounded index).
+     */
+    val courseRating: Double? = null,
+    val slopeRating: Int? = null,
+    val coursePar: Int? = null,
+    /** WHS handicap allowance percent applied to the course handicap (95 = singles standard). */
+    val handicapAllowancePercent: Int = 100,
     val holes: List<HoleScore>,
 ) {
     val enteredHoles: List<HoleScore> get() = holes.filter { it.entered }

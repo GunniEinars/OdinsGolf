@@ -9,6 +9,9 @@ data class Course(
     val locationHint: String,
     val defaultUnits: Units,
     val par: Int?,
+    /** Course/Slope rating for the default (men's back) tee, used for WHS course handicap. */
+    val courseRating: Double? = null,
+    val slopeRating: Int? = null,
     val attribution: List<String>,
     val dataQuality: List<String>,
     val notes: String,

@@ -26,6 +26,8 @@ fun SettingsScreen(
     onCycleGpsMode: () -> Unit,
     onSetKeepScreenOn: (Boolean) -> Unit,
     onCycleRoundMode: () -> Unit,
+    onCycleScoringFormat: () -> Unit,
+    onCycleAllowance: () -> Unit,
     onOpenHoles: () -> Unit,
     onOpenHandicap: () -> Unit,
     onOpenCourses: () -> Unit,
@@ -97,9 +99,29 @@ fun SettingsScreen(
                 Chip(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ChipDefaults.secondaryChipColors(),
+                    onClick = onCycleScoringFormat,
+                    label = { Text("Format") },
+                    secondaryLabel = { Text(s.scoringFormat.label) },
+                )
+            }
+
+            item {
+                Chip(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ChipDefaults.secondaryChipColors(),
                     onClick = onOpenHandicap,
                     label = { Text("Handicap") },
                     secondaryLabel = { Text(formatHandicap(s.handicapIndex)) },
+                )
+            }
+
+            item {
+                Chip(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ChipDefaults.secondaryChipColors(),
+                    onClick = onCycleAllowance,
+                    label = { Text("Hcp allowance") },
+                    secondaryLabel = { Text("${s.handicapAllowancePercent}%") },
                 )
             }
 

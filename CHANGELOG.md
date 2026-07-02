@@ -5,6 +5,16 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ## [Unreleased]
 
 ### Added
+- **Scoring format toggle — Stroke play or Stableford** (More → Format), persisted. Both record
+  gross strokes per hole; the scorecard headlines the chosen result — net total + net-to-par for
+  stroke play, points for Stableford — with the gross total and to-par shown either way.
+- **WHS course handicap from your index.** Enter your Handicap Index (e.g. 15.7) and the app
+  derives the playing handicap for the course: Course Handicap = Index × Slope/113 + (CR − Par),
+  then a **handicap allowance** (More → Hcp allowance, default **95%** — the WHS singles standard;
+  toggle 100% for full course handicap). Setberg's official men's-tee ratings (CR 70.8, Slope 130)
+  are baked in, so 15.7 → course 17 → playing 16 at 95%. The Handicap screen shows both numbers,
+  and net/Stableford use the derived playing handicap. Courses without ratings fall back to the
+  rounded index.
 - **Offline vector hole map** (now the default): real OSM area polygons — fairway, green,
   bunkers, water, tees — drawn as filled shapes, fully offline and battery cheap. Pulled +
   simplified by `tools/bake_geometry.mjs` and baked per hole (`FEATURES_FROM_OSM`). The hole

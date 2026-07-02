@@ -47,4 +47,12 @@ class CourseDataTest {
             assertTrue("$name: hazards present", course.holes.any { it.hazards.isNotEmpty() })
         }
     }
+
+    @Test
+    fun setberg_carries_official_course_and_slope_ratings() {
+        val c = load("setbergsvollur.json")
+        assertTrue("par 72", c.par == 72)
+        assertEquals(70.8, c.courseRating!!, 0.0001)
+        assertTrue("slope 130", c.slopeRating == 130)
+    }
 }

@@ -13,6 +13,7 @@ import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.RoundMode
+import com.odinsgolf.data.model.ScoringFormat
 import com.odinsgolf.ui.screens.CoursePickerScreen
 import com.odinsgolf.ui.screens.DistanceScreen
 import com.odinsgolf.ui.screens.HandicapScreen
@@ -57,6 +58,13 @@ fun OdinsGolfApp(vm: RoundViewModel) {
                     val modes = RoundMode.entries
                     vm.setRoundMode(modes[(state.settings.roundMode.ordinal + 1) % modes.size])
                 },
+                onCycleScoringFormat = {
+                    val formats = ScoringFormat.entries
+                    vm.setScoringFormat(formats[(state.settings.scoringFormat.ordinal + 1) % formats.size])
+                },
+                onCycleAllowance = {
+                    vm.setHandicapAllowance(if (state.settings.handicapAllowancePercent >= 100) 95 else 100)
+                },
                 onOpenHoles = { nav.navigate(Routes.HOLES) },
                 onOpenHandicap = { nav.navigate(Routes.HANDICAP) },
                 onOpenCourses = { nav.navigate(Routes.COURSES) },
@@ -77,7 +85,12 @@ fun OdinsGolfApp(vm: RoundViewModel) {
             )
         }
         composable(Routes.HANDICAP) {
-            HandicapScreen(index = state.settings.handicapIndex, onAdjust = { vm.adjustHandicap(it) })
+            HandicapScreen(
+                index = state.settings.handicapIndex,
+                course = state.course,
+                allowancePercent = state.settings.handicapAllowancePercent,
+                onAdjust = { vm.adjustHandicap(it) },
+            )
         }
         composable(Routes.COURSES) {
             CoursePickerScreen(

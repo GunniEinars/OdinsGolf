@@ -45,10 +45,34 @@ class ScoringTest {
     }
 
     @Test
-    fun playing_handicap_rounds_index() {
-        assertEquals(16, Scoring.playingHandicap(15.7))
-        assertEquals(15, Scoring.playingHandicap(15.4))
-        assertEquals(0, Scoring.playingHandicap(0.0))
+    fun course_handicap_uses_slope_and_rating() {
+        // Setberg tee 56: Slope 130, CR 70.8, Par 72. Off 15.7 -> 17.
+        assertEquals(17, Scoring.courseHandicap(15.7, slopeRating = 130, courseRating = 70.8, par = 72))
+        // A scratch index still shifts by (CR - Par).
+        assertEquals(-1, Scoring.courseHandicap(0.0, 130, 70.8, 72))
+    }
+
+    @Test
+    fun playing_handicap_applies_allowance() {
+        // Course handicap 17: 95% -> 16, 100% -> 17.
+        assertEquals(16, Scoring.playingHandicap(17, allowancePercent = 95))
+        assertEquals(17, Scoring.playingHandicap(17, allowancePercent = 100))
+    }
+
+    @Test
+    fun round_playing_handicap_from_ratings_and_allowance() {
+        val round = Round(
+            courseId = "setbergsvollur", courseName = "Setberg", startedEpochMillis = 0,
+            handicapIndex = 15.7, courseRating = 70.8, slopeRating = 130, coursePar = 72,
+            handicapAllowancePercent = 95, holes = emptyList(),
+        )
+        assertEquals(16, Scoring.playingHandicap(round))
+        assertEquals(17, Scoring.playingHandicap(round.copy(handicapAllowancePercent = 100)))
+        // No ratings -> falls back to the rounded index.
+        val noRatings = round.copy(
+            courseRating = null, slopeRating = null, coursePar = null, handicapAllowancePercent = 100,
+        )
+        assertEquals(16, Scoring.playingHandicap(noRatings)) // round(15.7) = 16
     }
 
     @Test

@@ -26,6 +26,7 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
 import com.odinsgolf.data.model.FairwayResult
 import com.odinsgolf.data.model.RoundMode
+import com.odinsgolf.data.model.ScoringFormat
 import com.odinsgolf.scoring.Scoring
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.formatHandicap
@@ -151,18 +152,28 @@ fun ScorecardScreen(
                     style = MaterialTheme.typography.title3,
                     fontWeight = FontWeight.SemiBold,
                 )
+                // Headline the result for the chosen format: Stableford points, or net
+                // stroke play (net total + net to par). Gross total above stays either way.
+                val playing = Scoring.playingHandicap(round)
+                when (state.settings.scoringFormat) {
+                    ScoringFormat.STABLEFORD -> Text(
+                        "Stableford ${Scoring.totalStableford(round)} pts",
+                        color = OdinGreen,
+                        style = MaterialTheme.typography.title3,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    ScoringFormat.STROKE_PLAY -> Text(
+                        "Net ${Scoring.totalNet(round)}  ·  ${Scoring.toParLabel(Scoring.netToPar(round))}",
+                        color = OdinGreen,
+                        style = MaterialTheme.typography.title3,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
                 Text(
-                    "Stableford ${Scoring.totalStableford(round)} pts  ·  HCP ${formatHandicap(round.handicapIndex)}",
+                    "HCP ${formatHandicap(round.handicapIndex)} · plays $playing",
                     color = OdinOnDim,
                     style = MaterialTheme.typography.caption2,
                 )
-                if (round.handicapIndex > 0) {
-                    Text(
-                        "Net ${Scoring.toParLabel(Scoring.netToPar(round))}",
-                        color = OdinOnDim,
-                        style = MaterialTheme.typography.caption2,
-                    )
-                }
             }
 
             Spacer(Modifier.height(10.dp))

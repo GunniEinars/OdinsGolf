@@ -7,6 +7,8 @@
   "locationHint": "Fagraberg 30, Hafnarfjörður, Iceland",
   "defaultUnits": "meters",
   "par": 72,
+  "courseRating": 70.8,
+  "slopeRating": 130,
   "physicalHoles": 9,
   "playedHoles": 18,
   "sourceAttribution": [
@@ -17,12 +19,14 @@
     "Hazards (bunkers, water) derived from OpenStreetMap and assigned to the nearest hole(s) by playing line. Map data © OpenStreetMap contributors, ODbL.",
     "Hole feature polygons (greens, fairways, bunkers, water, tees) from OpenStreetMap, ODbL. Elevation from Copernicus EU-DEM (25 m) via OpenTopoData.",
     "Hole centerlines + feature polygons (greens, fairways, bunkers, water, tees) from OpenStreetMap, ODbL. Elevation from Copernicus EU-DEM (25 m) via OpenTopoData.",
-    "Par and stroke index verified against the official scorecard on Rástímar (rastimar.golf.is)."
+    "Par and stroke index verified against the official scorecard on Rástímar (rastimar.golf.is).",
+    "Course Rating 70.8 and Slope 130 are the official men's back-tee (56) ratings from the scorecard (Rástímar), used for WHS course handicap."
   ],
   "dataQuality": [
     "GEOMETRY_FROM_OSM",
     "PAR_VERIFIED_OSM",
     "STROKE_INDEX_VERIFIED",
+    "RATINGS_FROM_SCORECARD",
     "GREEN_FRONT_BACK_NEEDS_FIELD_VERIFICATION",
     "HAZARDS_FROM_OSM",
     "FEATURES_FROM_OSM",

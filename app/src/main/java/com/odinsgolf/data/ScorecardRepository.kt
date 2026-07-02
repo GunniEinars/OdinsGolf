@@ -40,12 +40,16 @@ class ScorecardRepository(private val context: Context) {
         out.absolutePath
     }.getOrNull()
 
-    /** Build a fresh empty round seeded with par/stroke index from the course. */
-    fun newRound(course: Course, handicapIndex: Double): Round = Round(
+    /** Build a fresh empty round seeded with par/stroke index and the course rating context. */
+    fun newRound(course: Course, handicapIndex: Double, allowancePercent: Int): Round = Round(
         courseId = course.id,
         courseName = course.name,
         startedEpochMillis = System.currentTimeMillis(),
         handicapIndex = handicapIndex,
+        courseRating = course.courseRating,
+        slopeRating = course.slopeRating,
+        coursePar = course.par,
+        handicapAllowancePercent = allowancePercent,
         holes = course.holes.map {
             HoleScore(holeNumber = it.number, par = it.par, strokeIndex = it.strokeIndex)
         },

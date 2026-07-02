@@ -26,6 +26,9 @@ data class CourseDto(
     val locationHint: String = "",
     val defaultUnits: String = "meters",
     val par: Int? = null,
+    /** WHS course/slope rating for the default (men's back) tee. */
+    val courseRating: Double? = null,
+    val slopeRating: Int? = null,
     val physicalHoles: Int? = null,
     val playedHoles: Int? = null,
     val sourceAttribution: List<String> = emptyList(),
@@ -46,6 +49,8 @@ data class CourseDto(
             locationHint = locationHint,
             defaultUnits = Units.parse(defaultUnits),
             par = par,
+            courseRating = courseRating,
+            slopeRating = slopeRating,
             attribution = sourceAttribution,
             dataQuality = dataQuality,
             notes = notes,

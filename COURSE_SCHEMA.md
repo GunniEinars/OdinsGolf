@@ -12,6 +12,8 @@ Course files live in `app/src/main/assets/courses/<courseId>.json` and are parse
 | `courseName`, `clubName`, `country`, `locationHint` | string | display |
 | `defaultUnits` | `"meters"` \| `"yards"` | initial unit |
 | `par` | int | total, sanity-check |
+| `courseRating` | double? | WHS course rating for the default (men's back) tee, e.g. `70.8` |
+| `slopeRating` | int? | WHS slope for the default tee, e.g. `130`. Used for course handicap |
 | `physicalHoles`, `playedHoles` | int | e.g. 9 and 18 |
 | `sourceAttribution` | string[] | first entry shown in Settings |
 | `dataQuality` | string[] | flags (see below) |

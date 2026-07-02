@@ -24,7 +24,10 @@ First course: **Setbergsvöllur** (Golfklúbburinn Setberg, Hafnarfjörður, Ice
 - A fast **scorecard**: strokes start on par (tap to keep par; "–" past 1 = **pick up**),
   putts/fairway/GIR, running totals, **to-par, Stableford and net** (Icelandic club style),
   and a shareable round card PNG to the watch Gallery.
-- **Decimal handicap index** (e.g. 15.7); allocation uses the rounded playing handicap.
+- **Scoring format toggle**: **Stroke play** (headlines net total + net-to-par) or **Stableford**
+  (headlines points); gross total and to-par show in both.
+- **Decimal handicap index** (e.g. 15.7) → **WHS course handicap** from the course's slope/rating
+  (Index × Slope/113 + CR − Par), with a handicap **allowance** (95% singles default, or 100%).
 - **Round modes**: 18 holes / Front 9 / Back 9.
 - **Course picker** (Settings → Course): **Setbergsvöllur** + **Kiðjabergsvöllur**, more added as JSON.
 - **Round history**: manually save rounds you want to keep to a scrollable list.

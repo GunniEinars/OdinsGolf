@@ -33,7 +33,8 @@ RoundViewModel  →  single GolfUiState (settings + course + gps + round + tick)
 geo/   Geo (Haversine, bearing, destination), Distances, Terrain (PlaysLike + Carry),
        HoleProjection (playing-line-up vector), SlippyMap/MapPlan (Web-Mercator tiles),
        CanvasProjector (cos-lat, unit-tested)
-scoring/ Scoring (handicap allocation, Stableford, net, to-par)
+scoring/ Scoring (WHS course handicap from slope/rating + allowance, handicap allocation,
+       Stableford, net, to-par; scoring format = Stroke play | Stableford)
 ```
 
 Layering rule: parsing DTOs (`data/dto`) never leak into UI; the UI only sees the resolved

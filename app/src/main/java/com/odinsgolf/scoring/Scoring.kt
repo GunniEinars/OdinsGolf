@@ -15,8 +15,29 @@ import kotlin.math.roundToInt
  */
 object Scoring {
 
-    /** Playing handicap = index rounded to the nearest whole stroke. */
-    fun playingHandicap(index: Double): Int = index.roundToInt().coerceAtLeast(0)
+    /**
+     * WHS Course Handicap = Index × (Slope / 113) + (Course Rating − Par), rounded.
+     * e.g. Setberg off 15.7 with Slope 130, CR 70.8, Par 72 → 17.
+     */
+    fun courseHandicap(index: Double, slopeRating: Int, courseRating: Double, par: Int): Int =
+        (index * slopeRating / 113.0 + (courseRating - par)).roundToInt()
+
+    /** Playing handicap = course handicap × allowance%, rounded (≥ 0). */
+    fun playingHandicap(courseHandicap: Int, allowancePercent: Int): Int =
+        (courseHandicap * allowancePercent / 100.0).roundToInt().coerceAtLeast(0)
+
+    /**
+     * Playing handicap for a round: from the course rating (WHS) when the course has
+     * ratings, otherwise the rounded index; then the handicap allowance is applied.
+     */
+    fun playingHandicap(round: Round): Int {
+        val ch = if (round.slopeRating != null && round.courseRating != null && round.coursePar != null) {
+            courseHandicap(round.handicapIndex, round.slopeRating, round.courseRating, round.coursePar)
+        } else {
+            round.handicapIndex.roundToInt()
+        }
+        return playingHandicap(ch, round.handicapAllowancePercent)
+    }
 
     /** Handicap strokes received on a hole with [strokeIndex] given a playing [handicap]. */
     fun strokesReceived(handicap: Int, strokeIndex: Int?): Int {
@@ -43,19 +64,19 @@ object Scoring {
 
     /** Total Stableford points across entered holes. */
     fun totalStableford(round: Round): Int {
-        val ph = playingHandicap(round.handicapIndex)
+        val ph = playingHandicap(round)
         return round.enteredHoles.sumOf { stablefordPoints(it, ph) }
     }
 
     /** Total net strokes across entered holes. */
     fun totalNet(round: Round): Int {
-        val ph = playingHandicap(round.handicapIndex)
+        val ph = playingHandicap(round)
         return round.enteredHoles.sumOf { netStrokes(it, ph) }
     }
 
     /** Net total relative to par across entered holes. */
     fun netToPar(round: Round): Int {
-        val ph = playingHandicap(round.handicapIndex)
+        val ph = playingHandicap(round)
         return round.enteredHoles.sumOf { netStrokes(it, ph) - it.par }
     }
 

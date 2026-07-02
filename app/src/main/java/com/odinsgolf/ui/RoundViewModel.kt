@@ -19,6 +19,7 @@ import com.odinsgolf.data.model.HoleScore
 import com.odinsgolf.data.model.MapStyle
 import com.odinsgolf.data.model.Round
 import com.odinsgolf.data.model.RoundMode
+import com.odinsgolf.data.model.ScoringFormat
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.location.LocationEngine
 import kotlin.math.roundToInt
@@ -153,11 +154,12 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         roundFlow.value = if (existing != null && existing.courseId == course.id) {
             existing
         } else {
-            scoreRepo.newRound(course, currentHandicap()).also { scoreRepo.saveActiveRound(it) }
+            scoreRepo.newRound(course, currentHandicap(), currentAllowance()).also { scoreRepo.saveActiveRound(it) }
         }
     }
 
     private fun currentHandicap(): Double = uiState.value.settings.handicapIndex
+    private fun currentAllowance(): Int = uiState.value.settings.handicapAllowancePercent
 
     /** Hole-number range allowed by the current round mode. */
     private fun activeRange(): IntRange {
@@ -241,7 +243,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
 
     fun resetRound() {
         val course = courseFlow.value ?: return
-        val fresh = scoreRepo.newRound(course, currentHandicap())
+        val fresh = scoreRepo.newRound(course, currentHandicap(), currentAllowance())
         roundFlow.value = fresh
         scoreRepo.saveActiveRound(fresh)
     }
@@ -294,6 +296,18 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         // Jump to the first hole of the new range so navigation stays in bounds.
         val total = courseFlow.value?.holes?.size ?: 18
         settingsRepo.setCurrentHole(mode.range(total).first)
+    }
+
+    fun setScoringFormat(format: ScoringFormat) = viewModelScope.launch {
+        settingsRepo.setScoringFormat(format)
+    }
+
+    /** Set the WHS handicap allowance (percent) and reflect it in the active round. */
+    fun setHandicapAllowance(percent: Int) = viewModelScope.launch {
+        val clamped = percent.coerceIn(50, 100)
+        settingsRepo.setHandicapAllowance(clamped)
+        roundFlow.update { it?.copy(handicapAllowancePercent = clamped) }
+        roundFlow.value?.let { scoreRepo.saveActiveRound(it) }
     }
 
     fun setDebugGps(value: Boolean) = viewModelScope.launch { settingsRepo.setDebugGps(value) }
