@@ -85,9 +85,17 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     private val courseLoad: Flow<Pair<Course?, String?>> =
         combine(courseFlow, loadErrorFlow) { course, error -> course to error }
 
+    // Hole-map base layer is a per-outing choice held in memory, deliberately NOT
+    // persisted: the app always opens on the reliable, offline vector hole view, so an
+    // accidental satellite tap can never carry over to the next session or leave you on
+    // a blank satellite map with no signal. Tapping still switches it for this outing.
+    private val mapStyleFlow = MutableStateFlow(MapStyle.VECTOR)
+    private val settingsFlow: Flow<AppSettings> =
+        combine(settingsRepo.settings, mapStyleFlow) { s, style -> s.copy(mapStyle = style) }
+
     val uiState: StateFlow<GolfUiState> =
         combine(
-            settingsRepo.settings,
+            settingsFlow,
             courseLoad,
             location.state,
             roundFlow,
@@ -266,10 +274,9 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     }
     fun setKeepScreenOn(value: Boolean) = viewModelScope.launch { settingsRepo.setKeepScreenOn(value) }
 
-    /** Toggle the hole-map base layer between the offline vector drawing and satellite. */
-    fun toggleMapStyle() = viewModelScope.launch {
-        val next = if (uiState.value.settings.mapStyle == MapStyle.VECTOR) MapStyle.SATELLITE else MapStyle.VECTOR
-        settingsRepo.setMapStyle(next)
+    /** Toggle the hole-map base layer for this outing (in memory; resets to vector next launch). */
+    fun toggleMapStyle() {
+        mapStyleFlow.update { if (it == MapStyle.VECTOR) MapStyle.SATELLITE else MapStyle.VECTOR }
     }
 
     /** Adjust the decimal handicap index by [delta] (e.g. +0.1, -1.0), clamped 0..54. */

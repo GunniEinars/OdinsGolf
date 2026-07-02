@@ -10,8 +10,8 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   simplified by `tools/bake_geometry.mjs` and baked per hole (`FEATURES_FROM_OSM`). The hole
   is oriented **playing-line-up** (tee bottom, green top) with **range rings** every 50 around
   you, a **pin flag**, a you-are-here marker, and a big distance-to-green with a plays-like
-  arrow — a golf-watch hole view. Tap the map to switch to **satellite** and back (`MapStyle`,
-  persisted).
+  arrow — a golf-watch hole view. Tap the map to switch to **satellite** and back (`MapStyle`;
+  held in memory only — the map always opens on the vector view).
 - **"Plays like" distance (elevation)**: uphill plays longer, downhill shorter, from a baked
   **EU-DEM** elevation profile sampled along each hole (your ground height read at your
   projected position — no flaky GPS altitude, no wind guesswork). Shown only when the change
@@ -89,6 +89,11 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Hole map always opens on the vector view.** The base-layer choice is no longer persisted:
+  an accidental full-screen tap could previously switch to satellite and *stay* there across
+  sessions (and show a blank map when offline). The style now lives in memory (`RoundViewModel`,
+  default `VECTOR`); tapping still switches to satellite for the current outing, but every fresh
+  launch returns to the reliable offline hole view.
 - **Surveyed green centre now applies to the shared physical green.** Setberg plays 9 greens
   as 18 holes (hole N and N+9 share a green); a Survey CENTER capture on one hole now also
   updates its sibling, matching the shared-green model instead of only the captured hole. The

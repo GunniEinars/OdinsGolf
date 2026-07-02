@@ -39,7 +39,8 @@
 - [ ] Vector hole is **playing-line-up** (tee bottom, green top): filled fairway/green/bunkers/
       water, pin flag, your dot, **150/100 (+250 on long holes)** rings; par 3 has no rings.
 - [ ] Big distance top-right, hole # top-left, neither clipped by the round bezel; dims when stale.
-- [ ] **Tap** toggles satellite ⇄ vector (satellite needs a connection once to cache tiles).
+- [ ] **Tap** toggles satellite ⇄ vector (satellite needs a connection once to cache tiles). The
+      map **always opens on vector** — the satellite choice does not persist across app launches.
 - [ ] Doglegs bend (centreline); no overlapping numbers.
 
 ## Scorecard (first swipe-left)
