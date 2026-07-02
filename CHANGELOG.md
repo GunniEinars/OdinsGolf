@@ -5,6 +5,9 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ## [Unreleased]
 
 ### Added
+- **Handicap-stroke cue on the current hole**: the Distance and scorecard screens show
+  "+1 shot here" (or "+2") when your playing handicap gives you a stroke on this hole
+  (stroke index ≤ playing handicap) — quick net-play context on the tee and when scoring.
 - **Scoring format toggle — Stroke play or Stableford** (More → Format), persisted. Both record
   gross strokes per hole; the scorecard headlines the chosen result — net total + net-to-par for
   stroke play, points for Stableford — with the gross total and to-par shown either way.
@@ -99,6 +102,16 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Fixed a slow-startup crash on the watch (Galaxy Watch 4).** Course JSON (~120 KB each),
+  round history and the active round were parsed on the **main thread** at launch — on the
+  GW4's CPU that blocked the UI thread for ~10 s, long enough for the system to kill the app
+  ("won't open"). All of it now parses on a background dispatcher: the course picker list is
+  lazy (parsed on first open, not at launch), history loads asynchronously, and `loadCourse`
+  does its parse in `Dispatchers.Default`, publishing only the results back to the UI. Launch
+  is now fast and the app can't be killed for a slow start.
+- **Reset needs a confirm.** The scorecard/Settings "Reset" now arms on the first tap
+  ("Confirm reset?") and only wipes the card on a second tap (auto-disarms after 3 s), so an
+  accidental tap can't destroy an in-progress round.
 - **Hole map always opens on the vector view.** The base-layer choice is no longer persisted:
   an accidental full-screen tap could previously switch to satellite and *stay* there across
   sessions (and show a blank map when offline). The style now lives in memory (`RoundViewModel`,

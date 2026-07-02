@@ -28,6 +28,7 @@ import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.geo.Carry
 import com.odinsgolf.geo.Distances
 import com.odinsgolf.geo.PlaysLike
+import com.odinsgolf.scoring.Scoring
 import com.odinsgolf.location.effectiveStatus
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.DebugGpsReadout
@@ -75,6 +76,16 @@ fun DistanceScreen(
                     fontWeight = FontWeight.SemiBold,
                 )
                 NavArrow("›", onNextHole)
+            }
+
+            // Net-play cue: handicap strokes you receive on this hole.
+            val shotsHere = state.round?.let { Scoring.strokesReceived(Scoring.playingHandicap(it), hole?.strokeIndex) } ?: 0
+            if (shotsHere > 0) {
+                Text(
+                    "+$shotsHere shot${if (shotsHere > 1) "s" else ""} here",
+                    color = OdinAmber,
+                    style = MaterialTheme.typography.caption2,
+                )
             }
 
             Spacer(Modifier.height(4.dp))

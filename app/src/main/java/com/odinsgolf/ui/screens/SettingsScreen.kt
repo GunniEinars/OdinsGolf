@@ -2,6 +2,7 @@ package com.odinsgolf.ui.screens
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
@@ -38,6 +39,11 @@ fun SettingsScreen(
 ) {
     val s = state.settings
     val listState = rememberScalingLazyListState()
+    // Two-tap guard on Reset so an accidental tap can't wipe the round card.
+    val resetArmed = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    LaunchedEffect(resetArmed.value) {
+        if (resetArmed.value) { kotlinx.coroutines.delay(3000); resetArmed.value = false }
+    }
     Scaffold {
         ScalingLazyColumn(state = listState, modifier = Modifier.rotaryScroll(listState)) {
             item { ListHeader { Text("More") } }
@@ -172,9 +178,12 @@ fun SettingsScreen(
             item {
                 Chip(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ChipDefaults.secondaryChipColors(),
-                    onClick = onResetRound,
-                    label = { Text("Reset scorecard") },
+                    colors = if (resetArmed.value) ChipDefaults.primaryChipColors() else ChipDefaults.secondaryChipColors(),
+                    onClick = {
+                        if (resetArmed.value) { onResetRound(); resetArmed.value = false }
+                        else resetArmed.value = true
+                    },
+                    label = { Text(if (resetArmed.value) "Confirm reset?" else "Reset scorecard") },
                 )
             }
 

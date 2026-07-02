@@ -23,7 +23,9 @@ import com.odinsgolf.data.model.ScoringFormat
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.location.LocationEngine
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -67,7 +69,9 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
 
     val gpsState: StateFlow<GpsState> get() = location.state
 
-    private val historyFlow = MutableStateFlow(historyRepo.load())
+    // Loaded off the main thread in init (parsing history JSON at construction would
+    // block startup on the watch).
+    private val historyFlow = MutableStateFlow<List<Round>>(emptyList())
     /** Saved rounds (newest first). */
     val history: StateFlow<List<Round>> = historyFlow.asStateFlow()
 
@@ -114,11 +118,17 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), GolfUiState())
 
-    /** Bundled courses available in the picker (assets don't change at runtime). */
-    val courses: List<CourseRepository.CourseSummary> = courseRepo.listCourses()
+    /**
+     * Bundled courses for the picker. Parsed lazily (on first open of the picker), not at
+     * startup — parsing every course JSON at construction blocked launch on the watch.
+     */
+    val courses: List<CourseRepository.CourseSummary> by lazy { courseRepo.listCourses() }
 
     init {
-        // Load (and reload) the course whenever the selected file changes.
+        // Read saved history off the main thread (JSON parse would block launch).
+        viewModelScope.launch(Dispatchers.Default) { historyFlow.value = historyRepo.load() }
+        // Load (and reload) the course whenever the selected file changes. The heavy
+        // parse happens inside loadCourse on a background dispatcher.
         viewModelScope.launch {
             settingsRepo.settings
                 .map { it.selectedCourseFile }
@@ -134,24 +144,29 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun loadCourse(file: String) {
-        when (val res = courseRepo.loadCourse(file)) {
-            is CourseRepository.LoadResult.Success -> {
-                val overlaid = surveyRepo.overlay(res.course, surveyRepo.load(res.course.id))
-                courseFlow.value = overlaid
-                loadErrorFlow.value = null
-                ensureRound(overlaid)
-            }
-            is CourseRepository.LoadResult.Failure -> {
-                courseFlow.value = null
-                loadErrorFlow.value = res.message
+    // Parses course JSON (~120 KB) + survey/active-round files off the main thread; only
+    // the resulting StateFlow updates happen back on the caller's context. Doing this on
+    // the main thread blocked startup for ~10 s on the watch and the OS killed the app.
+    private suspend fun loadCourse(file: String) {
+        val outcome = withContext(Dispatchers.Default) {
+            when (val res = courseRepo.loadCourse(file)) {
+                is CourseRepository.LoadResult.Success -> {
+                    val overlaid = surveyRepo.overlay(res.course, surveyRepo.load(res.course.id))
+                    Triple<Course?, String?, Round?>(overlaid, null, resolveRound(overlaid))
+                }
+                is CourseRepository.LoadResult.Failure ->
+                    Triple<Course?, String?, Round?>(null, res.message, null)
             }
         }
+        courseFlow.value = outcome.first
+        loadErrorFlow.value = outcome.second
+        outcome.third?.let { roundFlow.value = it }
     }
 
-    private fun ensureRound(course: Course) {
+    /** Load the persisted active round, or start a fresh one. Does file I/O — call off-main. */
+    private fun resolveRound(course: Course): Round {
         val existing = scoreRepo.loadActiveRound()
-        roundFlow.value = if (existing != null && existing.courseId == course.id) {
+        return if (existing != null && existing.courseId == course.id) {
             existing
         } else {
             scoreRepo.newRound(course, currentHandicap(), currentAllowance()).also { scoreRepo.saveActiveRound(it) }
@@ -337,13 +352,15 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
             epochMillis = System.currentTimeMillis(),
         )
         val data = surveyRepo.add(course.id, point)
-        // Re-overlay so captured points show immediately. Reload the selected base course first.
+        // Re-overlay so captured points show immediately. Reload + parse off the main thread.
         viewModelScope.launch {
-            when (val res = courseRepo.loadCourse(uiState.value.settings.selectedCourseFile)) {
-                is CourseRepository.LoadResult.Success ->
-                    courseFlow.value = surveyRepo.overlay(res.course, data)
-                else -> {}
+            val overlaid = withContext(Dispatchers.Default) {
+                when (val res = courseRepo.loadCourse(uiState.value.settings.selectedCourseFile)) {
+                    is CourseRepository.LoadResult.Success -> surveyRepo.overlay(res.course, data)
+                    else -> null
+                }
             }
+            overlaid?.let { courseFlow.value = it }
         }
         return true
     }
@@ -354,7 +371,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     fun clearSurvey() {
         val course = courseFlow.value ?: return
         surveyRepo.clear(course.id)
-        loadCourse(uiState.value.settings.selectedCourseFile)
+        viewModelScope.launch { loadCourse(uiState.value.settings.selectedCourseFile) }
     }
 
     override fun onCleared() {

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +35,7 @@ import com.odinsgolf.ui.components.rotaryScroll
 import com.odinsgolf.ui.theme.OdinAmber
 import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -54,6 +56,11 @@ fun ScorecardScreen(
     Scaffold(timeText = { TimeText() }) {
         val scroll = rememberScrollState()
         val saveMsg = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
+        // Two-tap guard on Reset so an accidental tap can't wipe the round card.
+        val resetArmed = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+        LaunchedEffect(resetArmed.value) {
+            if (resetArmed.value) { delay(3000); resetArmed.value = false }
+        }
         val context = androidx.compose.ui.platform.LocalContext.current
         val scope = androidx.compose.runtime.rememberCoroutineScope()
         val hole = state.hole
@@ -72,6 +79,15 @@ fun ScorecardScreen(
                 style = MaterialTheme.typography.title3,
                 fontWeight = FontWeight.SemiBold,
             )
+            // Net-play cue: how many handicap strokes you receive on this hole.
+            val shotsHere = round?.let { Scoring.strokesReceived(Scoring.playingHandicap(it), hole?.strokeIndex) } ?: 0
+            if (shotsHere > 0) {
+                Text(
+                    "+$shotsHere handicap ${if (shotsHere == 1) "stroke" else "strokes"} here",
+                    color = OdinAmber,
+                    style = MaterialTheme.typography.caption2,
+                )
+            }
 
             // Big stroke stepper. Opens on par (dim hint) until entered/confirmed.
             val pickedUp = score?.pickedUp == true
@@ -209,7 +225,16 @@ fun ScorecardScreen(
                         }
                     },
                 )
-                CompactChip(label = { Text("Reset") }, onClick = onReset)
+                CompactChip(
+                    label = { Text(if (resetArmed.value) "Confirm reset?" else "Reset") },
+                    onClick = {
+                        if (resetArmed.value) {
+                            onReset(); resetArmed.value = false; saveMsg.value = ""
+                        } else {
+                            resetArmed.value = true
+                        }
+                    },
+                )
             }
         }
     }
