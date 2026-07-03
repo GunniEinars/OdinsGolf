@@ -9,6 +9,7 @@ import com.odinsgolf.data.model.Hole
 import com.odinsgolf.data.model.HoleFeature
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.geo.Geo
+import com.odinsgolf.geo.GreenEdges
 import kotlinx.serialization.Serializable
 
 /**
@@ -125,14 +126,25 @@ data class HoleDto(
         val teePoint = tee?.toGeoPointOrNull()
         var front = greenFront?.toGeoPointOrNull()
         var back = greenBack?.toGeoPointOrNull()
-        // When real front/back edges aren't supplied, approximate them by stepping
-        // off the green centre along this hole's playing line (centre±~half a green
-        // depth). Front is toward the tee, back away from it. A real Survey capture
-        // overrides these. Good enough to show approach yardages without field work.
+        // When real front/back edges aren't supplied, derive them from the green
+        // polygon: project its outline onto the tee→centre line and take the near
+        // (front) and far (back) extents. That gives true, asymmetric green depths
+        // from the OSM geometry we already ship. If there's no usable polygon, fall
+        // back to stepping centre±half a green depth along the playing line. A real
+        // Survey capture overrides either. Good enough to show approach yardages.
         if (front == null && back == null && center != null && teePoint != null) {
-            val bearingToGreen = Geo.bearingDegrees(teePoint, center)
-            front = Geo.destination(center, (bearingToGreen + 180.0) % 360.0, GREEN_HALF_DEPTH_M)
-            back = Geo.destination(center, bearingToGreen, GREEN_HALF_DEPTH_M)
+            val greenRing = features.firstOrNull { it.kind.equals("green", ignoreCase = true) }
+                ?.ring?.mapNotNull { if (it.size >= 2) GeoPoint(it[0], it[1]) else null }
+                .orEmpty()
+            val edges = if (greenRing.size >= 3) GreenEdges.fromPolygon(teePoint, center, greenRing) else null
+            if (edges != null) {
+                front = edges.first
+                back = edges.second
+            } else {
+                val bearingToGreen = Geo.bearingDegrees(teePoint, center)
+                front = Geo.destination(center, (bearingToGreen + 180.0) % 360.0, GREEN_HALF_DEPTH_M)
+                back = Geo.destination(center, bearingToGreen, GREEN_HALF_DEPTH_M)
+            }
         }
         val green = Green(center = center, front = front, back = back)
         val resolvedHazards = hazardRefs.mapNotNull { ref ->

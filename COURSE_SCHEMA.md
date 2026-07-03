@@ -55,9 +55,11 @@ Course files live in `app/src/main/assets/courses/<courseId>.json` and are parse
 - `greenId` resolves to the shared green's `center`. Because hole *N* and *N+9* point at the
   same `greenId` (one physical green), a green **centre** captured in Survey mode is applied to
   **both** of those holes, not just the one you stood on.
-- `greenFront` / `greenBack` are **per hole**. When `null`, the app **approximates** them
-  (green centre ±~11 m along the tee→green line) so approach yardages show without field work;
-  a real Survey capture overrides them.
+- `greenFront` / `greenBack` are **per hole**. When `null`, the app **derives** them from the
+  hole's **green polygon** (`features` `kind:"green"`): it projects the green outline onto the
+  tee→centre line and takes the near edge as front, the far edge as back — real, asymmetric green
+  depths from the OSM geometry. If a hole has no green polygon it falls back to green centre ±~11 m.
+  A real Survey capture overrides either. (See `geo/GreenEdges`.)
 - `tee` is this playing hole's tee.
 - `hazardRefs` lists ids from the top-level `hazards` array (regenerated from bunker/water).
 - `path` is the **hole centerline** (tee→green) as `[[lat,lon], …]` — drives the playing line
@@ -89,7 +91,9 @@ A coordinate is treated as **missing** (→ shows `—`, never a fake distance) 
 `GREEN_FRONT_BACK_NEEDS_FIELD_VERIFICATION` · `FIELD_VERIFIED` · `PLACEHOLDER`.
 
 Par and stroke index are **verified against the official scorecards** (Rástímar). Green
-front/back are approximated until field-captured (the one remaining `NEEDS_FIELD_VERIFICATION`).
+front/back are derived from the OSM green polygon (see above) until field-captured. Setberg's
+green **centres** were spot-checked in the field on 2026-07-02 — G1/G3/G4/G5 matched OSM to within
+GPS accuracy; G2 awaits a clean re-capture (see the course `notes`).
 
 ## How to replace / add coordinates
 

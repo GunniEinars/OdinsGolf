@@ -116,11 +116,19 @@ class LocationEngine(private val context: Context) {
             accuracy <= GOOD_ACCURACY_M -> GpsStatus.GOOD_FIX
             else -> GpsStatus.WEAK_FIX
         }
+        // Age the fix by when the GPS *computed* it (the Location's own elapsed-realtime
+        // clock), NOT when we received it. The fused provider can deliver a stale/cached
+        // "last known" fix — it arrives now but the position may be seconds-to-minutes old
+        // (GPS lost lock, throttling). Stamping receipt-time let a frozen position pose as a
+        // live number (the "stuck at 120 m greenside" bug). Using the fix's own clock means a
+        // stale/stuck fix correctly ages past the stale threshold, dims and flags "stale".
+        val nanos = location.elapsedRealtimeNanos
+        val fixMillis = if (nanos > 0L) nanos / 1_000_000L else SystemClock.elapsedRealtime()
         _state.value = GpsState(
             status = status,
             point = GeoPoint(location.latitude, location.longitude),
             accuracyMeters = accuracy,
-            fixElapsedRealtimeMillis = SystemClock.elapsedRealtime(),
+            fixElapsedRealtimeMillis = fixMillis,
         )
     }
 

@@ -32,7 +32,7 @@
     "FEATURES_FROM_OSM",
     "ELEVATION_FROM_EUDEM"
   ],
-  "notes": "Setbergsvöllur is physically 9 holes played as 18 from different tees: hole N and hole N+9 share the same physical green (greenId) but have their own tee, par and stroke index. Par and stroke index verified against the official scorecard (Rástímar); hole 9 is SI 10 (OSM had mistagged it SI 3).",
+  "notes": "Setbergsvöllur is physically 9 holes played as 18 from different tees: hole N and hole N+9 share the same physical green (greenId) but have their own tee, par and stroke index. Par and stroke index verified against the official scorecard (Rástímar); hole 9 is SI 10 (OSM had mistagged it SI 3). Green centres spot-checked in the field on 2026-07-02: G1, G3, G4 and G5 matched the OSM coordinates to within GPS accuracy (~4 m mean, no systematic shift). G2 was not cleanly captured on that walk (pending a re-survey) but is internally consistent. Front/back green edges are derived from the OSM green polygons (see COURSE_SCHEMA).",
   "greens": [
     {
       "id": "G1",

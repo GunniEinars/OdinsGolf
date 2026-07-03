@@ -2,6 +2,7 @@ package com.odinsgolf
 
 import com.odinsgolf.data.dto.CourseDto
 import com.odinsgolf.data.model.Course
+import com.odinsgolf.geo.Geo
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -45,6 +46,26 @@ class CourseDataTest {
             assertTrue("$name: elevation resolved", course.holes.any { it.elevationProfile.size >= 2 })
             // Hazard refs all point at a real hazard.
             assertTrue("$name: hazards present", course.holes.any { it.hazards.isNotEmpty() })
+        }
+    }
+
+    @Test
+    fun setberg_holes_get_real_front_back_edges_from_the_green_polygon() {
+        val c = load("setbergsvollur.json")
+        for (h in c.holes) {
+            val tee = h.tee ?: continue
+            val front = h.green.front
+            val back = h.green.back
+            assertTrue("hole ${h.number}: front edge derived", front != null)
+            assertTrue("hole ${h.number}: back edge derived", back != null)
+            // Front must be the tee-side edge, back the far edge.
+            assertTrue(
+                "hole ${h.number}: front nearer tee than back",
+                Geo.distanceMeters(tee, front!!) < Geo.distanceMeters(tee, back!!),
+            )
+            // Real greens: depth in a believable band (not the old flat 22 m guess, not absurd).
+            val depth = Geo.distanceMeters(front, back)
+            assertTrue("hole ${h.number}: green depth $depth m out of range", depth in 12.0..45.0)
         }
     }
 

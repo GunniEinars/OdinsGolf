@@ -55,6 +55,14 @@ class SurveyRepository(private val context: Context) {
         return updated
     }
 
+    /** Remove a single captured point (identified by its unique capture time). */
+    fun remove(courseId: String, epochMillis: Long): SurveyData {
+        val current = load(courseId)
+        val updated = current.copy(points = current.points.filterNot { it.epochMillis == epochMillis })
+        runCatching { file(courseId).writeText(json.encodeToString(updated)) }
+        return updated
+    }
+
     fun clear(courseId: String) {
         runCatching { if (file(courseId).exists()) file(courseId).delete() }
     }

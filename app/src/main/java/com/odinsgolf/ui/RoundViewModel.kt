@@ -22,6 +22,7 @@ import com.odinsgolf.data.model.Round
 import com.odinsgolf.data.model.RoundMode
 import com.odinsgolf.data.model.ScoringFormat
 import com.odinsgolf.data.model.Units
+import com.odinsgolf.geo.HoleHint
 import com.odinsgolf.location.LocationEngine
 import com.odinsgolf.location.effectiveStatus
 import kotlin.math.roundToInt
@@ -62,6 +63,14 @@ data class GolfUiState(
     /** Hole-number range for the active round mode. */
     val activeRange: IntRange
         get() = settings.roundMode.range(course?.holes?.size ?: 18)
+
+    /**
+     * Hole you appear to be at (from GPS) when it differs from the selected one — a
+     * one-tap switch offered on the Distance screen. Null when the current selection
+     * fits, or on courses spread out enough that no other hole is clearly closer.
+     */
+    val suggestedHole: Int?
+        get() = course?.let { HoleHint.suggest(it.holes, gps.point, currentHole, activeRange) }
 }
 
 class RoundViewModel(app: Application) : AndroidViewModel(app) {
@@ -84,6 +93,11 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     private val summaryFlow = MutableStateFlow<Round?>(null)
     /** Round currently shown on the summary card (active save or a history item). */
     val summaryRound: StateFlow<Round?> = summaryFlow.asStateFlow()
+
+    private val surveyPointsFlow = MutableStateFlow<List<SurveyPoint>>(emptyList())
+    /** Points captured in Survey mode for the active course, so the Survey screen can
+     *  list, verify (live distance) and delete them. */
+    val surveyPoints: StateFlow<List<SurveyPoint>> = surveyPointsFlow.asStateFlow()
 
     fun selectSummary(round: Round) { summaryFlow.value = round }
 
@@ -176,17 +190,27 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         val outcome = withContext(Dispatchers.Default) {
             when (val res = courseRepo.loadCourse(file)) {
                 is CourseRepository.LoadResult.Success -> {
-                    val overlaid = surveyRepo.overlay(res.course, surveyRepo.load(res.course.id))
-                    Triple<Course?, String?, Round?>(overlaid, null, resolveRound(overlaid))
+                    val data = surveyRepo.load(res.course.id)
+                    val overlaid = surveyRepo.overlay(res.course, data)
+                    CourseLoad(overlaid, null, resolveRound(overlaid), data.points)
                 }
                 is CourseRepository.LoadResult.Failure ->
-                    Triple<Course?, String?, Round?>(null, res.message, null)
+                    CourseLoad(null, res.message, null, emptyList())
             }
         }
-        courseFlow.value = outcome.first
-        loadErrorFlow.value = outcome.second
-        outcome.third?.let { roundFlow.value = it }
+        courseFlow.value = outcome.course
+        loadErrorFlow.value = outcome.error
+        outcome.round?.let { roundFlow.value = it }
+        surveyPointsFlow.value = outcome.surveyPoints
     }
+
+    /** Result of a background course load (course + resolved round + captured survey points). */
+    private data class CourseLoad(
+        val course: Course?,
+        val error: String?,
+        val round: Round?,
+        val surveyPoints: List<SurveyPoint>,
+    )
 
     /** Load the persisted active round, or start a fresh one. Does file I/O — call off-main. */
     private fun resolveRound(course: Course): Round {
@@ -378,6 +402,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
             epochMillis = System.currentTimeMillis(),
         )
         val data = surveyRepo.add(course.id, point)
+        surveyPointsFlow.value = data.points
         // Re-overlay so captured points show immediately. Reload + parse off the main thread.
         viewModelScope.launch {
             val overlaid = withContext(Dispatchers.Default) {
@@ -391,12 +416,29 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         return true
     }
 
+    /** Delete a captured survey point (identified by its capture time) and re-overlay. */
+    fun removeSurveyPoint(epochMillis: Long) {
+        val course = courseFlow.value ?: return
+        val data = surveyRepo.remove(course.id, epochMillis)
+        surveyPointsFlow.value = data.points
+        viewModelScope.launch {
+            val overlaid = withContext(Dispatchers.Default) {
+                when (val res = courseRepo.loadCourse(uiState.value.settings.selectedCourseFile)) {
+                    is CourseRepository.LoadResult.Success -> surveyRepo.overlay(res.course, data)
+                    else -> null
+                }
+            }
+            overlaid?.let { courseFlow.value = it }
+        }
+    }
+
     fun surveyExportPath(): String =
         courseFlow.value?.let { surveyRepo.exportPath(it.id) } ?: ""
 
     fun clearSurvey() {
         val course = courseFlow.value ?: return
         surveyRepo.clear(course.id)
+        surveyPointsFlow.value = emptyList()
         viewModelScope.launch { loadCourse(uiState.value.settings.selectedCourseFile) }
     }
 

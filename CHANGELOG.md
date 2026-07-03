@@ -5,6 +5,19 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ## [Unreleased]
 
 ### Added
+- **Nearest-hole hint** on the Distance screen: on a compact layout it's easy to leave the
+  watch on the wrong hole and read a real, correct-looking yardage to the *wrong* green. When
+  your GPS puts you clearly at another hole's corridor (≥40 m closer than the selected one), an
+  amber "⚑ At Hole N? tap to switch" chip appears — a one-tap fix that never overrides manual
+  control. Nine-aware on shared greens (at the 3rd/12th green it offers the hole in your current
+  nine). New pure `HoleHint` (unit-tested); it simply never fires on spread-out courses.
+- **Survey: review, verify and delete captured points.** The Survey screen now lists the current
+  hole's captured points with their accuracy and a **live distance from where you stand**, so a
+  mis-tagged point is obvious on the spot (a green centre should read a few metres, not 90). Each
+  has a ✕ to delete — fixing the blind-capture problem (e.g. a hazard tapped twice). Re-capturing
+  TEE/FRONT/CENTER/BACK still just replaces it. Captures overlay a separate file on top of the
+  shipped data (never overwritten), so deleting a point **reverts it to the built-in one**, and a
+  two-tap **"Reset to built-in points"** reverts everything — capturing is always safely undoable.
 - **Handicap-stroke cue on the current hole**: the Distance and scorecard screens show
   "+1 shot here" (or "+2") when your playing handicap gives you a stroke on this hole
   (stroke index ≤ playing handicap) — quick net-play context on the tee and when scoring.
@@ -72,6 +85,14 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
+- **Real green front/back from the green polygon.** Front/Back yardages were synthesised as a flat
+  centre ±11 m. They're now derived from the OSM green **polygon** — projecting its outline onto the
+  tee→centre line for the true near/far edges — giving realistic, asymmetric depths (~17–33 m at
+  Setberg, matching a field survey) instead of a fixed 22 m. Falls back to the old estimate only when
+  a hole has no green polygon; a real Survey capture still overrides. New `GreenEdges` helper.
+- **Setberg green data field-verified (2026-07-02).** A survey walk confirmed the OSM green centres
+  are accurate — G1/G3/G4/G5 matched to within GPS accuracy (~4 m mean, no systematic shift), so no
+  coordinates were changed. G2 is flagged in the course notes for a clean re-capture.
 - **Navigation is now a 3-screen swipe pager**: the on-course core is **Distance ⇄ Card ⇄
   Map**, swiped left/right (no bezel needed). Card is the first swipe-left (you score every
   hole); the map is one further. Everything occasional — course, units, GPS mode, handicap,
@@ -102,6 +123,11 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Stale/cached GPS fix could masquerade as live ("stuck at 120 m greenside").** Fixes were aged
+  from when the app *received* them, so a fused/cached "last-known" fix (GPS lost lock) arrived
+  looking fresh and the number stayed confident while the position was frozen on the map. Fixes are
+  now aged by the GPS's own clock (`Location.elapsedRealtimeNanos`), so a stale/stuck fix correctly
+  ages past the threshold, **dims and flags "stale"** instead of showing a wrong live yardage.
 - **Interval-aware "stale" GPS flag.** A fix now counts as stale after the update interval + 8 s
   (Normal → 20 s, not a flat 30 s), so a fix that aged while you walked to the ball with the
   wrist down flags as "refreshing" instead of briefly masquerading as live — while a live fix

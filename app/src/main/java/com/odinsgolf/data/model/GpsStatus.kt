@@ -16,7 +16,8 @@ enum class GpsStatus {
  *
  * @param point last known position, or null if none yet.
  * @param accuracyMeters horizontal accuracy of [point], or null if unknown.
- * @param fixElapsedRealtimeMillis SystemClock.elapsedRealtime() when the fix was taken.
+ * @param fixElapsedRealtimeMillis the fix's own elapsed-realtime clock (Location.elapsedRealtimeNanos),
+ *        i.e. when the GPS computed it — so a stale/cached fix ages correctly, not receipt time.
  */
 data class GpsState(
     val status: GpsStatus = GpsStatus.SEARCHING,

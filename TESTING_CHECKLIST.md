@@ -28,7 +28,11 @@
 ## Distance screen (the glance)
 
 - [ ] `H#·Par#` with ‹ › to change holes (persists after relaunch); big centre distance hero.
-- [ ] Front/Back show numbers with a fix (approximate ±~11 m until captured); `—` with no fix.
+- [ ] Front/Back show numbers with a fix (polygon-derived edges, asymmetric per green); `—` with no fix.
+- [ ] **Nearest-hole hint:** with the watch left on the wrong hole, walking to another hole's
+      green/fairway shows an amber **"⚑ At Hole N? tap to switch"** chip; tapping switches to it and
+      the chip clears. It stays hidden while you're on the selected hole, and on a shared green it
+      offers the hole in your current nine (front vs back), never nags to swap 1↔10.
 - [ ] **Plays-like** appears (amber, with ↑/↓) only on holes that climb/drop ≥3 m.
 - [ ] **Carry** lines show only for hazards ahead and within reach.
 - [ ] **"+N shot here"** (amber) shows on holes where your playing handicap gives you a stroke
@@ -75,7 +79,20 @@
 - [ ] Capturing FRONT/BACK makes those values appear on the Distance screen immediately.
 - [ ] Capturing **green CENTER** updates **both** holes that share that green (e.g. Setberg
       hole 1 and hole 10) — the centre distance changes on both, not just the captured hole.
+- [ ] **Captured points list:** each capture appears under "Captured · Hole #" with its accuracy
+      and a **live distance from where you stand** (a green centre reads a few metres, not tens).
+- [ ] **Delete (✕)** removes a point — capture a HAZARD twice, delete one, and only one remains.
+- [ ] **Re-capture** TEE/FRONT/CENTER/BACK replaces the old one (still a single entry per kind).
+- [ ] **Revert:** deleting a captured point restores the built-in distance for that feature;
+      **"Reset to built-in points"** (two-tap confirm) clears all captures and restores shipped data.
+- [ ] Deletions/edits survive relaunch (written back to `survey_<courseId>.json`).
 - [ ] `survey_setbergsvollur.json` is pullable via adb.
+
+## GPS honesty (the "stuck at 120 m" bug)
+
+- [ ] Walking with the wrist down / after a signal drop, a **frozen** number **dims and shows
+      "stale fix"** within ~20 s (Normal) — it never stays a confident live yardage while the map
+      marker is stuck. Raising the wrist / moving refreshes it.
 
 ## Startup / performance (Galaxy Watch 4)
 

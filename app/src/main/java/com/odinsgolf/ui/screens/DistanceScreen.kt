@@ -48,6 +48,7 @@ fun DistanceScreen(
     state: GolfUiState,
     onPrevHole: () -> Unit,
     onNextHole: () -> Unit,
+    onSelectHole: (Int) -> Unit,
     onOpenMore: () -> Unit,
 ) {
     Scaffold(timeText = { TimeText() }) {
@@ -127,6 +128,17 @@ fun DistanceScreen(
                         color = OdinAmber,
                         style = MaterialTheme.typography.title3,
                         fontWeight = FontWeight.SemiBold,
+                    )
+                }
+
+                // Nearest-hole hint: on a compact course it's easy to leave the watch on
+                // the wrong hole and read a real yardage to the wrong green. Offer a
+                // one-tap switch; it only shows when another hole is clearly closer.
+                state.suggestedHole?.let { n ->
+                    Spacer(Modifier.height(6.dp))
+                    CompactChip(
+                        onClick = { onSelectHole(n) },
+                        label = { Text("⚑ At Hole $n? tap to switch", color = OdinAmber) },
                     )
                 }
 

@@ -118,7 +118,15 @@ fun OdinsGolfApp(vm: RoundViewModel) {
             RoundSummaryScreen(round = round)
         }
         composable(Routes.SURVEY) {
-            SurveyScreen(state = state, onCapture = { vm.captureSurveyPoint(it) })
+            val points by vm.surveyPoints.collectAsStateWithLifecycle()
+            SurveyScreen(
+                state = state,
+                holePoints = points.filter { it.holeNumber == state.currentHole },
+                hasCapturedPoints = points.isNotEmpty(),
+                onCapture = { vm.captureSurveyPoint(it) },
+                onDeletePoint = vm::removeSurveyPoint,
+                onClearAll = vm::clearSurvey,
+            )
         }
     }
 }
@@ -137,6 +145,7 @@ private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavControlle
                 state = state,
                 onPrevHole = vm::prevHole,
                 onNextHole = vm::nextHole,
+                onSelectHole = vm::selectHole,
                 onOpenMore = { nav.navigate(Routes.SETTINGS) },
             )
             1 -> ScorecardScreen(
