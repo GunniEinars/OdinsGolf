@@ -146,6 +146,7 @@ private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavControlle
                 onPrevHole = vm::prevHole,
                 onNextHole = vm::nextHole,
                 onSelectHole = vm::selectHole,
+                onCyclePin = vm::cyclePinDepth,
                 onOpenMore = { nav.navigate(Routes.SETTINGS) },
             )
             1 -> ScorecardScreen(

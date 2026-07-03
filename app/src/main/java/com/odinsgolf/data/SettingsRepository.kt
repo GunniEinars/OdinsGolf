@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.MapStyle
+import com.odinsgolf.data.model.PinDepth
 import com.odinsgolf.data.model.RoundMode
 import com.odinsgolf.data.model.ScoringFormat
 import com.odinsgolf.data.model.Units
@@ -29,6 +30,8 @@ data class AppSettings(
     val selectedCourseFile: String = CourseRepository.DEFAULT_COURSE_FILE,
     val currentHole: Int = 1,
     val mapStyle: MapStyle = MapStyle.VECTOR,
+    /** Today's pin depth; drives the Distance hero. In-memory for the outing (see RoundViewModel). */
+    val pinDepth: PinDepth = PinDepth.MIDDLE,
     val scoringFormat: ScoringFormat = ScoringFormat.STABLEFORD,
     /** WHS handicap allowance as a percent (95 = singles standard, 100 = full course handicap). */
     val handicapAllowancePercent: Int = 95,

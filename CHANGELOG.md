@@ -5,6 +5,16 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ## [Unreleased]
 
 ### Added
+- **Pin position (Front / Middle / Back)** on the Distance screen. A "Pin: …" chip cycles today's
+  pin depth and the **hero yardage tracks it** — Middle is the green centre (unchanged default),
+  Front/Back use that hole's real polygon-derived edges. Front↔back can be a club or two on these
+  greens, so you now club to the pin, not just the centre. Plays-like (elevation) follows the pin.
+  Held in memory for the outing (resets to Middle on relaunch).
+- **Round score on the glance.** The Distance screen now shows where you stand without swiping to
+  the card: **"14 pts · thru 8"** in Stableford, **"+3 · thru 8"** (to-par) in stroke play. Hidden
+  until you enter your first score.
+- **Hole length + stroke index on the tee.** A dim "412 m · SI 8" under the hole header for tee
+  strategy (length is the tee→green distance in your chosen units).
 - **Nearest-hole hint** on the Distance screen: on a compact layout it's easy to leave the
   watch on the wrong hole and read a real, correct-looking yardage to the *wrong* green. When
   your GPS puts you clearly at another hole's corridor (≥40 m closer than the selected one), an
@@ -123,6 +133,9 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Nearest-hole hint now only fires on a live fix.** It was computed from the last position even
+  when that fix was stale/frozen — which could suggest switching to the wrong hole. It's suppressed
+  unless the fix is live (the same trust rule as the hero yardage).
 - **Stale/cached GPS fix could masquerade as live ("stuck at 120 m greenside").** Fixes were aged
   from when the app *received* them, so a fused/cached "last-known" fix (GPS lost lock) arrived
   looking fresh and the number stayed confident while the position was frozen on the map. Fixes are

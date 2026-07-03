@@ -28,11 +28,17 @@
 ## Distance screen (the glance)
 
 - [ ] `H#·Par#` with ‹ › to change holes (persists after relaunch); big centre distance hero.
+- [ ] **Hole length + SI** ("412 m · SI 8") shows under the header.
 - [ ] Front/Back show numbers with a fix (polygon-derived edges, asymmetric per green); `—` with no fix.
+- [ ] **Pin chip** cycles Middle → Front → Back; the hero number and its label follow the pin
+      (Middle = centre), and plays-like tracks the pin too. Resets to Middle on relaunch.
+- [ ] **Round score** shows once you've entered a score: "N pts · thru M" (Stableford) or
+      "+/-N · thru M" (stroke play); hidden before the first score.
 - [ ] **Nearest-hole hint:** with the watch left on the wrong hole, walking to another hole's
       green/fairway shows an amber **"⚑ At Hole N? tap to switch"** chip; tapping switches to it and
       the chip clears. It stays hidden while you're on the selected hole, and on a shared green it
-      offers the hole in your current nine (front vs back), never nags to swap 1↔10.
+      offers the hole in your current nine (front vs back), never nags to swap 1↔10. Only fires on
+      a **live** fix (never from a stale/frozen position).
 - [ ] **Plays-like** appears (amber, with ↑/↓) only on holes that climb/drop ≥3 m.
 - [ ] **Carry** lines show only for hazards ahead and within reach.
 - [ ] **"+N shot here"** (amber) shows on holes where your playing handicap gives you a stroke

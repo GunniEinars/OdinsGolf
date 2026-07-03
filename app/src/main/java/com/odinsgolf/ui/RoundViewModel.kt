@@ -18,6 +18,7 @@ import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.HoleScore
 import com.odinsgolf.data.model.MapStyle
+import com.odinsgolf.data.model.PinDepth
 import com.odinsgolf.data.model.Round
 import com.odinsgolf.data.model.RoundMode
 import com.odinsgolf.data.model.ScoringFormat
@@ -70,7 +71,12 @@ data class GolfUiState(
      * fits, or on courses spread out enough that no other hole is clearly closer.
      */
     val suggestedHole: Int?
-        get() = course?.let { HoleHint.suggest(it.holes, gps.point, currentHole, activeRange) }
+        get() {
+            // Only trust the hint on a live fix — a stale/frozen position must never send you
+            // to the wrong hole (that's the very failure the stale-fix handling guards against).
+            if (gpsStatus != GpsStatus.GOOD_FIX && gpsStatus != GpsStatus.WEAK_FIX) return null
+            return course?.let { HoleHint.suggest(it.holes, gps.point, currentHole, activeRange) }
+        }
 }
 
 class RoundViewModel(app: Application) : AndroidViewModel(app) {
@@ -115,8 +121,13 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     // accidental satellite tap can never carry over to the next session or leave you on
     // a blank satellite map with no signal. Tapping still switches it for this outing.
     private val mapStyleFlow = MutableStateFlow(MapStyle.VECTOR)
+    // Today's pin depth is a per-outing choice held in memory (like mapStyle): it resets to
+    // MIDDLE (green centre) on relaunch, so a stray pin setting never silently carries over.
+    private val pinDepthFlow = MutableStateFlow(PinDepth.MIDDLE)
     private val settingsFlow: Flow<AppSettings> =
-        combine(settingsRepo.settings, mapStyleFlow) { s, style -> s.copy(mapStyle = style) }
+        combine(settingsRepo.settings, mapStyleFlow, pinDepthFlow) { s, style, pin ->
+            s.copy(mapStyle = style, pinDepth = pin)
+        }
 
     val uiState: StateFlow<GolfUiState> =
         combine(
@@ -346,6 +357,17 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     /** Toggle the hole-map base layer for this outing (in memory; resets to vector next launch). */
     fun toggleMapStyle() {
         mapStyleFlow.update { if (it == MapStyle.VECTOR) MapStyle.SATELLITE else MapStyle.VECTOR }
+    }
+
+    /** Cycle today's pin depth Middle → Front → Back (in memory for the outing). */
+    fun cyclePinDepth() {
+        pinDepthFlow.update {
+            when (it) {
+                PinDepth.MIDDLE -> PinDepth.FRONT
+                PinDepth.FRONT -> PinDepth.BACK
+                PinDepth.BACK -> PinDepth.MIDDLE
+            }
+        }
     }
 
     /** Adjust the decimal handicap index by [delta] (e.g. +0.1, -1.0), clamped 0..54. */
