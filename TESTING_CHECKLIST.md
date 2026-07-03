@@ -30,8 +30,8 @@
 - [ ] `H#·Par#` with ‹ › to change holes (persists after relaunch); big centre distance hero.
 - [ ] **Hole length + SI** ("412 m · SI 8") shows under the header.
 - [ ] Front/Back show numbers with a fix (polygon-derived edges, asymmetric per green); `—` with no fix.
-- [ ] **Pin chip** cycles Middle → Front → Back; the hero number and its label follow the pin
-      (Middle = centre), and plays-like tracks the pin too. Resets to Middle on relaunch.
+- [ ] **Pin selector** (Front/Mid/Back, active highlighted) — one tap sets the pin; the hero number
+      and its label follow it (Mid = centre), and plays-like tracks the pin too. Resets to Mid on relaunch.
 - [ ] **Round score** shows once you've entered a score: "N pts · thru M" (Stableford) or
       "+/-N · thru M" (stroke play); hidden before the first score.
 - [ ] **Nearest-hole hint:** with the watch left on the wrong hole, walking to another hole's

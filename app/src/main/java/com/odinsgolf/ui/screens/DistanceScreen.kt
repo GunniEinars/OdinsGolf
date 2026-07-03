@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -19,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
-import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.CompactChip
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
@@ -53,7 +54,7 @@ fun DistanceScreen(
     onPrevHole: () -> Unit,
     onNextHole: () -> Unit,
     onSelectHole: (Int) -> Unit,
-    onCyclePin: () -> Unit,
+    onSetPin: (PinDepth) -> Unit,
     onOpenMore: () -> Unit,
 ) {
     Scaffold(timeText = { TimeText() }) {
@@ -164,13 +165,20 @@ fun DistanceScreen(
                     )
                 }
 
-                // Pin depth control: promote today's pin (Front/Middle/Back) to the hero.
+                // Pin depth selector: a light one-tap Front/Mid/Back so the hero clubs to the
+                // pin, not just the centre. Active target is highlighted; kept visually quiet
+                // so it never competes with the yardage.
                 Spacer(Modifier.height(4.dp))
-                CompactChip(
-                    onClick = onCyclePin,
-                    colors = ChipDefaults.secondaryChipColors(),
-                    label = { Text("Pin: ${pinName.replaceFirstChar { it.uppercase() }}") },
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text("Pin", color = OdinOnDim, style = MaterialTheme.typography.caption2)
+                    Spacer(Modifier.width(4.dp))
+                    PinSeg("Front", pin == PinDepth.FRONT) { onSetPin(PinDepth.FRONT) }
+                    PinSeg("Mid", pin == PinDepth.MIDDLE) { onSetPin(PinDepth.MIDDLE) }
+                    PinSeg("Back", pin == PinDepth.BACK) { onSetPin(PinDepth.BACK) }
+                }
 
                 // Nearest-hole hint: on a compact course it's easy to leave the watch on
                 // the wrong hole and read a real yardage to the wrong green. Offer a
@@ -235,6 +243,19 @@ fun DistanceScreen(
             CompactChip(label = { Text("More") }, onClick = onOpenMore)
         }
     }
+}
+
+@Composable
+private fun PinSeg(label: String, active: Boolean, onClick: () -> Unit) {
+    Text(
+        label,
+        color = if (active) OdinGreen else OdinOnDim,
+        fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+        style = MaterialTheme.typography.caption1,
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+    )
 }
 
 @Composable

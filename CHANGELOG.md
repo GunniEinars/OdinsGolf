@@ -5,8 +5,9 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ## [Unreleased]
 
 ### Added
-- **Pin position (Front / Middle / Back)** on the Distance screen. A "Pin: …" chip cycles today's
-  pin depth and the **hero yardage tracks it** — Middle is the green centre (unchanged default),
+- **Pin position (Front / Middle / Back)** on the Distance screen. A light one-tap "Pin Front·Mid·Back"
+  selector (active target highlighted) sets today's pin and the **hero yardage tracks it** — Middle is
+  the green centre (unchanged default),
   Front/Back use that hole's real polygon-derived edges. Front↔back can be a club or two on these
   greens, so you now club to the pin, not just the centre. Plays-like (elevation) follows the pin.
   Held in memory for the outing (resets to Middle on relaunch).

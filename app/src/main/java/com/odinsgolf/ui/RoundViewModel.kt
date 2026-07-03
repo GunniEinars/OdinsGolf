@@ -359,16 +359,8 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         mapStyleFlow.update { if (it == MapStyle.VECTOR) MapStyle.SATELLITE else MapStyle.VECTOR }
     }
 
-    /** Cycle today's pin depth Middle → Front → Back (in memory for the outing). */
-    fun cyclePinDepth() {
-        pinDepthFlow.update {
-            when (it) {
-                PinDepth.MIDDLE -> PinDepth.FRONT
-                PinDepth.FRONT -> PinDepth.BACK
-                PinDepth.BACK -> PinDepth.MIDDLE
-            }
-        }
-    }
+    /** Set today's pin depth (in memory for the outing; resets to Middle on relaunch). */
+    fun setPinDepth(depth: PinDepth) { pinDepthFlow.value = depth }
 
     /** Adjust the decimal handicap index by [delta] (e.g. +0.1, -1.0), clamped 0..54. */
     fun adjustHandicap(delta: Double) = viewModelScope.launch {
