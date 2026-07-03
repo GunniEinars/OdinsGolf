@@ -9,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -167,14 +166,12 @@ fun DistanceScreen(
 
                 // Pin depth selector: a light one-tap Front/Mid/Back so the hero clubs to the
                 // pin, not just the centre. Active target is highlighted; kept visually quiet
-                // so it never competes with the yardage.
-                Spacer(Modifier.height(4.dp))
+                // so it never competes with the yardage. (The subtitle above names the target.)
+                Spacer(Modifier.height(2.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
-                    Text("Pin", color = OdinOnDim, style = MaterialTheme.typography.caption2)
-                    Spacer(Modifier.width(4.dp))
                     PinSeg("Front", pin == PinDepth.FRONT) { onSetPin(PinDepth.FRONT) }
                     PinSeg("Mid", pin == PinDepth.MIDDLE) { onSetPin(PinDepth.MIDDLE) }
                     PinSeg("Back", pin == PinDepth.BACK) { onSetPin(PinDepth.BACK) }
