@@ -24,18 +24,26 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
 
 /**
+ * Process-wide GPS state. Both the in-activity [LocationEngine] and the Play-mode
+ * foreground service publish here, so the UI reads a single source no matter which
+ * one is currently driving the receiver.
+ */
+object LocationBus {
+    val state = MutableStateFlow(GpsState(status = GpsStatus.SEARCHING))
+}
+
+/**
  * Thin wrapper over FusedLocationProviderClient. Always requests HIGH_ACCURACY
- * (golf needs real GPS); the [GpsUpdateMode] interval is the battery lever.
- * Lifecycle is driven by the caller via [start]/[stop]; on resume the caller
- * also fires [requestBurst] for an immediate fix.
+ * (golf needs real GPS); the update interval is the battery lever. Lifecycle is
+ * driven by the caller via [start]/[stop]; on resume the caller also fires
+ * [requestBurst] for an immediate fix. All output goes to the shared [LocationBus].
  */
 class LocationEngine(private val context: Context) {
 
     private val client: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
 
-    private val _state = MutableStateFlow(GpsState(status = GpsStatus.SEARCHING))
-    val state: StateFlow<GpsState> = _state.asStateFlow()
+    val state: StateFlow<GpsState> = LocationBus.state.asStateFlow()
 
     private var started = false
 
@@ -51,33 +59,36 @@ class LocationEngine(private val context: Context) {
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
 
+    fun start(mode: GpsUpdateMode) = start(mode.intervalMillis, mode.minUpdateMillis)
+
     @SuppressLint("MissingPermission")
-    fun start(mode: GpsUpdateMode) {
+    fun start(intervalMillis: Long, minUpdateMillis: Long) {
         if (!hasPermission()) {
-            _state.value = _state.value.copy(status = GpsStatus.PERMISSION_NEEDED)
+            LocationBus.state.value = LocationBus.state.value.copy(status = GpsStatus.PERMISSION_NEEDED)
             return
         }
         // Always rebuild the request so a mode change takes effect.
         stopUpdates()
-        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, mode.intervalMillis)
-            .setMinUpdateIntervalMillis(mode.minUpdateMillis)
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, intervalMillis)
+            .setMinUpdateIntervalMillis(minUpdateMillis)
             .setWaitForAccurateLocation(false)
             .build()
         try {
             client.requestLocationUpdates(request, callback, context.mainLooper)
             started = true
-            if (_state.value.status == GpsStatus.PAUSED || _state.value.point == null) {
-                _state.value = _state.value.copy(status = GpsStatus.SEARCHING)
+            val s = LocationBus.state.value
+            if (s.status == GpsStatus.PAUSED || s.point == null) {
+                LocationBus.state.value = s.copy(status = GpsStatus.SEARCHING)
             }
         } catch (e: SecurityException) {
-            _state.value = _state.value.copy(status = GpsStatus.UNAVAILABLE)
+            LocationBus.state.value = LocationBus.state.value.copy(status = GpsStatus.UNAVAILABLE)
         }
     }
 
     /** Pause updates (app not visible). Keeps last fix so resume shows it immediately. */
     fun pause() {
         stopUpdates()
-        _state.value = _state.value.copy(status = GpsStatus.PAUSED)
+        LocationBus.state.value = LocationBus.state.value.copy(status = GpsStatus.PAUSED)
     }
 
     fun stop() = stopUpdates()
@@ -93,17 +104,21 @@ class LocationEngine(private val context: Context) {
     @SuppressLint("MissingPermission")
     suspend fun requestBurst() {
         if (!hasPermission()) {
-            _state.value = _state.value.copy(status = GpsStatus.PERMISSION_NEEDED)
+            LocationBus.state.value = LocationBus.state.value.copy(status = GpsStatus.PERMISSION_NEEDED)
             return
         }
         val req = CurrentLocationRequest.Builder()
             .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-            .setMaxUpdateAgeMillis(0)
+            // Accept a very recent fix (e.g. one the Play-mode service just produced while the
+            // receiver was warm) instead of forcing a brand-new compute — that makes a glance
+            // instant when a current fix already exists, while still being fresh enough that it
+            // reflects where you now stand.
+            .setMaxUpdateAgeMillis(FRESH_ENOUGH_MILLIS)
             .build()
         try {
             client.getCurrentLocation(req, null).await()?.let { publish(it) }
         } catch (_: SecurityException) {
-            _state.value = _state.value.copy(status = GpsStatus.UNAVAILABLE)
+            LocationBus.state.value = LocationBus.state.value.copy(status = GpsStatus.UNAVAILABLE)
         } catch (_: Exception) {
             // Ignore; periodic updates will catch up.
         }
@@ -124,7 +139,7 @@ class LocationEngine(private val context: Context) {
         // stale/stuck fix correctly ages past the stale threshold, dims and flags "stale".
         val nanos = location.elapsedRealtimeNanos
         val fixMillis = if (nanos > 0L) nanos / 1_000_000L else SystemClock.elapsedRealtime()
-        _state.value = GpsState(
+        LocationBus.state.value = GpsState(
             status = status,
             point = GeoPoint(location.latitude, location.longitude),
             accuracyMeters = accuracy,
@@ -135,6 +150,13 @@ class LocationEngine(private val context: Context) {
     companion object {
         const val GOOD_ACCURACY_M = 10f
         const val STALE_AFTER_MILLIS = 30_000L
+
+        /** A burst may reuse a fix no older than this (ms) before forcing a fresh compute. */
+        const val FRESH_ENOUGH_MILLIS = 4_000L
+
+        /** Play-mode continuous tracking: warm but lean — keeps the receiver hot at low draw. */
+        const val PLAY_INTERVAL_MILLIS = 20_000L
+        const val PLAY_MIN_UPDATE_MILLIS = 10_000L
     }
 }
 

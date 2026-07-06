@@ -5,6 +5,15 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ## [Unreleased]
 
 ### Added
+- **Play mode (warm GPS for instant distances).** Settings → Play mode (off by default). A foreground
+  service keeps the GPS receiver *warm* during a round, so raising your wrist at the ball reads a live
+  distance in ~1–2 s instead of the several-second cold re-acquire you get when GPS powers down on
+  every wrist-drop. The screen still sleeps between glances; only the receiver stays engaged, at a
+  **lean 20 s warm interval** to keep the draw down (~3–4× the glance-only default over a round, but a
+  full charge covers 18). **Auto-stops after 20 min idle** and offers a **Stop** action on its ongoing
+  notification, so it never drains in your bag. A "▶ Play mode" tag shows on the Distance screen while
+  active. Also: the resume **burst now reuses a just-produced fix** instead of always forcing a fresh
+  compute, so quick glances are snappier.
 - **Pin position (Front / Middle / Back)** on the Distance screen. A light one-tap "Pin Front·Mid·Back"
   selector (active target highlighted) sets today's pin and the **hero yardage tracks it** — Middle is
   the green centre (unchanged default),

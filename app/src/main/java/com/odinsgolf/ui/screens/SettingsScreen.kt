@@ -25,6 +25,7 @@ fun SettingsScreen(
     state: GolfUiState,
     onSetUnits: (Units) -> Unit,
     onCycleGpsMode: () -> Unit,
+    onSetPlayMode: (Boolean) -> Unit,
     onSetKeepScreenOn: (Boolean) -> Unit,
     onCycleRoundMode: () -> Unit,
     onCycleScoringFormat: () -> Unit,
@@ -87,6 +88,21 @@ fun SettingsScreen(
                     secondaryLabel = {
                         val warn = if (s.gpsMode == GpsUpdateMode.PRECISE) " (uses battery)" else ""
                         Text(s.gpsMode.label + warn)
+                    },
+                )
+            }
+
+            item {
+                ToggleChip(
+                    modifier = Modifier.fillMaxWidth(),
+                    checked = s.playMode,
+                    onCheckedChange = onSetPlayMode,
+                    label = { Text("Play mode") },
+                    secondaryLabel = {
+                        Text(if (s.playMode) "GPS warm · instant glances" else "Turn on at the 1st tee")
+                    },
+                    toggleControl = {
+                        androidx.wear.compose.material.Switch(checked = s.playMode)
                     },
                 )
             }

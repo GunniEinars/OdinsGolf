@@ -74,8 +74,8 @@
 ## More (Settings) + Jump to hole
 
 - [ ] **More** opens the menu: Jump-to-hole, Course, Units (m/yd), GPS mode (battery warning on
-      Precise), Play (18/Front/Back), Format (Stroke/Stableford), Handicap, Hcp allowance (95/100%),
-      keep-screen-on, debug GPS, history, survey, reset.
+      Precise), Play mode (warm GPS), Play (18/Front/Back), Format (Stroke/Stableford), Handicap,
+      Hcp allowance (95/100%), keep-screen-on, debug GPS, history, survey, reset.
 - [ ] **Jump to hole** lists all holes (current highlighted) and returns to the dashboard on tap.
 - [ ] Switching **Course → Kiðjabergsvöllur** loads it and persists.
 
@@ -99,6 +99,18 @@
 - [ ] Walking with the wrist down / after a signal drop, a **frozen** number **dims and shows
       "stale fix"** within ~20 s (Normal) — it never stays a confident live yardage while the map
       marker is stuck. Raising the wrist / moving refreshes it.
+
+## Play mode (warm GPS)
+
+- [ ] Settings → **Play mode** toggles on; an **ongoing notification** appears ("OdinsGolf · Play
+      mode") and a **"▶ Play mode"** tag shows on the Distance screen.
+- [ ] Walk a hole with Play mode on: arriving at the ball and raising your wrist reads **live in ~1–2 s**
+      (not a multi-second cold re-acquire). Compare to Play mode off (slower after a walk).
+- [ ] The notification's **Stop** action turns it off (tag + notification clear; setting flips off).
+- [ ] Left idle (~20 min, no wrist-raise) it **auto-stops** on its own; the toggle reads off afterward.
+- [ ] Foreground refresh with Play mode on is **no slower** than your GPS mode (it never flips to
+      "Paused" on wrist-down; the number stays live).
+- [ ] Survives an app relaunch mid-round (persisted on); toggling off stops the service.
 
 ## Startup / performance (Galaxy Watch 4)
 

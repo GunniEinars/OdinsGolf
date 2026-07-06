@@ -24,7 +24,10 @@ sparingly while still being accurate when you glance.
 4. **Last-known immediately, marked stale.** A fix older than 30 s is shown as `Stale`
    (`GpsState.effectiveStatus`) so you never trust an old number without knowing.
 
-5. **No wake locks. No background service. Let the watch sleep.** Scorecard entry needs no GPS.
+5. **No wake locks. Let the watch sleep — unless Play mode is on.** By default there is no
+   background service: scorecard entry needs no GPS and the receiver powers down between glances.
+   **Play mode** (opt-in) runs one foreground service that keeps the receiver *warm* during a round
+   so a wrist-raise reads live in ~1–2 s instead of a cold re-acquire (see below).
 
 6. **Cheap rendering.** No continuous animations. The hole map (Compose Canvas) re-renders only
    when the hole or your position changes. A 5 s ticker refreshes the fix "age"/stale indicator,
@@ -37,8 +40,33 @@ sparingly while still being accurate when you glance.
 ## Lifecycle wiring
 
 `MainActivity` adds a `LifecycleEventObserver`:
-`ON_RESUME → vm.onResume()` (start + burst), `ON_PAUSE → vm.onPause()` (pause updates).
+`ON_RESUME → vm.onResume()` (start + burst), `ON_PAUSE → vm.onPause()` (pause updates — or, in Play
+mode, `stop()` the activity's own updates while the service keeps GPS warm).
 Permission is gated before any location request; denied → `PermissionScreen`.
+
+## Play mode (opt-in warm GPS)
+
+The default lifecycle powers the GPS **off** on every wrist-down (`ON_PAUSE`). Walking to your
+ball that means the receiver goes cold, and the next wrist-raise pays a several-second re-acquire
+(`TTFF`) while the last fix shows dimmed as `Stale`. On modern Android, background location is also
+throttled, so nothing short of a **foreground service** can keep the receiver hot.
+
+**Play mode** (Settings → Play mode; off by default) is that service, `PlayModeService`:
+- Runs `PRIORITY_HIGH_ACCURACY` at a **lean warm interval** (20 s / min 10 s — `LocationEngine.PLAY_*`).
+  Keeping the receiver *powered* is what kills the cold start; the update *frequency* barely matters
+  for that, so a lean interval stays warm at far lower draw than a fast one.
+- Publishes to the shared `LocationBus`, same as the in-activity engine — the UI is agnostic to which
+  one is driving. The activity still runs its own responsive updates while you're looking; the service
+  only adds background warmth (so the foreground refresh is never slower than your GPS mode).
+- Posts an ongoing foreground notification with a **Stop** action.
+- **Auto-stops when idle** — 20 min with no wrist-raise (`PlayMode.lastActiveElapsedMillis`, stamped in
+  `ON_RESUME`), so it never drains in your bag; it also clears the persisted flag on stop.
+- On `ON_PAUSE` in Play mode the activity `stop()`s its own updates (no `Paused` flip); the service's
+  fixes stay live. On `ON_RESUME` a burst fires immediately — warm, so it returns in ~1–2 s.
+
+Battery: continuous GPS with the screen off is roughly 3–4× the glance-only default over a round, but
+a full charge comfortably covers 18 at the lean interval. Turn it on at the 1st tee; it gets out of the
+way afterward.
 
 ## Ambient / always-on — deferred (TODO)
 

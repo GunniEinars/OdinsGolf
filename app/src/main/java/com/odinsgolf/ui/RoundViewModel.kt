@@ -1,6 +1,8 @@
 package com.odinsgolf.ui
 
 import android.app.Application
+import android.content.Intent
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.odinsgolf.data.AppSettings
@@ -25,6 +27,8 @@ import com.odinsgolf.data.model.ScoringFormat
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.geo.HoleHint
 import com.odinsgolf.location.LocationEngine
+import com.odinsgolf.location.PlayMode
+import com.odinsgolf.location.PlayModeService
 import com.odinsgolf.location.effectiveStatus
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Job
@@ -176,6 +180,25 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         }
         // The stale/age ticker is started on resume and stopped on pause (see onResume/onPause),
         // so it never wakes the CPU while the wrist is down.
+
+        // Play mode: start/stop the warm-GPS foreground service to match the persisted flag.
+        // Runs on launch too, so a round resumed mid-play keeps tracking; the service self-stops
+        // when idle (and clears the flag), which this collector then observes.
+        viewModelScope.launch {
+            settingsRepo.settings
+                .map { it.playMode }
+                .distinctUntilChanged()
+                .collect { on ->
+                    val ctx = getApplication<Application>()
+                    val intent = Intent(ctx, PlayModeService::class.java)
+                    runCatching {
+                        // Only start the location foreground service when permission is actually
+                        // held (a location-typed FGS can't start otherwise on API 34+).
+                        if (on && location.hasPermission()) ContextCompat.startForegroundService(ctx, intent)
+                        else ctx.stopService(intent)
+                    }
+                }
+        }
     }
 
     // Refreshes "age"/stale display every 5 s while the screen is on. Off while paused.
@@ -245,23 +268,34 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     // ---- Lifecycle ----------------------------------------------------------
 
     fun onResume() {
-        val mode = uiState.value.settings.gpsMode
-        location.start(mode)
+        PlayMode.lastActiveElapsedMillis = SystemClock.elapsedRealtime() // feeds the idle auto-stop
+        // The activity always drives responsive foreground updates while you're looking. In Play
+        // mode the service ALSO runs (lean, in the background) so the receiver stays warm during
+        // the wrist-down walk — that's what makes the next glance instant.
+        location.start(uiState.value.settings.gpsMode)
         tickFlow.value = SystemClock.elapsedRealtime() // refresh age/stale immediately on glance
         startTicker()
         viewModelScope.launch { location.requestBurst() }
     }
 
     fun onPause() {
-        location.pause()
         stopTicker()
         // Flush the card before the app backgrounds, so a kill can't lose the last score
         // (the off-main collector handles the smooth per-tap saves during play).
         roundFlow.value?.let { scoreRepo.saveActiveRound(it) }
+        // In Play mode the service keeps GPS warm, so just detach the activity's own updates
+        // (no "Paused" flip — the service's fixes stay live). Otherwise power the receiver down.
+        if (uiState.value.settings.playMode) location.stop() else location.pause()
     }
 
     fun restartLocation() {
         location.start(uiState.value.settings.gpsMode)
+    }
+
+    /** Toggle Play mode. The settings collector (in init) starts/stops the foreground service to
+     *  match; the activity's own engine keeps running for responsive foreground updates either way. */
+    fun setPlayMode(on: Boolean) {
+        viewModelScope.launch { settingsRepo.setPlayMode(on) }
     }
 
     // ---- Hole navigation ----------------------------------------------------

@@ -231,6 +231,9 @@ fun DistanceScreen(
 
             Spacer(Modifier.height(8.dp))
             GpsStatusPill(state.gps, state.nowElapsed, state.settings.gpsMode.staleAfterMillis, state.settings.debugGps)
+            if (state.settings.playMode) {
+                Text("▶ Play mode", color = OdinGreen, style = MaterialTheme.typography.caption3)
+            }
             if (state.settings.debugGps) {
                 Spacer(Modifier.height(4.dp))
                 DebugGpsReadout(state.gps, state.nowElapsed)

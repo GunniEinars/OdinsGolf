@@ -32,7 +32,9 @@ First course: **Setbergsvöllur** (Golfklúbburinn Setberg, Hafnarfjörður, Ice
 - **Course picker** (Settings → Course): **Setbergsvöllur** + **Kiðjabergsvöllur**, more added as JSON.
 - **Round history**: manually save rounds you want to keep to a scrollable list.
 - **Survey mode** to capture real green/tee/hazard coordinates by walking the course.
-- Battery-first GPS (spaced updates, pauses when not visible).
+- **Nearest-hole hint** + **pin position** (Front/Mid/Back drives the hero) + a **round-score glance**.
+- Battery-first GPS (spaced updates, pauses when not visible), plus an opt-in **Play mode** that keeps
+  GPS warm during a round so a wrist-raise reads live in ~1–2 s (auto-stops when idle).
 - App **emblem** as launcher icon + system splash; **bezel/rotary scrolling** on all lists.
 
 ## The Setberg "9 played as 18" model

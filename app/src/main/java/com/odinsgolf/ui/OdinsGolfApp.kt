@@ -53,6 +53,7 @@ fun OdinsGolfApp(vm: RoundViewModel) {
                     val modes = GpsUpdateMode.entries
                     vm.setGpsMode(modes[(state.settings.gpsMode.ordinal + 1) % modes.size])
                 },
+                onSetPlayMode = vm::setPlayMode,
                 onSetKeepScreenOn = vm::setKeepScreenOn,
                 onCycleRoundMode = {
                     val modes = RoundMode.entries

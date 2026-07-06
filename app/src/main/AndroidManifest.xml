@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <!-- Play mode: a foreground service keeps GPS warm during the round so wrist-raise is instant. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- Satellite map tiles for the hole map (cached to disk after first load). -->
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -41,5 +46,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Keeps GPS warm during a round (Play mode). Location type: it needs the fix stream. -->
+        <service
+            android:name=".location.PlayModeService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
     </application>
 </manifest>

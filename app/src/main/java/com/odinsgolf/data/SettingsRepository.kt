@@ -35,6 +35,8 @@ data class AppSettings(
     val scoringFormat: ScoringFormat = ScoringFormat.STABLEFORD,
     /** WHS handicap allowance as a percent (95 = singles standard, 100 = full course handicap). */
     val handicapAllowancePercent: Int = 95,
+    /** Play mode: keep GPS warm via a foreground service for instant wrist-raise distances. */
+    val playMode: Boolean = false,
 )
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "odins_settings")
@@ -53,6 +55,7 @@ class SettingsRepository(private val context: Context) {
         val MAP_STYLE = stringPreferencesKey("map_style")
         val SCORING_FORMAT = stringPreferencesKey("scoring_format")
         val HCP_ALLOWANCE = intPreferencesKey("handicap_allowance_percent")
+        val PLAY_MODE = booleanPreferencesKey("play_mode")
     }
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { p ->
@@ -68,6 +71,7 @@ class SettingsRepository(private val context: Context) {
             mapStyle = MapStyle.fromName(p[Keys.MAP_STYLE]),
             scoringFormat = ScoringFormat.fromName(p[Keys.SCORING_FORMAT]),
             handicapAllowancePercent = p[Keys.HCP_ALLOWANCE] ?: 95,
+            playMode = p[Keys.PLAY_MODE] ?: false,
         )
     }
 
@@ -84,6 +88,7 @@ class SettingsRepository(private val context: Context) {
     suspend fun setScoringFormat(format: ScoringFormat) = edit { it[Keys.SCORING_FORMAT] = format.name }
     suspend fun setHandicapAllowance(percent: Int) =
         edit { it[Keys.HCP_ALLOWANCE] = percent.coerceIn(50, 100) }
+    suspend fun setPlayMode(on: Boolean) = edit { it[Keys.PLAY_MODE] = on }
 
     private suspend fun edit(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
         context.dataStore.edit(block)
