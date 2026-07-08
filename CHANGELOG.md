@@ -105,6 +105,10 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
+- **"Next hole" on the scorecard jumps back to the Distance screen.** After entering a score, tapping
+  Next hole now advances the hole *and* slides to that hole's yardage — no more scrolling up and
+  swiping back. The card also resets to the top on a hole change, so returning to it lands on the
+  stroke stepper.
 - **Real green front/back from the green polygon.** Front/Back yardages were synthesised as a flat
   centre ±11 m. They're now derived from the OSM green **polygon** — projecting its outline onto the
   tee→centre line for the true near/far edges — giving realistic, asymmetric depths (~17–33 m at

@@ -55,6 +55,9 @@ fun ScorecardScreen(
 ) {
     Scaffold(timeText = { TimeText() }) {
         val scroll = rememberScrollState()
+        // Reset the card to the top whenever the hole changes, so returning to it lands on the
+        // stroke stepper (not scrolled down where the Next-hole button was).
+        LaunchedEffect(state.currentHole) { scroll.scrollTo(0) }
         val saveMsg = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
         // Two-tap guard on Reset so an accidental tap can't wipe the round card.
         val resetArmed = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }

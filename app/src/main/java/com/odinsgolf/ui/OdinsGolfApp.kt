@@ -5,8 +5,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import androidx.navigation.NavController
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
@@ -140,6 +142,7 @@ fun OdinsGolfApp(vm: RoundViewModel) {
 @Composable
 private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavController) {
     val pagerState = rememberPagerState(pageCount = { 3 })
+    val scope = rememberCoroutineScope()
     HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
         when (page) {
             0 -> DistanceScreen(
@@ -159,7 +162,12 @@ private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavControlle
                 onDecPutts = vm::decPutts,
                 onCycleFairway = vm::cycleFairway,
                 onToggleGir = vm::toggleGir,
-                onNextHole = vm::nextHole,
+                // Advance the hole AND slide back to the Distance screen, so after scoring you
+                // land on the next hole's yardage instead of a scrolled-down card.
+                onNextHole = {
+                    vm.nextHole()
+                    scope.launch { pagerState.animateScrollToPage(0) }
+                },
                 onReset = vm::resetRound,
                 onExport = { vm.exportRound() },
                 onSaveRound = {
