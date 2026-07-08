@@ -30,6 +30,45 @@ import kotlinx.coroutines.tasks.await
  */
 object LocationBus {
     val state = MutableStateFlow(GpsState(status = GpsStatus.SEARCHING))
+
+    /**
+     * Publish a new *fix* through the [isBetterFix] filter. On a wrist-raise several sources
+     * (warm service, resume burst, restarted engine) fire almost at once and the receiver's
+     * first fixes after refocusing are often low-accuracy — showing every one made the number
+     * jump. This keeps a good recent fix instead of hopping onto a much-worse one, so the yardage
+     * settles quickly. Synchronised because the burst can resolve off the main thread.
+     */
+    @Synchronized
+    fun publishFix(candidate: GpsState) {
+        if (isBetterFix(candidate, state.value)) state.value = candidate
+    }
+}
+
+/** A fix no older than this (ms) than the current one is treated as "current enough" to replace it
+ *  even if less accurate — so we never get stuck on a stale-but-accurate fix while you move. */
+private const val FIX_SIGNIFICANT_NEWER_MS = 8_000L
+/** A newer fix up to this much (m) worse in accuracy is still accepted; worse than this is a spike. */
+private const val FIX_ACC_SLACK_M = 10f
+
+/**
+ * The classic "is this a better location" decision, on the fix's own clock and accuracy:
+ * accept a more-accurate fix always; accept a newer fix that's only slightly worse; reject a fix
+ * that is much less accurate (unless the current one has aged out). Pure, so it is unit-tested.
+ */
+fun isBetterFix(new: GpsState, cur: GpsState): Boolean {
+    if (cur.point == null) return true
+    val curT = cur.fixElapsedRealtimeMillis ?: return true
+    val newT = new.fixElapsedRealtimeMillis ?: return false
+    val dt = newT - curT
+    if (dt > FIX_SIGNIFICANT_NEWER_MS) return true // current has aged out — take the new one
+    val newAcc = new.accuracyMeters ?: return dt >= 0
+    val curAcc = cur.accuracyMeters ?: return true
+    val accDelta = newAcc - curAcc
+    return when {
+        accDelta <= 0f -> true                     // as good or better accuracy → always take
+        dt >= 0 && accDelta <= FIX_ACC_SLACK_M -> true // newer and only slightly worse
+        else -> false                              // worse (and older, or a big spike) → reject
+    }
 }
 
 /**
@@ -139,11 +178,13 @@ class LocationEngine(private val context: Context) {
         // stale/stuck fix correctly ages past the stale threshold, dims and flags "stale".
         val nanos = location.elapsedRealtimeNanos
         val fixMillis = if (nanos > 0L) nanos / 1_000_000L else SystemClock.elapsedRealtime()
-        LocationBus.state.value = GpsState(
-            status = status,
-            point = GeoPoint(location.latitude, location.longitude),
-            accuracyMeters = accuracy,
-            fixElapsedRealtimeMillis = fixMillis,
+        LocationBus.publishFix(
+            GpsState(
+                status = status,
+                point = GeoPoint(location.latitude, location.longitude),
+                accuracyMeters = accuracy,
+                fixElapsedRealtimeMillis = fixMillis,
+            ),
         )
     }
 

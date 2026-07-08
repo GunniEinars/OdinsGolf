@@ -143,6 +143,12 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Jumping distances on wrist-raise.** On a raise (especially Play mode + Precise) several GPS
+  sources fire at once and the receiver's first fixes after refocusing are often low-accuracy, so the
+  number bounced (a good reading → a wild spike → back). All fixes now pass through an accuracy-aware
+  filter (`isBetterFix`) on the shared `LocationBus`: a good recent fix isn't replaced by a much
+  less-accurate one, while genuine movement (a clearly newer fix) is always taken so it never sticks.
+  Steadier, and closer to truth. Unit-tested.
 - **Nearest-hole hint now only fires on a live fix.** It was computed from the last position even
   when that fix was stale/frozen — which could suggest switching to the wrong hole. It's suppressed
   unless the fix is live (the same trust rule as the hero yardage).
