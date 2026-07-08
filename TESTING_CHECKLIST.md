@@ -99,6 +99,9 @@
 - [ ] Walking with the wrist down / after a signal drop, a **frozen** number **dims and shows
       "stale fix"** within ~20 s (Normal) — it never stays a confident live yardage while the map
       marker is stuck. Raising the wrist / moving refreshes it.
+- [ ] **Steady on wrist-raise:** raising your wrist at the ball (esp. Play mode + Precise) the number
+      **settles quickly without a big spike** — a low-accuracy refocus fix no longer replaces a good
+      one (`isBetterFix`). It still tracks as you walk (a clearly newer fix is always taken).
 
 ## Play mode (warm GPS)
 
