@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.odinsgolf.data.AppSettings
+import com.odinsgolf.data.BagRepository
 import com.odinsgolf.data.CourseRepository
 import com.odinsgolf.data.HistoryRepository
 import com.odinsgolf.data.ScorecardRepository
@@ -13,6 +14,7 @@ import com.odinsgolf.data.SettingsRepository
 import com.odinsgolf.data.SurveyKind
 import com.odinsgolf.data.SurveyPoint
 import com.odinsgolf.data.SurveyRepository
+import com.odinsgolf.data.model.Bag
 import com.odinsgolf.data.model.Course
 import com.odinsgolf.data.model.FairwayResult
 import com.odinsgolf.data.model.GpsState
@@ -90,7 +92,12 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     private val scoreRepo = ScorecardRepository(app)
     private val surveyRepo = SurveyRepository(app)
     private val historyRepo = HistoryRepository(app)
+    private val bagRepo = BagRepository(app)
     private val location = LocationEngine(app)
+
+    private val bagFlow = MutableStateFlow(Bag.DEFAULT)
+    /** The player's club carries, for offline caddie advice. Editable in the My-bag screen. */
+    val bag: StateFlow<Bag> = bagFlow.asStateFlow()
 
     val gpsState: StateFlow<GpsState> get() = location.state
 
@@ -164,6 +171,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         // would block launch / freeze the picker on the watch).
         viewModelScope.launch(Dispatchers.Default) { historyFlow.value = historyRepo.load() }
         viewModelScope.launch(Dispatchers.Default) { coursesFlow.value = courseRepo.listCourses() }
+        viewModelScope.launch(Dispatchers.Default) { bagFlow.value = bagRepo.load() }
         // Load (and reload) the course whenever the selected file changes. The heavy
         // parse happens inside loadCourse on a background dispatcher.
         viewModelScope.launch {
@@ -482,6 +490,16 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
 
     fun surveyExportPath(): String =
         courseFlow.value?.let { surveyRepo.exportPath(it.id) } ?: ""
+
+    // ---- My bag (club distances) --------------------------------------------
+
+    fun adjustClub(name: String, deltaMeters: Int) {
+        viewModelScope.launch(Dispatchers.Default) { bagFlow.value = bagRepo.adjustClub(name, deltaMeters) }
+    }
+
+    fun resetBag() {
+        viewModelScope.launch(Dispatchers.Default) { bagFlow.value = bagRepo.resetToDefault() }
+    }
 
     fun clearSurvey() {
         val course = courseFlow.value ?: return

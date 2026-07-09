@@ -22,6 +22,7 @@ import com.odinsgolf.ui.screens.HandicapScreen
 import com.odinsgolf.ui.screens.HistoryScreen
 import com.odinsgolf.ui.screens.HoleMapScreen
 import com.odinsgolf.ui.screens.HoleSelectorScreen
+import com.odinsgolf.ui.screens.MyBagScreen
 import com.odinsgolf.ui.screens.RoundSummaryScreen
 import com.odinsgolf.ui.screens.ScorecardScreen
 import com.odinsgolf.ui.screens.SettingsScreen
@@ -36,6 +37,7 @@ private object Routes {
     const val HISTORY = "history"
     const val SUMMARY = "summary"
     const val SURVEY = "survey"
+    const val BAG = "bag"
 }
 
 @Composable
@@ -74,6 +76,7 @@ fun OdinsGolfApp(vm: RoundViewModel) {
                 onOpenHistory = { nav.navigate(Routes.HISTORY) },
                 onSetDebugGps = vm::setDebugGps,
                 onOpenSurvey = { nav.navigate(Routes.SURVEY) },
+                onOpenBag = { nav.navigate(Routes.BAG) },
                 onResetRound = vm::resetRound,
             )
         }
@@ -120,6 +123,15 @@ fun OdinsGolfApp(vm: RoundViewModel) {
             val round by vm.summaryRound.collectAsStateWithLifecycle()
             RoundSummaryScreen(round = round)
         }
+        composable(Routes.BAG) {
+            val bag by vm.bag.collectAsStateWithLifecycle()
+            MyBagScreen(
+                bag = bag,
+                units = state.settings.units,
+                onAdjust = vm::adjustClub,
+                onReset = vm::resetBag,
+            )
+        }
         composable(Routes.SURVEY) {
             val points by vm.surveyPoints.collectAsStateWithLifecycle()
             SurveyScreen(
@@ -143,10 +155,12 @@ fun OdinsGolfApp(vm: RoundViewModel) {
 private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavController) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
+    val bag by vm.bag.collectAsStateWithLifecycle()
     HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
         when (page) {
             0 -> DistanceScreen(
                 state = state,
+                bag = bag,
                 onPrevHole = vm::prevHole,
                 onNextHole = vm::nextHole,
                 onSelectHole = vm::selectHole,

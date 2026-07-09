@@ -36,6 +36,7 @@ fun SettingsScreen(
     onOpenHistory: () -> Unit,
     onSetDebugGps: (Boolean) -> Unit,
     onOpenSurvey: () -> Unit,
+    onOpenBag: () -> Unit,
     onResetRound: () -> Unit,
 ) {
     val s = state.settings
@@ -134,6 +135,16 @@ fun SettingsScreen(
                     onClick = onOpenHandicap,
                     label = { Text("Handicap") },
                     secondaryLabel = { Text(formatHandicap(s.handicapIndex)) },
+                )
+            }
+
+            item {
+                Chip(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ChipDefaults.secondaryChipColors(),
+                    onClick = onOpenBag,
+                    label = { Text("My bag") },
+                    secondaryLabel = { Text("Club distances") },
                 )
             }
 

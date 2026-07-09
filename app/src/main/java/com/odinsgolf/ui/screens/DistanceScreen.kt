@@ -25,9 +25,11 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
+import com.odinsgolf.data.model.Bag
 import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.PinDepth
 import com.odinsgolf.data.model.ScoringFormat
+import com.odinsgolf.geo.Caddie
 import com.odinsgolf.geo.Carry
 import com.odinsgolf.geo.Distances
 import com.odinsgolf.geo.Geo
@@ -50,6 +52,7 @@ import com.odinsgolf.ui.theme.OdinOnDim
 @Composable
 fun DistanceScreen(
     state: GolfUiState,
+    bag: Bag,
     onPrevHole: () -> Unit,
     onNextHole: () -> Unit,
     onSelectHole: (Int) -> Unit,
@@ -162,6 +165,22 @@ fun DistanceScreen(
                         style = MaterialTheme.typography.title3,
                         fontWeight = FontWeight.SemiBold,
                     )
+                }
+
+                // Caddie: the club for the plays-like pin distance, from your bag. Live fix only —
+                // a club off a stale/absent yardage would mislead.
+                val caddieTarget = pinMeters?.let {
+                    it + (pl?.takeIf { p -> p.significant }?.deltaMeters ?: 0.0)
+                }
+                if (hasFix && !stale && caddieTarget != null) {
+                    Caddie.approach(bag.clubs, caddieTarget)?.let { pick ->
+                        Text(
+                            "→ ${pick.club.name}" + if (pick.overClub) " · layup" else "",
+                            color = OdinGreen,
+                            style = MaterialTheme.typography.title3,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
                 }
 
                 // Pin depth selector: a light one-tap Front/Mid/Back so the hero clubs to the
