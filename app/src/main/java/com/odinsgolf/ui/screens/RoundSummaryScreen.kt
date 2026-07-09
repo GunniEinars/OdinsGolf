@@ -117,7 +117,9 @@ fun RoundSummaryScreen(round: Round?) {
 private fun NineRow(label: String, range: IntRange, round: Round) {
     val holes = round.holes.filter { it.holeNumber in range }
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        // Extra horizontal inset so the row stays inside the round display (the bezel was clipping
+        // "OUT" → "UT" and the outer scores) in the lower third of the screen.
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(1.dp),
     ) {

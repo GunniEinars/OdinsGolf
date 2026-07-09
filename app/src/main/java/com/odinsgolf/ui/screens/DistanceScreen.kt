@@ -193,17 +193,36 @@ fun DistanceScreen(
                     }
                 }
 
-                // Caddie: the club for the plays-like, wind-adjusted pin target, from your bag.
-                // Live fix only — a club off a stale/absent yardage would mislead.
+                // Caddie club (live fix only — a club off a stale yardage would mislead):
+                // on/near the tee of a two-shotter, suggest a position club that leaves a full
+                // scoring iron; otherwise the club for the plays-like, wind-adjusted pin target.
                 val caddieTarget = pinMeters?.let { it + totalDelta }
-                if (hasFix && !stale && caddieTarget != null) {
-                    Caddie.approach(bag.clubs, caddieTarget)?.let { pick ->
-                        Text(
-                            "→ ${pick.club.name}" + if (pick.overClub) " · layup" else "",
-                            color = OdinGreen,
-                            style = MaterialTheme.typography.title3,
-                            fontWeight = FontWeight.SemiBold,
-                        )
+                val holeLen = hole.tee?.let { t -> center?.let { c -> Geo.distanceMeters(t, c) } }
+                val nearTee = holeLen != null && pinMeters != null && hole.par >= 4 && pinMeters > holeLen * 0.7
+                if (hasFix && !stale) {
+                    if (nearTee && holeLen != null) {
+                        Caddie.tee(bag.clubs, holeLen)?.let { t ->
+                            Text(
+                                "Tee ${t.club.name}",
+                                color = OdinGreen,
+                                style = MaterialTheme.typography.title3,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                "leaves ~${formatDistance(t.leavesMeters.toDouble(), units)} ${units.suffix}",
+                                color = OdinOnDim,
+                                style = MaterialTheme.typography.caption3,
+                            )
+                        }
+                    } else if (caddieTarget != null) {
+                        Caddie.approach(bag.clubs, caddieTarget)?.let { pick ->
+                            Text(
+                                "→ ${pick.club.name}" + if (pick.overClub) " · layup" else "",
+                                color = OdinGreen,
+                                style = MaterialTheme.typography.title3,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
                     }
                 }
 

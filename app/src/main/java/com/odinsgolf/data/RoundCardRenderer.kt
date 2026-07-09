@@ -42,38 +42,43 @@ object RoundCardRenderer {
             c.drawText(s, x, y, p)
         }
 
+        // The card is square but shown on a ROUND watch (and round-cropped in the gallery), so all
+        // content is kept inside the inscribed circle — otherwise the edge labels/scores clip
+        // ("OUT" → "UT"). Positions below are tuned to sit within radius ~218 of centre (240,240).
         val date = SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date(round.startedEpochMillis))
-        text(round.courseName, cx, 54f, 30f, WHITE, Paint.Align.CENTER, bold = true)
-        text(date, cx, 84f, 20f, DIM, Paint.Align.CENTER)
+        text(round.courseName, cx, 64f, 24f, WHITE, Paint.Align.CENTER, bold = true)
+        text(date, cx, 90f, 19f, DIM, Paint.Align.CENTER)
 
-        text(Scoring.toParLabel(round.toPar), cx, 210f, 92f, GREEN, Paint.Align.CENTER, bold = true)
-        text("to par", cx, 240f, 20f, DIM, Paint.Align.CENTER)
+        text(Scoring.toParLabel(round.toPar), cx, 192f, 84f, GREEN, Paint.Align.CENTER, bold = true)
+        text("to par", cx, 220f, 19f, DIM, Paint.Align.CENTER)
 
-        text("${round.totalStrokes} strokes · ${Scoring.totalStableford(round)} pts", cx, 286f, 24f, WHITE, Paint.Align.CENTER)
+        text("${round.totalStrokes} strokes · ${Scoring.totalStableford(round)} pts", cx, 264f, 23f, WHITE, Paint.Align.CENTER)
         if (round.handicapIndex > 0) {
             val hcp = "%.1f".format(Locale.US, round.handicapIndex)
-            text("Net ${Scoring.toParLabel(Scoring.netToPar(round))} · HCP $hcp", cx, 314f, 20f, DIM, Paint.Align.CENTER)
+            text("Net ${Scoring.toParLabel(Scoring.netToPar(round))} · HCP $hcp", cx, 292f, 19f, DIM, Paint.Align.CENTER)
         }
 
-        drawNine(c, p, "OUT", 1..9, round, 372f)
-        drawNine(c, p, "IN", 10..18, round, 416f)
-        text("OdinsGolf", cx, 462f, 18f, DIM, Paint.Align.CENTER)
+        drawNine(c, p, "OUT", 1..9, round, 342f)
+        drawNine(c, p, "IN", 10..18, round, 382f)
+        text("OdinsGolf", cx, 424f, 18f, DIM, Paint.Align.CENTER)
         return bmp
     }
 
+    // Round-safe row: the lower (IN) row at y≈382 must fit within the circle, so the label starts at
+    // x≈78 and the total ends at x≈398 (both inside the chord ~76..404 there), cells in between.
     private fun drawNine(c: Canvas, p: Paint, label: String, range: IntRange, round: Round, y: Float) {
         p.typeface = Typeface.DEFAULT
         p.textAlign = Paint.Align.LEFT
         p.color = DIM
-        p.textSize = 20f
-        c.drawText(label, 28f, y, p)
+        p.textSize = 18f
+        c.drawText(label, 78f, y, p)
 
         val holes = round.holes.filter { it.holeNumber in range }
-        val left = 78f
-        val right = 408f
+        val left = 128f
+        val right = 356f
         val cellW = (right - left) / 9f
         p.textAlign = Paint.Align.CENTER
-        p.textSize = 22f
+        p.textSize = 21f
         holes.forEachIndexed { i, hs ->
             p.color = cellColor(hs)
             val x = left + cellW * i + cellW / 2f
@@ -88,9 +93,9 @@ object RoundCardRenderer {
         val sub = round.strokesForRange(range)
         p.color = WHITE
         p.textAlign = Paint.Align.RIGHT
-        p.textSize = 24f
+        p.textSize = 22f
         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        c.drawText(if (sub == 0) "–" else sub.toString(), 456f, y, p)
+        c.drawText(if (sub == 0) "–" else sub.toString(), 398f, y, p)
     }
 
     private fun cellColor(s: HoleScore): Int = when {

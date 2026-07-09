@@ -8,8 +8,10 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - **Offline caddie — club advice from your bag.** Enter your club carries once (More → My bag, seeded
   and editable ±5 m), and the Distance screen shows the club for the shot: it "takes enough club" to
   the **plays-like, wind-adjusted, pin-adjusted** yardage (the smallest club that carries it), e.g.
-  `→ 8-iron`, or `· layup` when it's beyond your longest. Deterministic, uses your verified course
-  distances — no AI, no key. New `Caddie` engine + `Bag` model, unit-tested.
+  `→ 8-iron`, or `· layup` when it's beyond your longest. On/near the tee of a par 4/5 it instead
+  suggests a **position club** that leaves a full scoring iron (`Tee 5-iron · leaves ~150 m`).
+  Deterministic, uses your verified course distances — no AI, no key. New `Caddie` engine + `Bag`
+  model, unit-tested.
 - **Weather-aware distances (Open-Meteo — free, no API key).** When you have signal it pulls current
   wind + rain for the course (cached, so it survives signal drops), and folds a **deterministic**
   head/tailwind + rain adjustment into the plays-like number and the club pick — with a cue like
@@ -156,6 +158,10 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed
+- **Saved scorecard clipped on the round display.** The shareable card is square but the watch shows
+  it round (and the gallery round-crops it), so the edge labels/scores fell outside the circle
+  ("OUT" → "UT", outer holes cut off). The card is now laid out **round-safe** — everything sits
+  inside the inscribed circle — and the on-screen round summary's nine-row got the same extra inset.
 - **Jumping distances on wrist-raise.** On a raise (especially Play mode + Precise) several GPS
   sources fire at once and the receiver's first fixes after refocusing are often low-accuracy, so the
   number bounced (a good reading → a wild spike → back). All fixes now pass through an accuracy-aware
