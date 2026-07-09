@@ -2,6 +2,7 @@ package com.odinsgolf.data
 
 import android.content.Context
 import com.odinsgolf.data.dto.CourseDto
+import com.odinsgolf.data.dto.LightCourseDto
 import com.odinsgolf.data.model.Course
 import kotlinx.serialization.json.Json
 
@@ -46,6 +47,15 @@ class CourseRepository(private val context: Context) {
     } catch (e: Exception) {
         LoadResult.Failure("Could not load course '$fileName': ${e.message}")
     }
+
+    /**
+     * Fast, best-effort load of just the distance essentials (tee/green/par/SI), skipping the heavy
+     * feature polygons + elevation. Null on any failure — the caller falls back to [loadCourse].
+     */
+    fun loadCourseLight(fileName: String = DEFAULT_COURSE_FILE): Course? = runCatching {
+        val text = context.assets.open("courses/$fileName").bufferedReader().use { it.readText() }
+        json.decodeFromString<LightCourseDto>(text).toDomain()
+    }.getOrNull()
 
     companion object {
         const val DEFAULT_COURSE_FILE = "setbergsvollur.json"

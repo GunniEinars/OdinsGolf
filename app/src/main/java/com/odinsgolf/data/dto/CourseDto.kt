@@ -178,3 +178,96 @@ data class HoleDto(
         const val GREEN_HALF_DEPTH_M = 11.0
     }
 }
+
+/**
+ * A **light** mirror of the course JSON that omits the heavy per-hole geometry (feature polygons,
+ * centreline path, elevation profile). Decoding this (with ignoreUnknownKeys skipping those big
+ * arrays) is much cheaper than the full [CourseDto], so distances can render almost immediately on
+ * cold start; the full course loads right after and replaces it. Front/back fall back to the
+ * centre±11 m estimate here (no green polygon), which the full parse then upgrades.
+ */
+@Serializable
+data class LightCourseDto(
+    val courseId: String,
+    val courseName: String,
+    val clubName: String = "",
+    val country: String = "",
+    val locationHint: String = "",
+    val defaultUnits: String = "meters",
+    val par: Int? = null,
+    val courseRating: Double? = null,
+    val slopeRating: Int? = null,
+    val sourceAttribution: List<String> = emptyList(),
+    val dataQuality: List<String> = emptyList(),
+    val notes: String = "",
+    val greens: List<GreenDto> = emptyList(),
+    val hazards: List<HazardDto> = emptyList(),
+    val holes: List<LightHoleDto> = emptyList(),
+) {
+    fun toDomain(): Course {
+        val greensById = greens.associateBy { it.id }
+        val hazardsById = hazards.associateBy { it.id }
+        return Course(
+            id = courseId,
+            name = courseName,
+            clubName = clubName,
+            country = country,
+            locationHint = locationHint,
+            defaultUnits = Units.parse(defaultUnits),
+            par = par,
+            courseRating = courseRating,
+            slopeRating = slopeRating,
+            attribution = sourceAttribution,
+            dataQuality = dataQuality,
+            notes = notes,
+            holes = holes.map { it.toDomain(greensById, hazardsById) },
+        )
+    }
+}
+
+@Serializable
+data class LightHoleDto(
+    val number: Int,
+    val displayNumber: String? = null,
+    val par: Int,
+    val strokeIndex: Int? = null,
+    val greenId: String? = null,
+    val tee: CoordDto? = null,
+    val greenFront: CoordDto? = null,
+    val greenBack: CoordDto? = null,
+    val hazardRefs: List<String> = emptyList(),
+    val notes: String = "",
+) {
+    fun toDomain(greensById: Map<String, GreenDto>, hazardsById: Map<String, HazardDto>): Hole {
+        val center = greenId?.let { greensById[it]?.center?.toGeoPointOrNull() }
+        val teePoint = tee?.toGeoPointOrNull()
+        var front = greenFront?.toGeoPointOrNull()
+        var back = greenBack?.toGeoPointOrNull()
+        // No green polygon in the light model — use the simple centre±11 m estimate; the full
+        // parse upgrades these to the real polygon edges moments later.
+        if (front == null && back == null && center != null && teePoint != null) {
+            val bearingToGreen = Geo.bearingDegrees(teePoint, center)
+            front = Geo.destination(center, (bearingToGreen + 180.0) % 360.0, 11.0)
+            back = Geo.destination(center, bearingToGreen, 11.0)
+        }
+        val resolvedHazards = hazardRefs.mapNotNull { ref ->
+            hazardsById[ref]?.let { h ->
+                h.point.toGeoPointOrNull()?.let { p -> Hazard(h.id, h.name, h.type, p) }
+            }
+        }
+        return Hole(
+            number = number,
+            displayNumber = displayNumber ?: number.toString(),
+            par = par,
+            strokeIndex = strokeIndex,
+            tee = teePoint,
+            green = Green(center = center, front = front, back = back),
+            hazards = resolvedHazards,
+            path = emptyList(),
+            notes = notes,
+            features = emptyList(),
+            elevationProfile = emptyList(),
+            greenId = greenId,
+        )
+    }
+}

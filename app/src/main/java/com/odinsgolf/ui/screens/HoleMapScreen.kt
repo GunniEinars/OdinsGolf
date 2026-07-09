@@ -73,7 +73,10 @@ fun HoleMapScreen(state: GolfUiState, onToggleMapStyle: () -> Unit) {
         val hole = state.hole
         if (hole == null || !hole.hasGeometry) {
             Box(Modifier.fillMaxSize(), Alignment.Center) {
-                Text("No geometry for this hole", color = MaterialTheme.colors.error)
+                Text(
+                    if (state.loading) "Loading course…" else "No geometry for this hole",
+                    color = if (state.loading) OdinOnDim else MaterialTheme.colors.error,
+                )
             }
             return@Scaffold
         }

@@ -239,6 +239,20 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     // the resulting StateFlow updates happen back on the caller's context. Doing this on
     // the main thread blocked startup for ~10 s on the watch and the OS killed the app.
     private suspend fun loadCourse(file: String) {
+        // Phase 1 (best-effort): a LIGHT course — just tee/green/par/SI, skipping the heavy feature
+        // polygons + elevation — so distances render almost immediately on cold start. This can
+        // never break loading: any failure just falls through to the authoritative full parse below.
+        val light = withContext(Dispatchers.Default) {
+            runCatching {
+                courseRepo.loadCourseLight(file)?.let { c -> surveyRepo.overlay(c, surveyRepo.load(c.id)) }
+            }.getOrNull()
+        }
+        if (light != null) {
+            courseFlow.value = light
+            loadErrorFlow.value = null
+        }
+        // Phase 2: the full course (features, elevation, everything) — authoritative; it replaces the
+        // light one and fills in the map, plays-like and real front/back edges.
         val outcome = withContext(Dispatchers.Default) {
             when (val res = courseRepo.loadCourse(file)) {
                 is CourseRepository.LoadResult.Success -> {
@@ -250,10 +264,16 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
                     CourseLoad(null, res.message, null, emptyList())
             }
         }
-        courseFlow.value = outcome.course
-        loadErrorFlow.value = outcome.error
-        outcome.round?.let { roundFlow.value = it }
-        surveyPointsFlow.value = outcome.surveyPoints
+        if (outcome.course != null) {
+            courseFlow.value = outcome.course
+            loadErrorFlow.value = null
+            outcome.round?.let { roundFlow.value = it }
+            surveyPointsFlow.value = outcome.surveyPoints
+        } else if (light == null) {
+            // Full failed and there's no light course to fall back on — surface the error.
+            loadErrorFlow.value = outcome.error
+        }
+        // else: full failed but a light course is showing — keep it (distances still work).
     }
 
     /** Result of a background course load (course + resolved round + captured survey points). */

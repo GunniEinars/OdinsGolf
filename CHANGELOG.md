@@ -117,6 +117,13 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
+- **Faster, cleaner startup.** Cold start re-parses the bundled course JSON (all the polygons +
+  elevation) into memory, which took a couple of seconds during which the Distance screen looked
+  half-drawn (bare "—" + a stray More button). Now: (1) a clean **"Loading course…"** placeholder
+  covers that window, and (2) an **essentials-first** load parses just the distance data
+  (tee/green/par/SI) first so the numbers appear almost immediately, then the heavy geometry (map,
+  elevation, real front/back) fills in behind it. The full parse stays authoritative — the fast path
+  is best-effort and can never break loading.
 - **"Next hole" on the scorecard jumps back to the Distance screen.** After entering a score, tapping
   Next hole now advances the hole *and* slides to that hole's yardage — no more scrolling up and
   swiping back. The card also resets to the top on a hole change, so returning to it lands on the

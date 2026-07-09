@@ -1,6 +1,7 @@
 package com.odinsgolf.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -22,6 +24,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
+import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.CompactChip
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
@@ -65,6 +68,12 @@ fun DistanceScreen(
     onOpenMore: () -> Unit,
 ) {
     Scaffold(timeText = { TimeText() }) {
+        // Course JSON parses off the main thread on cold start; show a clean placeholder until the
+        // (light) course is ready, instead of a bare half-drawn screen.
+        if (state.loading) {
+            LoadingCourse()
+            return@Scaffold
+        }
         val scroll = rememberScrollState()
         Column(
             modifier = Modifier
@@ -303,6 +312,17 @@ fun DistanceScreen(
 
             Spacer(Modifier.height(10.dp))
             CompactChip(label = { Text("More") }, onClick = onOpenMore)
+        }
+    }
+}
+
+@Composable
+private fun LoadingCourse() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator(modifier = Modifier.size(30.dp))
+            Spacer(Modifier.height(10.dp))
+            Text("Loading course…", color = OdinOnDim, style = MaterialTheme.typography.caption1)
         }
     }
 }
