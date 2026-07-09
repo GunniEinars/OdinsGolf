@@ -7,9 +7,13 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ### Added
 - **Offline caddie — club advice from your bag.** Enter your club carries once (More → My bag, seeded
   and editable ±5 m), and the Distance screen shows the club for the shot: it "takes enough club" to
-  the **plays-like, pin-adjusted** yardage (the smallest club that carries it), e.g. `→ 8-iron`, or
-  `· layup` when it's beyond your longest. Fully offline, deterministic, uses your verified course
-  distances — no AI, no key. (Weather adjustment next.) New `Caddie` engine + `Bag` model, unit-tested.
+  the **plays-like, wind-adjusted, pin-adjusted** yardage (the smallest club that carries it), e.g.
+  `→ 8-iron`, or `· layup` when it's beyond your longest. Deterministic, uses your verified course
+  distances — no AI, no key. New `Caddie` engine + `Bag` model, unit-tested.
+- **Weather-aware distances (Open-Meteo — free, no API key).** When you have signal it pulls current
+  wind + rain for the course (cached, so it survives signal drops), and folds a **deterministic**
+  head/tailwind + rain adjustment into the plays-like number and the club pick — with a cue like
+  `↑ headwind 6 m/s · rain`. Nothing sensitive ships in the APK. New `Wind` model, unit-tested.
 - **Play mode (warm GPS for instant distances).** Settings → Play mode (off by default). A foreground
   service keeps the GPS receiver *warm* during a round, so raising your wrist at the ball reads a live
   distance in ~1–2 s instead of the several-second cold re-acquire you get when GPS powers down on

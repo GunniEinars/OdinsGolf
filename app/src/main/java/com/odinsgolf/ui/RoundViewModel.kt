@@ -14,8 +14,11 @@ import com.odinsgolf.data.SettingsRepository
 import com.odinsgolf.data.SurveyKind
 import com.odinsgolf.data.SurveyPoint
 import com.odinsgolf.data.SurveyRepository
+import com.odinsgolf.data.WeatherRepository
 import com.odinsgolf.data.model.Bag
 import com.odinsgolf.data.model.Course
+import com.odinsgolf.data.model.GeoPoint
+import com.odinsgolf.data.model.Weather
 import com.odinsgolf.data.model.FairwayResult
 import com.odinsgolf.data.model.GpsState
 import com.odinsgolf.data.model.GpsStatus
@@ -93,11 +96,17 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     private val surveyRepo = SurveyRepository(app)
     private val historyRepo = HistoryRepository(app)
     private val bagRepo = BagRepository(app)
+    private val weatherRepo = WeatherRepository(app)
     private val location = LocationEngine(app)
 
     private val bagFlow = MutableStateFlow(Bag.DEFAULT)
     /** The player's club carries, for offline caddie advice. Editable in the My-bag screen. */
     val bag: StateFlow<Bag> = bagFlow.asStateFlow()
+
+    private val weatherFlow = MutableStateFlow<Weather?>(null)
+    /** Cached current conditions (Open-Meteo) for the wind/rain caddie adjustment; null until fetched. */
+    val weather: StateFlow<Weather?> = weatherFlow.asStateFlow()
+    private var lastWeatherAttemptMillis = 0L
 
     val gpsState: StateFlow<GpsState> get() = location.state
 
@@ -172,6 +181,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch(Dispatchers.Default) { historyFlow.value = historyRepo.load() }
         viewModelScope.launch(Dispatchers.Default) { coursesFlow.value = courseRepo.listCourses() }
         viewModelScope.launch(Dispatchers.Default) { bagFlow.value = bagRepo.load() }
+        viewModelScope.launch(Dispatchers.Default) { weatherFlow.value = weatherRepo.cached() }
         // Load (and reload) the course whenever the selected file changes. The heavy
         // parse happens inside loadCourse on a background dispatcher.
         viewModelScope.launch {
@@ -284,6 +294,7 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         tickFlow.value = SystemClock.elapsedRealtime() // refresh age/stale immediately on glance
         startTicker()
         viewModelScope.launch { location.requestBurst() }
+        refreshWeatherIfStale()
     }
 
     fun onPause() {
@@ -499,6 +510,33 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
 
     fun resetBag() {
         viewModelScope.launch(Dispatchers.Default) { bagFlow.value = bagRepo.resetToDefault() }
+    }
+
+    // ---- Weather (Open-Meteo) ------------------------------------------------
+
+    // Weather is course-wide, so a green centre is a fine location even before a GPS fix.
+    private fun weatherLocation(): GeoPoint? =
+        location.state.value.point
+            ?: courseFlow.value?.holeByNumber(uiState.value.currentHole)?.green?.center
+            ?: courseFlow.value?.holes?.firstNotNullOfOrNull { it.green.center }
+
+    /** Fetch only if there's no recent reading and we haven't just tried — so an offline watch
+     *  doesn't spin on every wrist-raise. Called on resume; cached value is used meanwhile. */
+    private fun refreshWeatherIfStale() {
+        val loc = weatherLocation() ?: return
+        val now = System.currentTimeMillis()
+        val last = weatherFlow.value
+        if (last != null && now - last.fetchedEpochMillis < 30 * 60 * 1000L) return // fresh < 30 min
+        if (now - lastWeatherAttemptMillis < 5 * 60 * 1000L) return // don't hammer when offline
+        lastWeatherAttemptMillis = now
+        viewModelScope.launch { weatherRepo.fetch(loc.lat, loc.lon)?.let { weatherFlow.value = it } }
+    }
+
+    /** Manual refresh (ignores the throttle). */
+    fun refreshWeather() {
+        val loc = weatherLocation() ?: return
+        lastWeatherAttemptMillis = System.currentTimeMillis()
+        viewModelScope.launch { weatherRepo.fetch(loc.lat, loc.lon)?.let { weatherFlow.value = it } }
     }
 
     fun clearSurvey() {

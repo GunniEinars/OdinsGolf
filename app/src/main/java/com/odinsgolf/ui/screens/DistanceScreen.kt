@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.abs
+import kotlin.math.roundToInt
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.CompactChip
@@ -29,6 +31,8 @@ import com.odinsgolf.data.model.Bag
 import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.PinDepth
 import com.odinsgolf.data.model.ScoringFormat
+import com.odinsgolf.data.model.Weather
+import com.odinsgolf.data.model.Wind
 import com.odinsgolf.geo.Caddie
 import com.odinsgolf.geo.Carry
 import com.odinsgolf.geo.Distances
@@ -53,6 +57,7 @@ import com.odinsgolf.ui.theme.OdinOnDim
 fun DistanceScreen(
     state: GolfUiState,
     bag: Bag,
+    weather: Weather?,
     onPrevHole: () -> Unit,
     onNextHole: () -> Unit,
     onSelectHole: (Int) -> Unit,
@@ -155,23 +160,42 @@ fun DistanceScreen(
                     style = MaterialTheme.typography.caption2,
                 )
 
-                // Plays-like (elevation) applied to the chosen pin target.
+                // Plays-like = elevation + wind/rain, applied to the chosen pin target.
                 val pl = PlaysLike.toCenter(hole, state.gps.point)
-                if (pl != null && pl.significant && pinMeters != null) {
-                    val arrow = if (pl.deltaMeters > 0) "↑" else "↓"
+                val elevDelta = pl?.takeIf { it.significant }?.deltaMeters ?: 0.0
+                val center = hole.green.center
+                val shotBearing = state.gps.point?.let { me -> center?.let { c -> Geo.bearingDegrees(me, c) } }
+                val windDelta = if (weather != null && shotBearing != null) Wind.playingDelta(weather, shotBearing) else 0.0
+                val totalDelta = elevDelta + windDelta
+
+                if (pinMeters != null && abs(totalDelta) >= 3.0) {
+                    val arrow = if (totalDelta > 0) "↑" else "↓"
                     Text(
-                        "plays ${formatDistance(pinMeters + pl.deltaMeters, units)} $arrow",
+                        "plays ${formatDistance(pinMeters + totalDelta, units)} $arrow",
                         color = OdinAmber,
                         style = MaterialTheme.typography.title3,
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
 
-                // Caddie: the club for the plays-like pin distance, from your bag. Live fix only —
-                // a club off a stale/absent yardage would mislead.
-                val caddieTarget = pinMeters?.let {
-                    it + (pl?.takeIf { p -> p.significant }?.deltaMeters ?: 0.0)
+                // Why it plays differently — wind direction/strength + rain.
+                if (weather != null && shotBearing != null) {
+                    val hw = Wind.headwindMps(weather, shotBearing)
+                    val windLabel = when {
+                        hw >= 1.0 -> "↑ headwind ${hw.roundToInt()} m/s"
+                        hw <= -1.0 -> "↓ tailwind ${(-hw).roundToInt()} m/s"
+                        weather.windSpeedMps >= 2.0 -> "→ cross ${weather.windSpeedMps.roundToInt()} m/s"
+                        else -> null
+                    }
+                    val parts = listOfNotNull(windLabel, if (Wind.isRaining(weather)) "rain" else null)
+                    if (parts.isNotEmpty()) {
+                        Text(parts.joinToString(" · "), color = OdinOnDim, style = MaterialTheme.typography.caption3)
+                    }
                 }
+
+                // Caddie: the club for the plays-like, wind-adjusted pin target, from your bag.
+                // Live fix only — a club off a stale/absent yardage would mislead.
+                val caddieTarget = pinMeters?.let { it + totalDelta }
                 if (hasFix && !stale && caddieTarget != null) {
                     Caddie.approach(bag.clubs, caddieTarget)?.let { pick ->
                         Text(
