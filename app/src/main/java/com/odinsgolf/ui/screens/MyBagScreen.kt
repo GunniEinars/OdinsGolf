@@ -19,7 +19,9 @@ import androidx.wear.compose.material.CompactChip
 import androidx.wear.compose.material.ListHeader
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
+import androidx.wear.compose.material.Switch
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.ToggleChip
 import com.odinsgolf.data.model.Bag
 import com.odinsgolf.data.model.Units
 import com.odinsgolf.ui.components.formatDistance
@@ -36,6 +38,7 @@ fun MyBagScreen(
     bag: Bag,
     units: Units,
     onAdjust: (String, Int) -> Unit,
+    onSetStyle: (Boolean) -> Unit,
     onReset: () -> Unit,
 ) {
     val listState = rememberScalingLazyListState()
@@ -50,17 +53,35 @@ fun MyBagScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                 )
             }
+            item {
+                ToggleChip(
+                    modifier = Modifier.fillMaxWidth(),
+                    checked = bag.fullBag,
+                    onCheckedChange = onSetStyle,
+                    label = { Text("Full bag") },
+                    secondaryLabel = {
+                        Text(if (bag.fullBag) "Driver + 3-wood in play" else "Iron play · woods out")
+                    },
+                    toggleControl = { Switch(checked = bag.fullBag) },
+                )
+            }
             items(bag.clubs) { club ->
+                val isWood = club.name == "Driver" || club.name.contains("wood", ignoreCase = true)
+                val muted = isWood && !bag.fullBag
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp, horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(club.name, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            club.name + if (muted) " · out" else "",
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (muted) OdinOnDim else MaterialTheme.colors.onSurface,
+                        )
                         Text(
                             "${formatDistance(club.carryMeters.toDouble(), units)} ${units.suffix}",
-                            color = OdinGreen,
+                            color = if (muted) OdinOnDim else OdinGreen,
                             style = MaterialTheme.typography.caption1,
                         )
                     }

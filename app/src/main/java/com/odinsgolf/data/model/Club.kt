@@ -10,10 +10,21 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ClubDistance(val name: String, val carryMeters: Int)
 
-/** The player's bag — clubs with planning carries, longest first is not assumed (engine sorts). */
+/**
+ * The player's bag. [fullBag] = Driver + 3-wood are in play; when false ("iron play") the caddie
+ * won't recommend the woods off the tee or into a green — it caps at your longest iron. Wood
+ * detection is by name so it survives an older saved bag.
+ */
 @Serializable
-data class Bag(val clubs: List<ClubDistance> = emptyList()) {
+data class Bag(val clubs: List<ClubDistance> = emptyList(), val fullBag: Boolean = false) {
     val isEmpty: Boolean get() = clubs.isEmpty()
+
+    /** Clubs the caddie may actually recommend, per the play style. */
+    val activeClubs: List<ClubDistance>
+        get() = if (fullBag) clubs else clubs.filterNot { isWood(it.name) }
+
+    private fun isWood(name: String): Boolean =
+        name == "Driver" || name.contains("wood", ignoreCase = true)
 
     companion object {
         /** Seed bag from the player's stated numbers (low end of ranges = the count-on-it carry). */

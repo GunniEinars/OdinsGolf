@@ -201,7 +201,7 @@ fun DistanceScreen(
                 val nearTee = holeLen != null && pinMeters != null && hole.par >= 4 && pinMeters > holeLen * 0.7
                 if (hasFix && !stale) {
                     if (nearTee && holeLen != null) {
-                        Caddie.tee(bag.clubs, holeLen)?.let { t ->
+                        Caddie.tee(bag.activeClubs, holeLen)?.let { t ->
                             Text(
                                 "Tee ${t.club.name}",
                                 color = OdinGreen,
@@ -215,7 +215,7 @@ fun DistanceScreen(
                             )
                         }
                     } else if (caddieTarget != null) {
-                        Caddie.approach(bag.clubs, caddieTarget)?.let { pick ->
+                        Caddie.approach(bag.activeClubs, caddieTarget)?.let { pick ->
                             Text(
                                 "→ ${pick.club.name}" + if (pick.overClub) " · layup" else "",
                                 color = OdinGreen,

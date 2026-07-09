@@ -11,7 +11,8 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   `→ 8-iron`, or `· layup` when it's beyond your longest. On/near the tee of a par 4/5 it instead
   suggests a **position club** that leaves a full scoring iron (`Tee 5-iron · leaves ~150 m`).
   Deterministic, uses your verified course distances — no AI, no key. New `Caddie` engine + `Bag`
-  model, unit-tested.
+  model, unit-tested. A **Full bag / Iron play** toggle (My bag) tells the caddie whether Driver +
+  3-wood are in play — in iron play it never recommends the woods and caps at your longest iron.
 - **Weather-aware distances (Open-Meteo — free, no API key).** When you have signal it pulls current
   wind + rain for the course (cached, so it survives signal drops), and folds a **deterministic**
   head/tailwind + rain adjustment into the plays-like number and the club pick — with a cue like

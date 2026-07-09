@@ -508,6 +508,10 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch(Dispatchers.Default) { bagFlow.value = bagRepo.adjustClub(name, deltaMeters) }
     }
 
+    fun setBagStyle(fullBag: Boolean) {
+        viewModelScope.launch(Dispatchers.Default) { bagFlow.value = bagRepo.setFullBag(fullBag) }
+    }
+
     fun resetBag() {
         viewModelScope.launch(Dispatchers.Default) { bagFlow.value = bagRepo.resetToDefault() }
     }

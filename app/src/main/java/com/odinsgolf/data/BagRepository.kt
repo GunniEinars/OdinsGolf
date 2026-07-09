@@ -37,6 +37,12 @@ class BagRepository(private val context: Context) {
         return updated
     }
 
+    fun setFullBag(on: Boolean): Bag {
+        val updated = load().copy(fullBag = on)
+        save(updated)
+        return updated
+    }
+
     fun resetToDefault(): Bag {
         save(Bag.DEFAULT)
         return Bag.DEFAULT

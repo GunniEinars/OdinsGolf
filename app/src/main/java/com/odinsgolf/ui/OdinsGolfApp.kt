@@ -129,6 +129,7 @@ fun OdinsGolfApp(vm: RoundViewModel) {
                 bag = bag,
                 units = state.settings.units,
                 onAdjust = vm::adjustClub,
+                onSetStyle = vm::setBagStyle,
                 onReset = vm::resetBag,
             )
         }
