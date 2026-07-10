@@ -16,7 +16,7 @@ MainActivity (system splash + permission gate + lifecycle)
        ├─ RoundPager (HorizontalPager)  ← the on-course core
        │    ├─ DistanceScreen  (hero centre distance, F/B, plays-like, carry, GPS)
        │    ├─ ScorecardScreen (steppers, totals, Stableford/net, pick-up)
-       │    └─ HoleMapScreen   (vector hole + satellite toggle)
+       │    └─ HoleMapScreen   (offline vector hole)
        └─ pushed: SettingsScreen ("More"), HoleSelectorScreen, HandicapScreen,
             CoursePickerScreen, HistoryScreen, RoundSummaryScreen, SurveyScreen
 
@@ -27,12 +27,10 @@ RoundViewModel  →  single GolfUiState (settings + course + gps + round + tick)
   ├─ SurveyRepository    (captured points + live overlay onto Course; a green-centre
   │                       capture applies to both holes sharing that greenId)
   ├─ HistoryRepository   (saved rounds JSON)
-  ├─ TileRepository      (satellite tiles, disk-cached)
   └─ LocationEngine      (FusedLocationProvider, lifecycle-driven)
 
 geo/   Geo (Haversine, bearing, destination), Distances, Terrain (PlaysLike + Carry),
-       HoleProjection (playing-line-up vector), SlippyMap/MapPlan (Web-Mercator tiles),
-       CanvasProjector (cos-lat, unit-tested)
+       HoleProjection (playing-line-up vector), CanvasProjector (cos-lat, unit-tested)
 scoring/ Scoring (WHS course handicap from slope/rating + allowance, handicap allocation,
        Stableford, net, to-par; scoring format = Stroke play | Stableford)
 ```
@@ -82,7 +80,7 @@ domain model (`data/model`). Pure math (`geo`, `scoring`) has no Android deps an
   system SplashScreen with the emblem.
 - **Phase 9 — Vector course map + offline data** ✅ Real OSM polygons (fairway/green/bunker/
   water/tee) + hole centrelines baked per hole (`tools/bake_geometry.mjs`); playing-line-up
-  vector hole map with 150/100/250 rings, pin flag and satellite toggle; **plays-like**
+  vector hole map with 150/100/250 rings and pin flag; **plays-like**
   (EU-DEM elevation, cross-checked vs ASTER) and **hazard carry**; **par + stroke index
   verified against the official scorecards** (Rástímar — Setberg h9 SI 10, Kiðjaberg h13 SI 4).
 - **Phase 10 — Navigation + glance polish** ✅ 3-screen swipe pager (Distance ⇄ Card ⇄ Map);

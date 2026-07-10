@@ -12,14 +12,17 @@ enum class GpsUpdateMode(
     val warnsBattery: Boolean,
 ) {
     BATTERY_SAVER("Battery saver", 25_000L, 15_000L, false),
-    NORMAL("Normal", 12_000L, 6_000L, false),
-    PRECISE("Precise", 5_000L, 3_000L, true);
+    // The foreground interval only streams while you're actually looking (a few seconds per
+    // glance), so a tight cadence costs almost nothing on battery but makes the yardage settle
+    // fast. Normal now matches the old Precise; Precise is quicker still.
+    NORMAL("Normal", 6_000L, 3_000L, false),
+    PRECISE("Precise", 3_000L, 2_000L, true);
 
     /**
      * A fix older than this counts as **stale**: the update interval plus slack. A live fix
      * arriving on schedule never false-dims (the threshold is above the interval), but a fix
      * that aged — e.g. while you walked to the ball with the wrist down — flags sooner than a
-     * flat 30 s (Normal → 20 s), so the number never masquerades as live after you've moved.
+     * flat 30 s (Normal → 14 s), so the number never masquerades as live after you've moved.
      */
     val staleAfterMillis: Long get() = intervalMillis + 8_000L
 

@@ -100,13 +100,10 @@ which would need live data and be less reliable.
 
 ## Map imagery (hole map base layer)
 
-The hole map draws a **satellite base layer** from **Esri "World Imagery"** raster tiles
-(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`),
-no API key, fine for low-volume personal use. Tiles are cached under `cacheDir/tiles` so a hole
-viewed once works offline afterward; the schematic still draws (on the dark background) when a
-tile can't be fetched. Attribution shown on the map: **Source: Esri, Maxar, Earthstar
-Geographics**. This is map *imagery*, not course data — it's drawn under our own OSM/field
-geometry, never traced into the course JSON.
+None. The hole map is a **fully offline vector schematic** drawn from our own OSM/field geometry
+(fairway/green/bunker/water polygons, centerline, tees). An earlier satellite-tile base layer
+(Esri "World Imagery") was **removed** once the vector map proved good enough on the watch — it
+means no imagery to download, no network dependency for the map, and a lighter app.
 
 ## OSM attribution (required)
 

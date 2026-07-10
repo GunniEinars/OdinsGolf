@@ -223,7 +223,8 @@ fun DistanceScreen(
                                 style = MaterialTheme.typography.caption3,
                             )
                         }
-                    } else if (caddieTarget != null) {
+                    } else if (caddieTarget != null && pinMeters != null && pinMeters >= Caddie.MIN_APPROACH_METERS) {
+                        // On/near the green it's a chip or putt — no club to name.
                         Caddie.approach(bag.activeClubs, caddieTarget)?.let { pick ->
                             Text(
                                 "→ ${pick.club.name}" + if (pick.overClub) " · layup" else "",

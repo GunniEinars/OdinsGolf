@@ -18,7 +18,7 @@ First course: **Setbergsvöllur** (Golfklúbburinn Setberg, Hafnarfjörður, Ice
 - An offline **vector hole map**: the hole oriented playing-line-up (tee bottom, green top)
   with filled fairway/green/bunkers/water/tees, a pin flag, your position, **150/100 (and 250
   on long holes) distance-to-green rings**, and the playing line following the real centerline
-  (doglegs bend). **Tap** to switch to a **satellite** layer and back.
+  (doglegs bend). Fully offline — no imagery to download.
 - GPS accuracy + status: `Live` / `Weak` / `Stale` / `Searching` / `Paused`, with fix age,
   plus an optional live **debug GPS readout** (Settings → Debug GPS info).
 - A fast **scorecard**: strokes start on par (tap to keep par; "–" past 1 = **pick up**),
@@ -33,8 +33,10 @@ First course: **Setbergsvöllur** (Golfklúbburinn Setberg, Hafnarfjörður, Ice
 - **Round history**: manually save rounds you want to keep to a scrollable list.
 - **Survey mode** to capture real green/tee/hazard coordinates by walking the course.
 - **Nearest-hole hint** + **pin position** (Front/Mid/Back drives the hero) + a **round-score glance**.
-- Battery-first GPS (spaced updates, pauses when not visible), plus an opt-in **Play mode** that keeps
-  GPS warm during a round so a wrist-raise reads live in ~1–2 s (auto-stops when idle).
+- Battery-first GPS (spaced updates that only stream while you look), plus **automatic Play mode**
+  (on by default) that keeps the receiver warm while you play so a wrist-raise reads live in ~1–2 s
+  (often instantly); it re-arms on each glance and auto-stops when idle. Turn it off for **battery
+  saver** (GPS sleeps between glances).
 - App **emblem** as launcher icon + system splash; **bezel/rotary scrolling** on all lists.
 
 ## The Setberg "9 played as 18" model
@@ -49,7 +51,7 @@ as hole 17 par 4). OdinsGolf models this correctly: 9 greens + 18 playing holes.
 
 Tees, green centers, hole centerlines, fairway/green/bunker/water shapes, par and stroke index
 are real, derived from **OpenStreetMap** (© OpenStreetMap contributors, ODbL). Elevation is
-**Copernicus EU-DEM** (via OpenTopoData); the satellite layer is **Esri World Imagery**. Green
+**Copernicus EU-DEM** (via OpenTopoData). Green
 **front/back edges aren't in OSM**, so they're **approximated** (green centre ±~11 m along the
 playing line) and clearly labelled as such — a real Survey capture overrides them. The app
 never copies data from any commercial golf-GPS database. See [DATA_SOURCES.md](DATA_SOURCES.md).

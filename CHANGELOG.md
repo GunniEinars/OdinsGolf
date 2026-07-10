@@ -17,12 +17,13 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   wind + rain for the course (cached, so it survives signal drops), and folds a **deterministic**
   head/tailwind + rain adjustment into the plays-like number and the club pick — with a cue like
   `↑ headwind 6 m/s · rain`. Nothing sensitive ships in the APK. New `Wind` model, unit-tested.
-- **Play mode (warm GPS for instant distances).** Settings → Play mode (off by default). A foreground
+- **Play mode (warm GPS for instant distances).** Settings → Play mode (**automatic, on by default** —
+  see Changed). A foreground
   service keeps the GPS receiver *warm* during a round, so raising your wrist at the ball reads a live
   distance in ~1–2 s instead of the several-second cold re-acquire you get when GPS powers down on
   every wrist-drop. The screen still sleeps between glances; only the receiver stays engaged, at a
-  **lean 20 s warm interval** to keep the draw down (~3–4× the glance-only default over a round, but a
-  full charge covers 18). **Auto-stops after 20 min idle** and offers a **Stop** action on its ongoing
+  lean warm interval to keep the draw down (final tuning under Changed). **Auto-stops after 20 min idle**
+  and offers a **Stop** action on its ongoing
   notification, so it never drains in your bag. A "▶ Play mode" tag shows on the Distance screen while
   active. Also: the resume **burst now reuses a just-produced fix** instead of always forcing a fresh
   compute, so quick glances are snappier.
@@ -117,6 +118,23 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 - Tests for playing-handicap rounding and round-mode ranges.
 
 ### Changed
+- **Play mode is now automatic and on by default (was opt-in).** Non-Play glances are *structurally*
+  cold — the OS won't let GPS stay warm in the background without a foreground service — so leaving
+  warm GPS as a toggle you had to remember meant a forgotten tap = a whole round of slow cold glances.
+  Now warm GPS **re-arms itself on every glance while you play** and still auto-stops after 20 min idle;
+  you never accidentally play cold. Turning the toggle off is now **battery saver** (GPS sleeps between
+  glances, the old behaviour). Internally split into a user *policy* (`autoWarmGps`, default on) and a
+  *runtime* flag (`playMode`); `onResume` arms the policy, the idle watchdog clears the runtime flag.
+  Trade-off: opening the app off-course now warms GPS (with its visible notification) for up to 20 min —
+  bounded, and one tap of Battery saver avoids it. Justified by the ~45 % post-round battery headroom.
+- **Snappier live distance (GPS retuned after round 2).** The number now settles noticeably
+  faster after a wrist-raise, focused on the ~180 m-and-in range you actually check. Foreground
+  cadence — which only streams during the seconds you're looking, so it barely touches battery —
+  was tightened: **Normal 12 s/6 s → 6 s/3 s** (now ≈ the old Precise) and **Precise 5 s/3 s →
+  3 s/2 s** (quicker still). In **Play mode** the warm interval dropped **20 s/10 s → 8 s/4 s** and
+  the resume burst now **reuses a warm fix up to 8 s old** (was 4 s), so a glance is usually instant
+  rather than paying a fresh compute. Honesty is unchanged — a genuinely aged fix still dims and
+  flags stale (Normal threshold 14 s). Plenty of battery headroom (45 % left after 18 in testing).
 - **Faster, cleaner startup.** Cold start re-parses the bundled course JSON (all the polygons +
   elevation) into memory, which took a couple of seconds during which the Distance screen looked
   half-drawn (bare "—" + a stray More button). Now: (1) a clean **"Loading course…"** placeholder
@@ -165,7 +183,21 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   phase is a clean blank to avoid the circular-mask clipping that affects wide logos). The
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
+### Removed
+- **Satellite hole-map layer (and its tap-to-toggle).** The offline **vector** hole map proved good
+  enough on the watch, so the Esri "World Imagery" tile layer is gone — with it `TileRepository`,
+  `SlippyMap`/`MapPlan`, the `MapStyle` model and the persisted map-style setting. The map is now
+  purely offline (no imagery to fetch or cache) and the app is lighter. `INTERNET` stays (weather
+  still uses it); the hole map no longer needs a connection at all.
+
 ### Fixed
+- **Map big number no longer shows a tee→green length as if it were live.** With no GPS fix the
+  hole-map hero used to display the static tee→green distance (e.g. "409") in bright white next to
+  "waiting for GPS". It now blanks to a dimmed **"—"** until there's a live fix — matching the
+  Distance hero's honesty.
+- **Caddie no longer names a club when you're on/next to the green.** Below **35 m** (chipping/
+  putting range) the club suggestion (`→ 56°`) is suppressed — it's meaningless when you're not
+  clubbing to a number.
 - **Saved scorecard clipped on the round display.** The shareable card is square but the watch shows
   it round (and the gallery round-crops it), so the edge labels/scores fell outside the circle
   ("OUT" → "UT", outer holes cut off). The card is now laid out **round-safe** — everything sits

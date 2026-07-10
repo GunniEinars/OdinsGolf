@@ -40,6 +40,8 @@
       offers the hole in your current nine (front vs back), never nags to swap 1↔10. Only fires on
       a **live** fix (never from a stale/frozen position).
 - [ ] **Plays-like** appears (amber, with ↑/↓) only on holes that climb/drop ≥3 m.
+- [ ] **Caddie club** (`→ 8-iron` / `Tee 5-iron`) shows on an approach with a live fix, but is
+      **suppressed on/next to the green (< 35 m)** — no club when you're chipping/putting.
 - [ ] **Carry** lines show only for hazards ahead and within reach.
 - [ ] **"+N shot here"** (amber) shows on holes where your playing handicap gives you a stroke
       (stroke index ≤ playing handicap); absent on the holes you don't get one.
@@ -50,9 +52,8 @@
 
 - [ ] Vector hole is **playing-line-up** (tee bottom, green top): filled fairway/green/bunkers/
       water, pin flag, your dot, **150/100 (+250 on long holes)** rings; par 3 has no rings.
-- [ ] Big distance top-right, hole # top-left, neither clipped by the round bezel; dims when stale.
-- [ ] **Tap** toggles satellite ⇄ vector (satellite needs a connection once to cache tiles). The
-      map **always opens on vector** — the satellite choice does not persist across app launches.
+- [ ] Big distance top-right, hole # top-left, neither clipped by the round bezel; dims (to "—")
+      when the fix is **stale or absent**, so it never shows a tee→green number as if it were live.
 - [ ] Doglegs bend (centreline); no overlapping numbers.
 
 ## Scorecard (first swipe-left)
@@ -103,17 +104,22 @@
       **settles quickly without a big spike** — a low-accuracy refocus fix no longer replaces a good
       one (`isBetterFix`). It still tracks as you walk (a clearly newer fix is always taken).
 
-## Play mode (warm GPS)
+## Play mode (automatic warm GPS)
 
-- [ ] Settings → **Play mode** toggles on; an **ongoing notification** appears ("OdinsGolf · Play
-      mode") and a **"▶ Play mode"** tag shows on the Distance screen.
-- [ ] Walk a hole with Play mode on: arriving at the ball and raising your wrist reads **live in ~1–2 s**
-      (not a multi-second cold re-acquire). Compare to Play mode off (slower after a walk).
-- [ ] The notification's **Stop** action turns it off (tag + notification clear; setting flips off).
-- [ ] Left idle (~20 min, no wrist-raise) it **auto-stops** on its own; the toggle reads off afterward.
+- [ ] **On by default:** a fresh launch (with location permission) warms GPS automatically — an
+      **ongoing notification** appears ("OdinsGolf · Play mode") and a **"▶ Play mode"** tag shows on
+      the Distance screen, without touching any toggle. Settings → **Play mode** reads **on**.
+- [ ] Walk a hole: arriving at the ball and raising your wrist reads **live in ~1–2 s** (often
+      instantly), not a multi-second cold re-acquire.
+- [ ] **Battery saver:** toggling Settings → Play mode **off** stops the service now (tag +
+      notification clear) and glances go back to cold after a walk. It **stays off** across glances
+      (does *not* silently re-arm) until you turn it back on.
+- [ ] With Play mode on, it **re-arms after an idle auto-stop**: left idle ~20 min it auto-stops, but
+      the next wrist-raise warms it again on its own (no manual toggle).
+- [ ] The notification's **Stop** action stops the current warm session (it re-arms on the next glance
+      while the policy is on — that's expected).
 - [ ] Foreground refresh with Play mode on is **no slower** than your GPS mode (it never flips to
       "Paused" on wrist-down; the number stays live).
-- [ ] Survives an app relaunch mid-round (persisted on); toggling off stops the service.
 
 ## Startup / performance (Galaxy Watch 4)
 

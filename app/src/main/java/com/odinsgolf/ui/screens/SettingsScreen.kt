@@ -25,7 +25,7 @@ fun SettingsScreen(
     state: GolfUiState,
     onSetUnits: (Units) -> Unit,
     onCycleGpsMode: () -> Unit,
-    onSetPlayMode: (Boolean) -> Unit,
+    onSetAutoWarmGps: (Boolean) -> Unit,
     onSetKeepScreenOn: (Boolean) -> Unit,
     onCycleRoundMode: () -> Unit,
     onCycleScoringFormat: () -> Unit,
@@ -96,14 +96,14 @@ fun SettingsScreen(
             item {
                 ToggleChip(
                     modifier = Modifier.fillMaxWidth(),
-                    checked = s.playMode,
-                    onCheckedChange = onSetPlayMode,
+                    checked = s.autoWarmGps,
+                    onCheckedChange = onSetAutoWarmGps,
                     label = { Text("Play mode") },
                     secondaryLabel = {
-                        Text(if (s.playMode) "GPS warm · instant glances" else "Turn on at the 1st tee")
+                        Text(if (s.autoWarmGps) "Auto · warm & ready while you play" else "GPS sleeps between glances (slower)")
                     },
                     toggleControl = {
-                        androidx.wear.compose.material.Switch(checked = s.playMode)
+                        androidx.wear.compose.material.Switch(checked = s.autoWarmGps)
                     },
                 )
             }

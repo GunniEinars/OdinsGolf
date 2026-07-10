@@ -24,7 +24,6 @@ import com.odinsgolf.data.model.GpsState
 import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.GpsUpdateMode
 import com.odinsgolf.data.model.HoleScore
-import com.odinsgolf.data.model.MapStyle
 import com.odinsgolf.data.model.PinDepth
 import com.odinsgolf.data.model.Round
 import com.odinsgolf.data.model.RoundMode
@@ -47,6 +46,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -136,18 +136,11 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     private val courseLoad: Flow<Pair<Course?, String?>> =
         combine(courseFlow, loadErrorFlow) { course, error -> course to error }
 
-    // Hole-map base layer is a per-outing choice held in memory, deliberately NOT
-    // persisted: the app always opens on the reliable, offline vector hole view, so an
-    // accidental satellite tap can never carry over to the next session or leave you on
-    // a blank satellite map with no signal. Tapping still switches it for this outing.
-    private val mapStyleFlow = MutableStateFlow(MapStyle.VECTOR)
-    // Today's pin depth is a per-outing choice held in memory (like mapStyle): it resets to
-    // MIDDLE (green centre) on relaunch, so a stray pin setting never silently carries over.
+    // Today's pin depth is a per-outing choice held in memory: it resets to MIDDLE (green
+    // centre) on relaunch, so a stray pin setting never silently carries over.
     private val pinDepthFlow = MutableStateFlow(PinDepth.MIDDLE)
     private val settingsFlow: Flow<AppSettings> =
-        combine(settingsRepo.settings, mapStyleFlow, pinDepthFlow) { s, style, pin ->
-            s.copy(mapStyle = style, pinDepth = pin)
-        }
+        combine(settingsRepo.settings, pinDepthFlow) { s, pin -> s.copy(pinDepth = pin) }
 
     val uiState: StateFlow<GolfUiState> =
         combine(
@@ -315,6 +308,14 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         startTicker()
         viewModelScope.launch { location.requestBurst() }
         refreshWeatherIfStale()
+        // Auto warm-GPS (Option A): while the policy is on, re-arm the warm-GPS service on every
+        // glance so you never play a round cold. The service's 20-min idle watchdog stops it when
+        // you stop glancing; the next glance re-arms it. Read the *persisted* policy (first()) rather
+        // than the pre-load UI default, so a battery-saver user isn't briefly warmed at launch.
+        viewModelScope.launch {
+            val s = settingsRepo.settings.first()
+            if (s.autoWarmGps && !s.playMode && location.hasPermission()) setPlayMode(true)
+        }
     }
 
     fun onPause() {
@@ -331,10 +332,19 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         location.start(uiState.value.settings.gpsMode)
     }
 
-    /** Toggle Play mode. The settings collector (in init) starts/stops the foreground service to
-     *  match; the activity's own engine keeps running for responsive foreground updates either way. */
+    /** Set the warm-GPS *runtime* flag. The settings collector (in init) starts/stops the foreground
+     *  service to match; the activity's own engine keeps running for responsive foreground updates
+     *  either way. Driven automatically (onResume auto-arm + the service's idle watchdog), not a
+     *  direct user control — see [setAutoWarmGps] for the user-facing policy. */
     fun setPlayMode(on: Boolean) {
         viewModelScope.launch { settingsRepo.setPlayMode(on) }
+    }
+
+    /** User policy: keep GPS warm automatically while playing (on) vs. battery saver (off). Persists
+     *  the choice and applies it now — on starts the warm service immediately; off stops it. */
+    fun setAutoWarmGps(on: Boolean) = viewModelScope.launch {
+        settingsRepo.setAutoWarmGps(on)
+        settingsRepo.setPlayMode(on)
     }
 
     // ---- Hole navigation ----------------------------------------------------
@@ -426,11 +436,6 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
         location.start(mode)
     }
     fun setKeepScreenOn(value: Boolean) = viewModelScope.launch { settingsRepo.setKeepScreenOn(value) }
-
-    /** Toggle the hole-map base layer for this outing (in memory; resets to vector next launch). */
-    fun toggleMapStyle() {
-        mapStyleFlow.update { if (it == MapStyle.VECTOR) MapStyle.SATELLITE else MapStyle.VECTOR }
-    }
 
     /** Set today's pin depth (in memory for the outing; resets to Middle on relaunch). */
     fun setPinDepth(depth: PinDepth) { pinDepthFlow.value = depth }

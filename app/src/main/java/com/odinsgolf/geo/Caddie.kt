@@ -9,6 +9,12 @@ import com.odinsgolf.data.model.ClubDistance
  */
 object Caddie {
 
+    /**
+     * Below this (m) you're chipping/putting, not clubbing to a number — the UI suppresses club
+     * advice so it never suggests a wedge when you're 6 m off the green.
+     */
+    const val MIN_APPROACH_METERS = 35.0
+
     /** How the pick relates to the target, so the UI can nuance it ("smooth", "stretch", "layup"). */
     data class Pick(
         val club: ClubDistance,

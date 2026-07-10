@@ -2,60 +2,45 @@ package com.odinsgolf.ui.screens
 
 import android.graphics.Paint
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
-import com.odinsgolf.data.TileRepository
 import com.odinsgolf.data.model.FeatureKind
 import com.odinsgolf.data.model.GeoPoint
 import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.Hole
-import com.odinsgolf.data.model.MapStyle
 import com.odinsgolf.geo.Carry
-import com.odinsgolf.geo.Distances
 import com.odinsgolf.geo.Geo
 import com.odinsgolf.geo.HoleProjection
-import com.odinsgolf.geo.MapPlan
 import com.odinsgolf.geo.PlaysLike
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.formatDistance
 import com.odinsgolf.ui.theme.OdinAmber
-import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
-import kotlinx.coroutines.launch
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 // Vibrant golf palette; rough is the dark background showing through.
 private val FairwayFill = Color(0xFF4C9A3F)
@@ -68,7 +53,7 @@ private val FlagRed = Color(0xFFE5484D)
 private val MapShadow = Shadow(Color(0xCC000000), Offset(0f, 1f), 5f)
 
 @Composable
-fun HoleMapScreen(state: GolfUiState, onToggleMapStyle: () -> Unit) {
+fun HoleMapScreen(state: GolfUiState) {
     Scaffold {
         val hole = state.hole
         if (hole == null || !hole.hasGeometry) {
@@ -80,9 +65,8 @@ fun HoleMapScreen(state: GolfUiState, onToggleMapStyle: () -> Unit) {
             }
             return@Scaffold
         }
-        val satellite = state.settings.mapStyle == MapStyle.SATELLITE
-        Box(Modifier.fillMaxSize().clickable(onClick = onToggleMapStyle)) {
-            if (satellite) SatelliteHoleMap(hole, state) else VectorHoleMap(hole, state)
+        Box(Modifier.fillMaxSize()) {
+            VectorHoleMap(hole, state)
             // Hole number flanks the green (top-centre) on the left, lowered out of
             // the clipped top corner of the round display.
             Text(
@@ -106,8 +90,9 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
     val back = hole.green.back
     val rawMe = state.gps.point
     val me = rawMe?.takeIf { center == null || Geo.distanceMeters(it, center) < 2000 }
-    val arcOrigin = me ?: tee
-    val toGreen = center?.let { c -> arcOrigin?.let { Geo.distanceMeters(it, c) } }
+    // Big number is the live distance from where you stand — like the Distance hero. With no live
+    // fix it blanks to "—" rather than quietly showing the tee→green length as if it were live.
+    val toGreen = center?.let { c -> me?.let { Geo.distanceMeters(it, c) } }
 
     val points = buildList {
         tee?.let { add(it) }
@@ -214,13 +199,13 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
             modifier = Modifier.align(Alignment.TopEnd).padding(top = 54.dp, end = 24.dp),
             horizontalAlignment = Alignment.End,
         ) {
-            // Dim the number when the fix is stale, so it never looks live.
+            // Dim the number when the fix is stale or absent, so it never looks live.
             val stale = state.gpsStatus == GpsStatus.STALE_FIX
             Text(
                 text = toGreen?.let { formatDistance(it, units) } ?: "—",
                 style = TextStyle(
                     fontSize = 32.sp, fontWeight = FontWeight.Bold,
-                    color = if (stale) OdinOnDim else Color.White, shadow = MapShadow,
+                    color = if (stale || me == null) OdinOnDim else Color.White, shadow = MapShadow,
                 ),
             )
             val pl = PlaysLike.toCenter(hole, me)
@@ -251,74 +236,6 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
             if (me == null) {
                 Text("waiting for GPS", color = Color.White, style = MaterialTheme.typography.caption3.copy(shadow = MapShadow))
             }
-        }
-    }
-}
-
-// ---- Satellite (toggle) ----------------------------------------------------
-
-@Composable
-private fun SatelliteHoleMap(hole: Hole, state: GolfUiState) {
-    val context = LocalContext.current
-    val tiles = remember { TileRepository(context) }
-    val center = hole.green.center
-    val tee = hole.tee
-    val rawMe = state.gps.point
-    val me = rawMe?.takeIf { center == null || Geo.distanceMeters(it, center) < 2000 }
-    val hazards = hole.hazards.map { it.point }
-    val points = buildList {
-        tee?.let { add(it) }; center?.let { add(it) }; me?.let { add(it) }
-        addAll(hazards); addAll(hole.path); hole.features.forEach { addAll(it.ring) }
-    }
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val density = LocalDensity.current
-        val wPx = with(density) { maxWidth.toPx() }
-        val hPx = with(density) { maxHeight.toPx() }
-        val padPx = with(density) { 14.dp.toPx() }
-        val plan = remember(hole.number, wPx, hPx, points.size) { MapPlan.compute(points, wPx, hPx, padPx) }
-        val bitmaps = remember(plan) { mutableStateMapOf<Long, ImageBitmap>() }
-        LaunchedEffect(plan) {
-            val pl = plan ?: return@LaunchedEffect
-            pl.tiles.forEach { t -> launch { tiles.tile(t.z, t.x, t.y)?.let { bitmaps[t.key] = it.asImageBitmap() } } }
-        }
-        Canvas(Modifier.fillMaxSize()) {
-            val p = plan ?: return@Canvas
-            fun off(pt: GeoPoint): Offset { val (x, y) = p.project(pt); return Offset(x, y) }
-            p.tiles.forEach { t ->
-                bitmaps[t.key]?.let { img ->
-                    drawImage(
-                        image = img,
-                        dstOffset = IntOffset(t.left.roundToInt(), t.top.roundToInt()),
-                        dstSize = IntSize(t.size.roundToInt(), t.size.roundToInt()),
-                    )
-                }
-            }
-            if (tee != null && center != null) drawLine(Color.White.copy(alpha = 0.85f), off(tee), off(center), strokeWidth = 3f)
-            if (me != null && center != null) {
-                drawLine(OdinGreen, off(me), off(center), strokeWidth = 3f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f)))
-            }
-            hazards.forEach { drawCircle(OdinAmber, radius = 7f, center = off(it)) }
-            center?.let { drawCircle(OdinGreen, radius = 7f, center = off(it)) }
-            tee?.let { drawCircle(OdinOnDim, radius = 6f, center = off(it)) }
-            me?.let { val o = off(it); drawCircle(Color.White.copy(alpha = 0.3f), 13f, o); drawCircle(Color.White, 6f, o) }
-        }
-        val units = state.settings.units
-        val d = Distances.toGreen(hole, me)
-        // Distance + attribution centred (the round display clips bottom corners).
-        Column(
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = if (me != null && d.centerMeters != null) "C ${formatDistance(d.centerMeters, units)} ${units.suffix}" else "waiting for GPS",
-                color = Color.White,
-                style = MaterialTheme.typography.caption2.copy(shadow = MapShadow),
-            )
-            Text(
-                "Esri, Maxar",
-                color = Color.White.copy(alpha = 0.7f),
-                style = MaterialTheme.typography.caption3.copy(shadow = MapShadow),
-            )
         }
     }
 }

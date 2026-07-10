@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Satellite map tiles for the hole map (cached to disk after first load). -->
+    <!-- Weather-aware caddie distances (Open-Meteo, no key). App is fully usable offline. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application

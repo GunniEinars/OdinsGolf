@@ -192,12 +192,22 @@ class LocationEngine(private val context: Context) {
         const val GOOD_ACCURACY_M = 10f
         const val STALE_AFTER_MILLIS = 30_000L
 
-        /** A burst may reuse a fix no older than this (ms) before forcing a fresh compute. */
-        const val FRESH_ENOUGH_MILLIS = 4_000L
+        /**
+         * A burst may reuse a fix no older than this (ms) before forcing a fresh compute. Sized to
+         * the Play-mode warm interval so a wrist-raise reuses the warm service's most recent fix
+         * *instantly* (no ~1–2 s re-compute), then the foreground stream refines it within a couple
+         * of updates. Kept at/under the mode's stale threshold (Normal 14 s) so a reused fix is
+         * always fresh enough to be honest; non-Play mode still computes fresh (receiver was off).
+         */
+        const val FRESH_ENOUGH_MILLIS = 8_000L
 
-        /** Play-mode continuous tracking: warm but lean — keeps the receiver hot at low draw. */
-        const val PLAY_INTERVAL_MILLIS = 20_000L
-        const val PLAY_MIN_UPDATE_MILLIS = 10_000L
+        /**
+         * Play-mode continuous tracking: warm and reasonably fresh. Keeping the receiver *powered*
+         * is what kills the cold start, but a fresher warm fix also lets the resume burst reuse it
+         * outright (see [FRESH_ENOUGH_MILLIS]) instead of re-computing — so glances feel instant.
+         */
+        const val PLAY_INTERVAL_MILLIS = 8_000L
+        const val PLAY_MIN_UPDATE_MILLIS = 4_000L
     }
 }
 
