@@ -158,12 +158,17 @@ private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavControlle
     val scope = rememberCoroutineScope()
     val bag by vm.bag.collectAsStateWithLifecycle()
     val weather by vm.weather.collectAsStateWithLifecycle()
+    val mark by vm.mark.collectAsStateWithLifecycle()
+    val aim by vm.aim.collectAsStateWithLifecycle()
     HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
         when (page) {
             0 -> DistanceScreen(
                 state = state,
                 bag = bag,
                 weather = weather,
+                mark = mark,
+                onMark = vm::markBall,
+                onClearMark = vm::clearMark,
                 onPrevHole = vm::prevHole,
                 onNextHole = vm::nextHole,
                 onSelectHole = vm::selectHole,
@@ -193,7 +198,13 @@ private fun RoundPager(state: GolfUiState, vm: RoundViewModel, nav: NavControlle
                     ok
                 },
             )
-            else -> HoleMapScreen(state = state)
+            else -> HoleMapScreen(
+                state = state,
+                weather = weather,
+                aim = aim,
+                onSetAim = vm::setAim,
+                onClearAim = vm::clearAim,
+            )
         }
     }
 }

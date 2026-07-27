@@ -5,6 +5,24 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
 ## [Unreleased]
 
 ### Added
+- **Shot / drive tracker.** On the Distance screen, ⚑ **Mark ball** at your position, walk to where
+  it finished, and the screen shows the live distance you hit it — matched to the nearest club in your
+  bag (`≈ 7-iron`) so you learn your real carries. In-memory per shot; clears on the next hole. Marks
+  only with a live fix (you can't mark thin air). New `Caddie.nearestClub`, unit-tested.
+- **Tap-to-measure on the hole map.** Tap any point to drop an aim marker: an amber shot line from
+  where you'd play (your position, else the tee) with **"aim 210 · leaves 130"** — the carry to reach
+  it and what it leaves to the green — plus a green line for the remainder. Long-press to clear; it
+  also clears on a hole change. Great for laying up or picking a carry on a hole you're learning. The
+  map projection is now invertible (`HoleProjection.unproject`), round-trip unit-tested to <1 m.
+- **Wind arrow on the hole map.** When there's live wind, a compact badge shows an arrow pointing
+  **downwind** (the way it pushes your ball), rotated from the real-world bearing into the play-line-up
+  map frame, with the speed in m/s. Uses the same cached Open-Meteo reading as the caddie.
+- **Green depth cue.** The Distance screen shows how deep the green plays front↔back (e.g. **"green 23 m
+  deep"**) under the Front/Back yardages, so the club-up/down call is explicit. Intrinsic to the green,
+  so it shows even before a fix.
+- **Haptic "fix is live" tick.** A single subtle buzz the moment a fresh GOOD GPS fix lands (e.g. after
+  a wrist-raise re-acquire), so you know the number is trustworthy without staring. Fires only on the
+  transition into a good fix, and only while the screen is on — never in your pocket.
 - **Offline caddie — club advice from your bag.** Enter your club carries once (More → My bag, seeded
   and editable ±5 m), and the Distance screen shows the club for the shot: it "takes enough club" to
   the **plays-like, wind-adjusted, pin-adjusted** yardage (the smallest club that carries it), e.g.

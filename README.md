@@ -18,7 +18,11 @@ First course: **Setbergsvöllur** (Golfklúbburinn Setberg, Hafnarfjörður, Ice
 - An offline **vector hole map**: the hole oriented playing-line-up (tee bottom, green top)
   with filled fairway/green/bunkers/water/tees, a pin flag, your position, **150/100 (and 250
   on long holes) distance-to-green rings**, and the playing line following the real centerline
-  (doglegs bend). Fully offline — no imagery to download.
+  (doglegs bend). Fully offline — no imagery to download. **Tap to measure** any point (aim/layup:
+  "aim 210 · leaves 130"); a **wind arrow** shows live wind relative to the hole.
+- **Shot / drive tracker**: mark the ball, walk to it, read how far you hit it (matched to the
+  nearest club in your bag) — learn your real carries. Plus a **green depth** cue and a subtle
+  **haptic tick** when a fresh GPS fix goes live.
 - GPS accuracy + status: `Live` / `Weak` / `Stale` / `Searching` / `Paused`, with fix age,
   plus an optional live **debug GPS readout** (Settings → Debug GPS info).
 - A fast **scorecard**: strokes start on par (tap to keep par; "–" past 1 = **pick up**),

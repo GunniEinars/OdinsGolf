@@ -42,6 +42,11 @@
 - [ ] **Plays-like** appears (amber, with ↑/↓) only on holes that climb/drop ≥3 m.
 - [ ] **Caddie club** (`→ 8-iron` / `Tee 5-iron`) shows on an approach with a live fix, but is
       **suppressed on/next to the green (< 35 m)** — no club when you're chipping/putting.
+- [ ] **Green depth** ("green 23 m deep") shows under Front/Back (intrinsic — visible without a fix).
+- [ ] **Shot tracker:** with a live fix, ⚑ **Mark ball** appears; tap it, walk, and the "shot from
+      mark" distance grows and shows `≈ <club>`; **Clear mark** removes it; it also clears on hole change.
+- [ ] **Haptic tick** — a single subtle buzz when a fresh **Live** fix lands after searching; it does
+      **not** buzz on every update or while the screen is off.
 - [ ] **Carry** lines show only for hazards ahead and within reach.
 - [ ] **"+N shot here"** (amber) shows on holes where your playing handicap gives you a stroke
       (stroke index ≤ playing handicap); absent on the holes you don't get one.
@@ -55,6 +60,11 @@
 - [ ] Big distance top-right, hole # top-left, neither clipped by the round bezel; dims (to "—")
       when the fix is **stale or absent**, so it never shows a tee→green number as if it were live.
 - [ ] Doglegs bend (centreline); no overlapping numbers.
+- [ ] **Tap-to-measure:** tapping the map drops an amber crosshair + shot line from your position
+      (or the tee with no fix) and shows **"aim N · leaves M"**; a green line marks the remainder to
+      the pin. **Long-press** clears it; changing hole clears it.
+- [ ] **Wind arrow** (left, with "N m/s") appears when there's live wind, pointing **downwind**;
+      absent when there's no weather/calm.
 
 ## Scorecard (first swipe-left)
 

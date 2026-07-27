@@ -37,6 +37,20 @@ class HoleProjection private constructor(
         return x.toFloat() to y.toFloat()
     }
 
+    /** Inverse of [project]: a canvas pixel back to a geographic point (for tap-to-measure). */
+    fun unproject(x: Float, y: Float): GeoPoint {
+        val perp = (x - offsetX) / scale
+        val along = (canvasH - y - offsetY) / scale
+        // Rotate the along/perp frame back to east/north (the 2x2 is its own inverse up to sign).
+        val mE = along * dAlongE + perp * dAlongN
+        val mN = along * dAlongN - perp * dAlongE
+        return GeoPoint(originLat + mN / mPerLat, originLon + mE / mPerLon)
+    }
+
+    /** Geographic bearing (deg, 0 = N) of the map's "up" direction (tee→green), so overlays like the
+     *  wind arrow can be rotated from a real-world bearing into this rotated, play-line-up frame. */
+    fun upBearingDegrees(): Double = (Math.toDegrees(kotlin.math.atan2(dAlongE, dAlongN)) + 360.0) % 360.0
+
     companion object {
         fun build(hole: Hole, points: List<GeoPoint>, w: Float, h: Float, pad: Float): HoleProjection? {
             val tee = hole.tee

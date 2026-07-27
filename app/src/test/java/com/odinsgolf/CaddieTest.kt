@@ -49,4 +49,14 @@ class CaddieTest {
     @Test fun tee_is_null_when_the_hole_is_already_short() {
         assertNull(Caddie.tee(bag, 130.0, leaveMeters = 150.0))
     }
+
+    @Test fun nearest_club_matches_a_measured_shot() {
+        // A 158 m shot is closest to the 8-iron (160). Within tolerance.
+        assertEquals("8-iron", Caddie.nearestClub(bag, 158.0)!!.name)
+    }
+
+    @Test fun nearest_club_is_null_for_a_chip_far_from_any_club() {
+        // A 20 m chip is nowhere near the shortest club, so no club is claimed.
+        assertNull(Caddie.nearestClub(bag, 20.0))
+    }
 }

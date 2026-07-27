@@ -110,6 +110,15 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
 
     val gpsState: StateFlow<GpsState> get() = location.state
 
+    // Shot tracker: where you marked the ball (in-memory, per shot). Live distance from here is
+    // "how far you've hit it" — the number that teaches your real club carries.
+    private val markFlow = MutableStateFlow<GeoPoint?>(null)
+    val mark: StateFlow<GeoPoint?> = markFlow.asStateFlow()
+
+    // Map aim point: a spot you tapped on the hole map to measure a carry / layup (in-memory).
+    private val aimFlow = MutableStateFlow<GeoPoint?>(null)
+    val aim: StateFlow<GeoPoint?> = aimFlow.asStateFlow()
+
     // Loaded off the main thread in init (parsing history JSON at construction would
     // block startup on the watch).
     private val historyFlow = MutableStateFlow<List<Round>>(emptyList())
@@ -356,8 +365,22 @@ class RoundViewModel(app: Application) : AndroidViewModel(app) {
     private fun changeHole(n: Int) {
         val range = activeRange()
         val clamped = n.coerceIn(range.first, range.last)
+        // A new hole means a new shot and a new map — drop any mark / aim so stale measurements
+        // from the previous hole never linger.
+        markFlow.value = null
+        aimFlow.value = null
         viewModelScope.launch { settingsRepo.setCurrentHole(clamped) }
     }
+
+    // ---- Shot tracker & map aim ---------------------------------------------
+
+    /** Mark the ball at the current fix (start of a shot). No-op without a live position. */
+    fun markBall() { location.state.value.point?.let { markFlow.value = it } }
+    fun clearMark() { markFlow.value = null }
+
+    /** Set / move the map aim point (a tapped layup or carry target). */
+    fun setAim(point: GeoPoint) { aimFlow.value = point }
+    fun clearAim() { aimFlow.value = null }
 
     // ---- Scoring ------------------------------------------------------------
 

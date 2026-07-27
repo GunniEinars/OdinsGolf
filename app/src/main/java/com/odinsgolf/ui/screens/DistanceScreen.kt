@@ -14,8 +14,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,6 +30,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
+import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.CompactChip
 import androidx.wear.compose.material.MaterialTheme
@@ -31,6 +38,7 @@ import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
 import com.odinsgolf.data.model.Bag
+import com.odinsgolf.data.model.GeoPoint
 import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.PinDepth
 import com.odinsgolf.data.model.ScoringFormat
@@ -61,6 +69,9 @@ fun DistanceScreen(
     state: GolfUiState,
     bag: Bag,
     weather: Weather?,
+    mark: com.odinsgolf.data.model.GeoPoint?,
+    onMark: () -> Unit,
+    onClearMark: () -> Unit,
     onPrevHole: () -> Unit,
     onNextHole: () -> Unit,
     onSelectHole: (Int) -> Unit,
@@ -68,6 +79,18 @@ fun DistanceScreen(
     onOpenMore: () -> Unit,
 ) {
     Scaffold(timeText = { TimeText() }) {
+        // Fix-live haptic: a single subtle tick the moment a fresh GOOD fix lands (e.g. after a
+        // wrist-raise re-acquire), so you know the number is trustworthy without staring at it.
+        // Fires only on the transition into a good fix — never on every update — and only while this
+        // screen is composed (foreground, screen on), so it can't buzz in your pocket.
+        val hapticCtx = LocalContext.current
+        val liveNow = state.gpsStatus == GpsStatus.GOOD_FIX
+        var wasLive by remember { mutableStateOf(false) }
+        LaunchedEffect(liveNow) {
+            if (liveNow && !wasLive) fixLiveTick(hapticCtx)
+            wasLive = liveNow
+        }
+
         // Course JSON parses off the main thread on cold start; show a clean placeholder until the
         // (light) course is ready, instead of a bare half-drawn screen.
         if (state.loading) {
@@ -270,6 +293,19 @@ fun DistanceScreen(
                     LabeledValue("Front", formatDistance(d.frontMeters, units))
                     LabeledValue("Back", formatDistance(d.backMeters, units))
                 }
+                // Green depth cue: how deep the green plays front↔back, so the club choice is
+                // explicit. Intrinsic to the green (distance between its edges), so it shows even
+                // before a fix — not derived from your position.
+                val greenDepth = hole.green.front?.let { f ->
+                    hole.green.back?.let { b -> Geo.distanceMeters(f, b) }
+                }
+                greenDepth?.takeIf { it >= 3.0 }?.let { depth ->
+                    Text(
+                        "green ${formatDistance(depth, units)} ${units.suffix} deep",
+                        color = OdinOnDim,
+                        style = MaterialTheme.typography.caption3,
+                    )
+                }
 
                 // Where you stand in the round — so you never have to swipe to the card to
                 // check. Stableford shows points; stroke play shows to-par. Hidden until you
@@ -299,6 +335,9 @@ fun DistanceScreen(
                         )
                     }
                 }
+
+                // Shot tracker: mark the ball, walk to it, read how far you hit it.
+                ShotTracker(mark, state.gps.point, hasFix, units, bag, onMark, onClearMark)
             }
 
             Spacer(Modifier.height(8.dp))
@@ -357,5 +396,70 @@ private fun LabeledValue(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(value, style = MaterialTheme.typography.title2, fontWeight = FontWeight.SemiBold)
         Text(label, color = OdinOnDim, style = MaterialTheme.typography.caption3)
+    }
+}
+
+/**
+ * Shot/drive tracker. Mark the ball, walk to where it finished, and read the live distance —
+ * that's how far you actually hit it. Matches it to the nearest club in your bag so you learn
+ * your real carries. Needs a live fix to mark; the number then tracks as you walk.
+ */
+@Composable
+private fun ShotTracker(
+    mark: GeoPoint?,
+    me: GeoPoint?,
+    hasFix: Boolean,
+    units: com.odinsgolf.data.model.Units,
+    bag: Bag,
+    onMark: () -> Unit,
+    onClear: () -> Unit,
+) {
+    Spacer(Modifier.height(10.dp))
+    if (mark == null) {
+        // Can only mark where you stand — hide the action until there's a position to mark.
+        if (hasFix) {
+            CompactChip(
+                onClick = onMark,
+                colors = ChipDefaults.secondaryChipColors(),
+                label = { Text("⚑ Mark ball") },
+            )
+        }
+    } else {
+        val shot = if (me != null) Geo.distanceMeters(mark, me) else null
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("shot from mark", color = OdinOnDim, style = MaterialTheme.typography.caption3)
+            Text(
+                text = shot?.let { "${formatDistance(it, units)} ${units.suffix}" } ?: "—",
+                color = OdinGreen,
+                fontSize = 34.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            shot?.let { s ->
+                Caddie.nearestClub(bag.activeClubs, s)?.let { c ->
+                    Text("≈ ${c.name}", color = OdinOnDim, style = MaterialTheme.typography.caption2)
+                }
+            }
+            Spacer(Modifier.height(2.dp))
+            CompactChip(
+                onClick = onClear,
+                colors = ChipDefaults.secondaryChipColors(),
+                label = { Text("Clear mark") },
+            )
+        }
+    }
+}
+
+/** A single soft haptic tick — the subtle "GPS is live now" confirmation. Best-effort: silently
+ *  does nothing on devices without a vibrator. */
+private fun fixLiveTick(context: android.content.Context) {
+    val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        (context.getSystemService(android.os.VibratorManager::class.java))?.defaultVibrator
+    } else {
+        @Suppress("DEPRECATION")
+        context.getSystemService(android.os.Vibrator::class.java)
+    } ?: return
+    if (!vibrator.hasVibrator()) return
+    runCatching {
+        vibrator.vibrate(android.os.VibrationEffect.createPredefined(android.os.VibrationEffect.EFFECT_TICK))
     }
 }

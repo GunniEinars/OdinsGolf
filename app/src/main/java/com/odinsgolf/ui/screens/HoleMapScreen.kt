@@ -2,11 +2,13 @@ package com.odinsgolf.ui.screens
 
 import android.graphics.Paint
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -17,9 +19,11 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +36,7 @@ import com.odinsgolf.data.model.FeatureKind
 import com.odinsgolf.data.model.GeoPoint
 import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.Hole
+import com.odinsgolf.data.model.Weather
 import com.odinsgolf.geo.Carry
 import com.odinsgolf.geo.Geo
 import com.odinsgolf.geo.HoleProjection
@@ -39,8 +44,10 @@ import com.odinsgolf.geo.PlaysLike
 import com.odinsgolf.ui.GolfUiState
 import com.odinsgolf.ui.components.formatDistance
 import com.odinsgolf.ui.theme.OdinAmber
+import com.odinsgolf.ui.theme.OdinGreen
 import com.odinsgolf.ui.theme.OdinOnDim
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 // Vibrant golf palette; rough is the dark background showing through.
 private val FairwayFill = Color(0xFF4C9A3F)
@@ -53,7 +60,13 @@ private val FlagRed = Color(0xFFE5484D)
 private val MapShadow = Shadow(Color(0xCC000000), Offset(0f, 1f), 5f)
 
 @Composable
-fun HoleMapScreen(state: GolfUiState) {
+fun HoleMapScreen(
+    state: GolfUiState,
+    weather: Weather?,
+    aim: GeoPoint?,
+    onSetAim: (GeoPoint) -> Unit,
+    onClearAim: () -> Unit,
+) {
     Scaffold {
         val hole = state.hole
         if (hole == null || !hole.hasGeometry) {
@@ -66,7 +79,7 @@ fun HoleMapScreen(state: GolfUiState) {
             return@Scaffold
         }
         Box(Modifier.fillMaxSize()) {
-            VectorHoleMap(hole, state)
+            VectorHoleMap(hole, state, weather, aim, onSetAim, onClearAim)
             // Hole number flanks the green (top-centre) on the left, lowered out of
             // the clipped top corner of the round display.
             Text(
@@ -82,7 +95,14 @@ fun HoleMapScreen(state: GolfUiState) {
 // ---- Vector (default) ------------------------------------------------------
 
 @Composable
-private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
+private fun VectorHoleMap(
+    hole: Hole,
+    state: GolfUiState,
+    weather: Weather?,
+    aim: GeoPoint?,
+    onSetAim: (GeoPoint) -> Unit,
+    onClearAim: () -> Unit,
+) {
     val units = state.settings.units
     val center = hole.green.center
     val tee = hole.tee
@@ -93,6 +113,12 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
     // Big number is the live distance from where you stand — like the Distance hero. With no live
     // fix it blanks to "—" rather than quietly showing the tee→green length as if it were live.
     val toGreen = center?.let { c -> me?.let { Geo.distanceMeters(it, c) } }
+
+    // Tap-to-measure: distance from where you'd play the shot (live position, else the tee) to the
+    // tapped aim point, and what that leaves to the green.
+    val aimOrigin = me ?: tee
+    val aimFromOrigin = aim?.let { a -> aimOrigin?.let { Geo.distanceMeters(it, a) } }
+    val aimToGreen = aim?.let { a -> center?.let { Geo.distanceMeters(a, it) } }
 
     val points = buildList {
         tee?.let { add(it) }
@@ -113,7 +139,17 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
         }
         val cornerIdx = remember(hole.number) { doglegCorner(hole.path) }
 
-        Canvas(Modifier.fillMaxSize()) {
+        Canvas(
+            Modifier
+                .fillMaxSize()
+                .pointerInput(proj) {
+                    // Tap = drop/move the aim point at that spot; long-press = clear it.
+                    detectTapGestures(
+                        onTap = { off -> proj?.let { onSetAim(it.unproject(off.x, off.y)) } },
+                        onLongPress = { onClearAim() },
+                    )
+                },
+        ) {
             val p = proj ?: return@Canvas
             fun off(pt: GeoPoint): Offset { val (x, y) = p.project(pt); return Offset(x, y) }
 
@@ -191,6 +227,19 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
                 drawCircle(Color(0xFF2E78D2), radius = 6f, center = o)
                 drawCircle(Color.White, radius = 6f, center = o, style = Stroke(width = 2f))
             }
+
+            // Aim point (tap-to-measure): amber shot line from where you play to the target, a green
+            // remainder line target→green, and a crosshair marker. Drawn last so it sits on top.
+            if (aim != null) {
+                val ao = off(aim)
+                val dash = PathEffect.dashPathEffect(floatArrayOf(8f, 6f))
+                aimOrigin?.let { drawLine(OdinAmber, off(it), ao, strokeWidth = 3f, pathEffect = dash) }
+                center?.let { drawLine(OdinGreen.copy(alpha = 0.85f), ao, off(it), strokeWidth = 2f, pathEffect = dash) }
+                drawCircle(OdinAmber.copy(alpha = 0.22f), radius = 13f, center = ao)
+                drawLine(OdinAmber, Offset(ao.x - 10f, ao.y), Offset(ao.x + 10f, ao.y), strokeWidth = 2.5f)
+                drawLine(OdinAmber, Offset(ao.x, ao.y - 10f), Offset(ao.x, ao.y + 10f), strokeWidth = 2.5f)
+                drawCircle(OdinAmber, radius = 3.5f, center = ao)
+            }
         }
 
         // Big distance to the green — kept out of the round display's clipped
@@ -221,22 +270,75 @@ private fun VectorHoleMap(hole: Hole, state: GolfUiState) {
             }
         }
 
-        // Carries over hazards ahead, and a GPS hint when unfixed.
+        // Aim readout (tap-to-measure), carries over hazards ahead, and a GPS hint when unfixed.
         val carries = Carry.ahead(hole, me)
         Column(
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            if (aimFromOrigin != null) {
+                Text(
+                    buildString {
+                        append("aim ${formatDistance(aimFromOrigin, units)}")
+                        aimToGreen?.let { append(" · leaves ${formatDistance(it, units)}") }
+                    },
+                    color = OdinAmber,
+                    style = MaterialTheme.typography.caption1.copy(shadow = MapShadow, fontWeight = FontWeight.SemiBold),
+                )
+                Text(
+                    "long-press to clear",
+                    color = Color.White.copy(alpha = 0.65f),
+                    style = MaterialTheme.typography.caption3.copy(shadow = MapShadow),
+                )
+            }
             carries.forEach { c ->
                 Text(
                     "carry ${c.label} ${formatDistance(c.carryMeters, units)}",
                     color = OdinAmber, style = MaterialTheme.typography.caption2.copy(shadow = MapShadow),
                 )
             }
-            if (me == null) {
-                Text("waiting for GPS", color = Color.White, style = MaterialTheme.typography.caption3.copy(shadow = MapShadow))
+            if (me == null && aim == null) {
+                Text("tap map to measure · waiting for GPS", color = Color.White, style = MaterialTheme.typography.caption3.copy(shadow = MapShadow))
             }
         }
+
+        // Wind arrow: shown when there's live wind, pointing downwind (the way it pushes the ball),
+        // rotated from a real-world bearing into this play-line-up map frame.
+        val windMps = weather?.windSpeedMps ?: 0.0
+        if (proj != null && weather != null && windMps >= 1.0) {
+            val downwindBearing = weather.windFromDeg + 180.0
+            val screenAngle = (downwindBearing - proj.upBearingDegrees()).toFloat()
+            WindArrow(
+                screenAngle = screenAngle,
+                mps = windMps,
+                modifier = Modifier.align(Alignment.CenterStart).padding(start = 8.dp),
+            )
+        }
+    }
+}
+
+/** Compact wind badge: a dark disc, an arrow pointing downwind (rotated into the map frame), and
+ *  the speed in m/s. */
+@Composable
+private fun WindArrow(screenAngle: Float, mps: Double, modifier: Modifier) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Canvas(Modifier.size(30.dp)) {
+            val cx = size.width / 2f
+            val cy = size.height / 2f
+            drawCircle(Color(0x66000000), radius = size.minDimension / 2f, center = Offset(cx, cy))
+            rotate(screenAngle, pivot = Offset(cx, cy)) {
+                val top = Offset(cx, size.height * 0.16f)
+                val bottom = Offset(cx, size.height * 0.84f)
+                drawLine(Color.White, bottom, top, strokeWidth = 3f)
+                drawLine(Color.White, top, Offset(cx - size.width * 0.17f, size.height * 0.38f), strokeWidth = 3f)
+                drawLine(Color.White, top, Offset(cx + size.width * 0.17f, size.height * 0.38f), strokeWidth = 3f)
+            }
+        }
+        Text(
+            "${mps.roundToInt()} m/s",
+            color = Color.White,
+            style = MaterialTheme.typography.caption3.copy(shadow = MapShadow),
+        )
     }
 }
 

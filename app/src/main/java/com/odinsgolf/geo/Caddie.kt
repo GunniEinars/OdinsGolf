@@ -59,4 +59,16 @@ object Caddie {
     }
 
     data class TeePlan(val club: ClubDistance, val leavesMeters: Int)
+
+    /**
+     * The club whose carry is closest to [meters] — for the shot tracker's "you hit that ≈ 7-iron".
+     * Null on an empty bag or a non-positive distance. Only matches within [tolMeters] so a chip or a
+     * monster drive past the bag doesn't get labelled with the nearest club.
+     */
+    fun nearestClub(bag: List<ClubDistance>, meters: Double, tolMeters: Int = 12): ClubDistance? {
+        if (bag.isEmpty() || meters <= 0.0) return null
+        val target = Math.round(meters).toInt()
+        return bag.minByOrNull { kotlin.math.abs(it.carryMeters - target) }
+            ?.takeIf { kotlin.math.abs(it.carryMeters - target) <= tolMeters }
+    }
 }
