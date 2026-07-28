@@ -105,6 +105,16 @@ None. The hole map is a **fully offline vector schematic** drawn from our own OS
 (Esri "World Imagery") was **removed** once the vector map proved good enough on the watch — it
 means no imagery to download, no network dependency for the map, and a lighter app.
 
+### Shared-hole hazards (9 greens played as 18)
+
+Setberg's holes come in pairs that play the **same physical fairway and green** from different tees
+(1/10, 2/11, … 9/18 — see [COURSE_SCHEMA.md]). The geometry bake assigns each OSM bunker to the
+nearest hole, which split some shared fairway bunkers onto only one hole of a pair (e.g. hole 1's
+mid-fairway bunker at OSM way 790838114 landed on hole 10, so hole 1's map was missing it). Fixed by
+**sharing every bunker across each paired hole** (deduped by centroid) — the same real OSM polygons,
+now shown on both holes, since they're in play from either tee. Tees stay per-hole. No coordinates
+were invented; all hazards are the OSM geometry the course already shipped.
+
 ## OSM attribution (required)
 
 This project uses data from **OpenStreetMap**, © OpenStreetMap contributors, licensed under the

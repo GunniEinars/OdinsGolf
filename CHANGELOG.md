@@ -201,6 +201,13 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   phase is a clean blank to avoid the circular-mask clipping that affects wide logos). The
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
+### Fixed (course data)
+- **Missing fairway bunkers on shared holes.** Setberg plays 9 fairways twice (1/10, 2/11, … 9/18),
+  but the geometry bake had filed each shared bunker under only one hole of the pair — so e.g. hole 1's
+  map was missing the mid-fairway bunker (OSM way 790838114) that plays from both tees. Every bunker is
+  now **shared across each paired hole** (deduped; real OSM polygons, tees untouched): 8 bunkers added
+  across 8 holes, leaving each pair symmetric. See DATA_SOURCES.md.
+
 ### Removed
 - **Satellite hole-map layer (and its tap-to-toggle).** The offline **vector** hole map proved good
   enough on the watch, so the Esri "World Imagery" tile layer is gone — with it `TileRepository`,
