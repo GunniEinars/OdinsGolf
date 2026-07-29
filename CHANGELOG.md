@@ -202,9 +202,18 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
 ### Fixed (round 3 regression — unusable distances/map)
-- **Wrong yardages and a hole squished into the corner.** After a round where every hole read
-  hundreds of metres off and the map wasn't centred, root-caused to a bad GPS position feeding both
-  the number *and* the map framing at once. Three fixes:
+- **Frozen GPS position (root cause).** Every hole read hundreds of metres off, with the map
+  uncentred, even though GPS was on, warmed up and accurate. The fix filter (`isBetterFix`) rejects a
+  new fix that's >10 m worse in *reported* accuracy than the current one, unless the current one has
+  aged past 8 s on **its own GPS clock**. With auto-warm Play mode now running continuously (new in
+  this release), a stuck, very-accurate warm-up fix could keep getting re-published with a refreshed
+  clock — so it never aged out, every slightly-worse fix as you walked was rejected, and the position
+  **froze at the warm-up spot for the whole round**. Fixed with an anti-freeze guard (`shouldAccept`):
+  if nothing has been accepted for a few seconds of **real** time, the newest fix is force-taken, so
+  movement always wins and the position can never stick. Unit-tested. The extra safeguards below make
+  the failure impossible to show as a confident wrong number even if a bad fix slips through.
+- **Wrong yardages and a hole squished into the corner** were the visible symptoms; the same bad
+  position fed both the number *and* the map framing at once. Three further fixes:
   - **The map now frames on the hole only** (tee/green/features/centerline), never on your position,
     so a wrong fix can't drag the hole into a corner — it stays centred and tap-to-measure keeps working.
   - **Glances fetch a fresh fix instead of a stale cached one.** The earlier warm-GPS retune let a

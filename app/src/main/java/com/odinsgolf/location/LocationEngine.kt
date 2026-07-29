@@ -31,18 +31,40 @@ import kotlinx.coroutines.tasks.await
 object LocationBus {
     val state = MutableStateFlow(GpsState(status = GpsStatus.SEARCHING))
 
+    /** Receipt time (real elapsed clock) of the last fix we accepted — the anti-freeze anchor. */
+    @Volatile private var lastAcceptedElapsed = 0L
+
     /**
-     * Publish a new *fix* through the [isBetterFix] filter. On a wrist-raise several sources
+     * Publish a new *fix* through the [shouldAccept] filter. On a wrist-raise several sources
      * (warm service, resume burst, restarted engine) fire almost at once and the receiver's
      * first fixes after refocusing are often low-accuracy — showing every one made the number
-     * jump. This keeps a good recent fix instead of hopping onto a much-worse one, so the yardage
-     * settles quickly. Synchronised because the burst can resolve off the main thread.
+     * jump. [isBetterFix] keeps a good recent fix instead of hopping onto a much-worse one, so the
+     * yardage settles quickly. But it must never *freeze*: a stuck warm fix that keeps its own clock
+     * fresh could get its worse-accuracy successors rejected forever, pinning you at the wrong spot
+     * for a whole round. [shouldAccept] therefore force-takes the newest fix after a short real-time
+     * gap. Synchronised because the burst can resolve off the main thread.
      */
     @Synchronized
     fun publishFix(candidate: GpsState) {
-        if (isBetterFix(candidate, state.value)) state.value = candidate
+        val now = SystemClock.elapsedRealtime()
+        if (shouldAccept(candidate, state.value, now - lastAcceptedElapsed)) {
+            state.value = candidate
+            lastAcceptedElapsed = now
+        }
     }
 }
+
+/** How long a reject-streak may hold the position before we force-take the newest fix (ms). Bounds
+ *  any freeze to a few seconds of real time, whatever a stuck provider claims on the fix's own clock. */
+private const val FORCE_ACCEPT_AFTER_MS = 5_000L
+
+/**
+ * Accept a candidate fix if it's genuinely better ([isBetterFix]) **or** if it's been longer than
+ * [FORCE_ACCEPT_AFTER_MS] of real time since we last accepted anything — so movement always wins
+ * within a few seconds and the position can never freeze at a stale spot. Pure, so it is unit-tested.
+ */
+fun shouldAccept(new: GpsState, cur: GpsState, msSinceLastAccept: Long): Boolean =
+    msSinceLastAccept > FORCE_ACCEPT_AFTER_MS || isBetterFix(new, cur)
 
 /** A fix no older than this (ms) than the current one is treated as "current enough" to replace it
  *  even if less accurate — so we never get stuck on a stale-but-accurate fix while you move. */

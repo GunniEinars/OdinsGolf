@@ -4,6 +4,7 @@ import com.odinsgolf.data.model.GeoPoint
 import com.odinsgolf.data.model.GpsState
 import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.location.isBetterFix
+import com.odinsgolf.location.shouldAccept
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -48,5 +49,19 @@ class LocationFilterTest {
 
     @Test fun older_and_worse_fix_is_rejected() {
         assertFalse(isBetterFix(fix(900, 20f), fix(1_000, 6f)))
+    }
+
+    // ---- Anti-freeze (shouldAccept) -----------------------------------------
+    // The round-3 failure: a stuck warm fix keeps its own clock fresh, so worse-accuracy successors
+    // are rejected forever and the position freezes hundreds of metres from where you stand.
+
+    @Test fun within_the_window_shouldAccept_defers_to_isBetterFix() {
+        // A worse spike, only 1 s since the last accept → still rejected (no jumping).
+        assertFalse(shouldAccept(fix(6_000, 30f), fix(1_000, 5f), msSinceLastAccept = 1_000))
+    }
+
+    @Test fun after_a_real_time_gap_the_newest_fix_is_force_taken() {
+        // Same worse fix, but 6 s of real time with nothing accepted → take it, so it can't freeze.
+        assertTrue(shouldAccept(fix(6_000, 30f), fix(1_000, 5f), msSinceLastAccept = 6_000))
     }
 }
