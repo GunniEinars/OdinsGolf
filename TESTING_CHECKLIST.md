@@ -51,6 +51,9 @@
 - [ ] **"+N shot here"** (amber) shows on holes where your playing handicap gives you a stroke
       (stroke index ≤ playing handicap); absent on the holes you don't get one.
 - [ ] **Stale honesty:** standing still >30 s dims the hero to grey and shows "stale fix".
+- [ ] **Bad-fix honesty:** if the fix is wildly off (farther from the green than the tee is), the hero
+      blanks to "—" with **"weak GPS · move & wait"** — never a confident wrong yardage. Normal play
+      (you're always ≤ tee→green from the green) never trips it.
 - [ ] Missing geometry shows "Course geometry missing", **never a fake number**.
 
 ## Hole map (swipe to it)
@@ -60,6 +63,9 @@
 - [ ] Big distance top-right, hole # top-left, neither clipped by the round bezel; dims (to "—")
       when the fix is **stale or absent**, so it never shows a tee→green number as if it were live.
 - [ ] Doglegs bend (centreline); no overlapping numbers.
+- [ ] **Always centred:** the hole fills and centres the screen; a wrong/off GPS fix never squishes it
+      into a corner (the map frames on the hole, not on your position). Your dot is hidden if the fix
+      is off-hole.
 - [ ] **Tap-to-measure:** tapping the map drops an amber crosshair + shot line from your position
       (or the tee with no fix) and shows **"aim N · leaves M"**; a green line marks the remainder to
       the pin. **Long-press** clears it; changing hole clears it.

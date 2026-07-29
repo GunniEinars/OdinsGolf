@@ -193,13 +193,14 @@ class LocationEngine(private val context: Context) {
         const val STALE_AFTER_MILLIS = 30_000L
 
         /**
-         * A burst may reuse a fix no older than this (ms) before forcing a fresh compute. Sized to
-         * the Play-mode warm interval so a wrist-raise reuses the warm service's most recent fix
-         * *instantly* (no ~1–2 s re-compute), then the foreground stream refines it within a couple
-         * of updates. Kept at/under the mode's stale threshold (Normal 14 s) so a reused fix is
-         * always fresh enough to be honest; non-Play mode still computes fresh (receiver was off).
+         * A burst may reuse a fix no older than this (ms) before forcing a fresh compute. Kept short
+         * on purpose: **accuracy beats speed on a glance.** An earlier 8 s window let a wrist-raise
+         * reuse a warm fix that could be seconds stale (or, in marginal signal, a bad cached one) —
+         * which showed yardages well off from where you actually stood. At 2 s a reused fix is
+         * essentially your current position; otherwise the burst computes fresh (~1–2 s) so the number
+         * is right. The foreground stream then keeps it current.
          */
-        const val FRESH_ENOUGH_MILLIS = 8_000L
+        const val FRESH_ENOUGH_MILLIS = 2_000L
 
         /**
          * Play-mode continuous tracking: warm and reasonably fresh. Keeping the receiver *powered*

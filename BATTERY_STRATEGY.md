@@ -62,9 +62,11 @@ remember to enable.
 
 **Play mode** is the service `PlayModeService`:
 - Runs `PRIORITY_HIGH_ACCURACY` at a **warm interval** (8 s / min 4 s — `LocationEngine.PLAY_*`).
-  Keeping the receiver *powered* is what kills the cold start, but a reasonably fresh warm fix also
-  lets the resume burst **reuse it outright** (`FRESH_ENOUGH_MILLIS = 8 s`) instead of re-computing —
-  so a glance is usually instant rather than paying a ~1–2 s fix. Any genuinely aged fix still dims.
+  Keeping the receiver *powered* is what kills the cold start. The resume burst reuses a cached fix
+  only if it's **very fresh** (`FRESH_ENOUGH_MILLIS = 2 s`), otherwise it computes fresh — because
+  **accuracy beats speed on a glance**: an earlier 8 s window let a wrist-raise ride a stale/bad
+  cached position and read a wrong yardage. A fix that's implausibly off-hole is flagged, not shown
+  (`Distances.isOnHole`).
 - Publishes to the shared `LocationBus`, same as the in-activity engine — the UI is agnostic to which
   one is driving. The activity still runs its own responsive updates while you're looking; the service
   only adds background warmth (so the foreground refresh is never slower than your GPS mode).

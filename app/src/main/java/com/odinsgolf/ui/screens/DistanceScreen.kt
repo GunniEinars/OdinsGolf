@@ -160,7 +160,13 @@ fun DistanceScreen(
                     style = MaterialTheme.typography.body2,
                 )
             } else if (hole != null) {
-                val d = Distances.toGreen(hole, state.gps.point)
+                // Trust the fix for yardages only when it's plausibly on this hole. A wildly wrong
+                // fix (the "hundreds of metres off" kind) is treated as no usable position, so every
+                // number blanks to "—" and we flag it — never a confident wrong yardage.
+                val hasFix = state.gps.point != null
+                val plausible = state.gps.point?.let { Distances.isOnHole(it, hole) } ?: false
+                val pos = state.gps.point?.takeIf { plausible }
+                val d = Distances.toGreen(hole, pos)
                 // Hero tracks today's pin (front/middle/back), so the big number is the one
                 // you actually club to — front↔back can be a club or two on these greens.
                 val pin = state.settings.pinDepth
@@ -174,11 +180,12 @@ fun DistanceScreen(
                     PinDepth.BACK -> "back"
                     PinDepth.MIDDLE -> "center"
                 }
-                // Honest hero: a stale or absent fix is dimmed and flagged, so an
-                // out-of-date yardage never looks live.
+                // Honest hero: a stale, absent, or off-hole fix is dimmed and flagged, so an
+                // out-of-date or wrong yardage never looks live.
                 val stale = state.gpsStatus == GpsStatus.STALE_FIX
-                val hasFix = state.gps.point != null
-                val heroColor = if (!hasFix || stale) OdinOnDim else OdinGreen
+                val badFix = hasFix && !plausible
+                val trustworthy = hasFix && !stale && plausible
+                val heroColor = if (!trustworthy) OdinOnDim else OdinGreen
 
                 Text(
                     text = formatDistance(pinMeters, units),
@@ -187,16 +194,20 @@ fun DistanceScreen(
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    if (stale) "stale fix · $pinName" else "$pinName · ${units.suffix}",
-                    color = if (stale) OdinAmber else OdinOnDim,
+                    when {
+                        stale -> "stale fix · $pinName"
+                        badFix -> "weak GPS · move & wait"
+                        else -> "$pinName · ${units.suffix}"
+                    },
+                    color = if (stale || badFix) OdinAmber else OdinOnDim,
                     style = MaterialTheme.typography.caption2,
                 )
 
                 // Plays-like = elevation + wind/rain, applied to the chosen pin target.
-                val pl = PlaysLike.toCenter(hole, state.gps.point)
+                val pl = PlaysLike.toCenter(hole, pos)
                 val elevDelta = pl?.takeIf { it.significant }?.deltaMeters ?: 0.0
                 val center = hole.green.center
-                val shotBearing = state.gps.point?.let { me -> center?.let { c -> Geo.bearingDegrees(me, c) } }
+                val shotBearing = pos?.let { me -> center?.let { c -> Geo.bearingDegrees(me, c) } }
                 val windDelta = if (weather != null && shotBearing != null) Wind.playingDelta(weather, shotBearing) else 0.0
                 val totalDelta = elevDelta + windDelta
 
@@ -231,7 +242,7 @@ fun DistanceScreen(
                 val caddieTarget = pinMeters?.let { it + totalDelta }
                 val holeLen = hole.tee?.let { t -> center?.let { c -> Geo.distanceMeters(t, c) } }
                 val nearTee = holeLen != null && pinMeters != null && hole.par >= 4 && pinMeters > holeLen * 0.7
-                if (hasFix && !stale) {
+                if (trustworthy) {
                     if (nearTee && holeLen != null) {
                         Caddie.tee(bag.activeClubs, holeLen)?.let { t ->
                             Text(
@@ -324,7 +335,7 @@ fun DistanceScreen(
                 }
 
                 // Carry over hazards ahead and within reach (the actionable hazard info).
-                val carries = Carry.ahead(hole, state.gps.point)
+                val carries = Carry.ahead(hole, pos)
                 if (carries.isNotEmpty()) {
                     Spacer(Modifier.height(4.dp))
                     carries.forEach { c ->

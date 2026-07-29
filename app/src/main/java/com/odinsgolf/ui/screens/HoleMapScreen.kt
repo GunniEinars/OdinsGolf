@@ -38,6 +38,7 @@ import com.odinsgolf.data.model.GpsStatus
 import com.odinsgolf.data.model.Hole
 import com.odinsgolf.data.model.Weather
 import com.odinsgolf.geo.Carry
+import com.odinsgolf.geo.Distances
 import com.odinsgolf.geo.Geo
 import com.odinsgolf.geo.HoleProjection
 import com.odinsgolf.geo.PlaysLike
@@ -108,10 +109,12 @@ private fun VectorHoleMap(
     val tee = hole.tee
     val front = hole.green.front
     val back = hole.green.back
-    val rawMe = state.gps.point
-    val me = rawMe?.takeIf { center == null || Geo.distanceMeters(it, center) < 2000 }
+    // Only trust the fix as "you" when it's plausibly on this hole. A wildly wrong fix (hundreds of
+    // metres off) must never drive the map or the yardage — it stays null, so the map frames on the
+    // hole and the number blanks, instead of squishing the hole into a corner or lying.
+    val me = state.gps.point?.takeIf { Distances.isOnHole(it, hole) }
     // Big number is the live distance from where you stand — like the Distance hero. With no live
-    // fix it blanks to "—" rather than quietly showing the tee→green length as if it were live.
+    // (or trustworthy) fix it blanks to "—".
     val toGreen = center?.let { c -> me?.let { Geo.distanceMeters(it, c) } }
 
     // Tap-to-measure: distance from where you'd play the shot (live position, else the tee) to the
@@ -120,10 +123,12 @@ private fun VectorHoleMap(
     val aimFromOrigin = aim?.let { a -> aimOrigin?.let { Geo.distanceMeters(it, a) } }
     val aimToGreen = aim?.let { a -> center?.let { Geo.distanceMeters(a, it) } }
 
+    // The projection frames on the HOLE only (tee, green, features, centerline, hazards) — never on
+    // your position — so the hole is always centred and readable even if the fix is off. Your dot is
+    // drawn on top.
     val points = buildList {
         tee?.let { add(it) }
         center?.let { add(it) }
-        me?.let { add(it) }
         hole.features.forEach { addAll(it.ring) }
         addAll(hole.path)
         addAll(hole.hazards.map { it.point })

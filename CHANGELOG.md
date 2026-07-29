@@ -201,6 +201,20 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
   phase is a clean blank to avoid the circular-mask clipping that affects wide logos). The
   **app icon** is inset so the whole logo fits the circular launcher mask.
 
+### Fixed (round 3 regression — unusable distances/map)
+- **Wrong yardages and a hole squished into the corner.** After a round where every hole read
+  hundreds of metres off and the map wasn't centred, root-caused to a bad GPS position feeding both
+  the number *and* the map framing at once. Three fixes:
+  - **The map now frames on the hole only** (tee/green/features/centerline), never on your position,
+    so a wrong fix can't drag the hole into a corner — it stays centred and tap-to-measure keeps working.
+  - **Glances fetch a fresh fix instead of a stale cached one.** The earlier warm-GPS retune let a
+    wrist-raise reuse a fix up to 8 s old; in marginal signal that could ride a bad position. Cut to
+    2 s (`FRESH_ENOUGH_MILLIS`) — a reused fix is essentially current, otherwise it computes fresh.
+  - **An off-hole fix is now flagged, not trusted.** A new `Distances.isOnHole` guard rejects a fix
+    that puts you materially farther from the green than the tee is (impossible on a real hole): the
+    hero blanks to "—" with **"weak GPS · move & wait"** instead of a confident wrong number, on both
+    the Distance screen and the map. Unit-tested; generous margin so normal play never trips it.
+
 ### Fixed (course data)
 - **Missing fairway bunkers on shared holes.** Setberg plays 9 fairways twice (1/10, 2/11, … 9/18),
   but the geometry bake had filed each shared bunker under only one hole of the pair — so e.g. hole 1's
