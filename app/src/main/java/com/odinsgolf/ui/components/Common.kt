@@ -37,6 +37,7 @@ fun statusColor(status: GpsStatus): Color = when (status) {
     GpsStatus.SEARCHING -> OdinAmber
     GpsStatus.PAUSED -> OdinOnDim
     GpsStatus.PERMISSION_NEEDED -> OdinRed
+    GpsStatus.LOCATION_DISABLED -> OdinRed
     GpsStatus.UNAVAILABLE -> OdinRed
 }
 
@@ -47,6 +48,7 @@ fun statusLabel(status: GpsStatus): String = when (status) {
     GpsStatus.SEARCHING -> "Searching"
     GpsStatus.PAUSED -> "Paused"
     GpsStatus.PERMISSION_NEEDED -> "No permission"
+    GpsStatus.LOCATION_DISABLED -> "Location off"
     GpsStatus.UNAVAILABLE -> "No GPS"
 }
 

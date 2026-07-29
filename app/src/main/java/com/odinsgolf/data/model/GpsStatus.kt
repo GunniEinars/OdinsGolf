@@ -3,6 +3,8 @@ package com.odinsgolf.data.model
 /** Coarse GPS state surfaced to the UI. */
 enum class GpsStatus {
     PERMISSION_NEEDED,
+    /** Location services are switched off system-wide — the app can't get any fix until it's on. */
+    LOCATION_DISABLED,
     SEARCHING,
     GOOD_FIX,
     WEAK_FIX,

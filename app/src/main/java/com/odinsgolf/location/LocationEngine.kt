@@ -98,12 +98,24 @@ class LocationEngine(private val context: Context) {
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
 
+    /** Whether location services are switched on system-wide. Off ⇒ we get no fixes at all. */
+    fun isLocationEnabled(): Boolean =
+        runCatching {
+            context.getSystemService(android.location.LocationManager::class.java)?.isLocationEnabled == true
+        }.getOrDefault(true)
+
     fun start(mode: GpsUpdateMode) = start(mode.intervalMillis, mode.minUpdateMillis)
 
     @SuppressLint("MissingPermission")
     fun start(intervalMillis: Long, minUpdateMillis: Long) {
         if (!hasPermission()) {
             LocationBus.state.value = LocationBus.state.value.copy(status = GpsStatus.PERMISSION_NEEDED)
+            return
+        }
+        // Location switched off system-wide ⇒ no fixes will ever arrive. Surface it plainly instead
+        // of spinning on "Searching" forever (the failure that made a whole round unusable).
+        if (!isLocationEnabled()) {
+            LocationBus.state.value = LocationBus.state.value.copy(status = GpsStatus.LOCATION_DISABLED)
             return
         }
         // Always rebuild the request so a mode change takes effect.
@@ -221,6 +233,7 @@ fun GpsState.effectiveStatus(
     staleAfterMillis: Long = LocationEngine.STALE_AFTER_MILLIS,
 ): GpsStatus {
     if (status == GpsStatus.PERMISSION_NEEDED ||
+        status == GpsStatus.LOCATION_DISABLED ||
         status == GpsStatus.UNAVAILABLE ||
         status == GpsStatus.PAUSED ||
         point == null

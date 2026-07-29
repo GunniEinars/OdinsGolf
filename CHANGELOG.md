@@ -214,6 +214,11 @@ All notable changes to OdinsGolf. Format loosely follows Keep a Changelog.
     that puts you materially farther from the green than the tee is (impossible on a real hole): the
     hero blanks to "—" with **"weak GPS · move & wait"** instead of a confident wrong number, on both
     the Distance screen and the map. Unit-tested; generous margin so normal play never trips it.
+  - **"Location off" is now surfaced.** If location services are switched off system-wide (found off
+    on the watch — it can revert on a reboot, and a degraded/network-only state gives wildly wrong
+    positions), the app showed only an endless "Searching". It now detects it
+    (`LocationEngine.isLocationEnabled` → `GpsStatus.LOCATION_DISABLED`) and shows a red **"Location
+    off — turn it on"** instead of pretending to search.
 
 ### Fixed (course data)
 - **Missing fairway bunkers on shared holes.** Setberg plays 9 fairways twice (1/10, 2/11, … 9/18),

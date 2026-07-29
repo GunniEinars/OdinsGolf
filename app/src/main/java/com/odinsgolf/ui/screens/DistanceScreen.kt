@@ -183,6 +183,7 @@ fun DistanceScreen(
                 // Honest hero: a stale, absent, or off-hole fix is dimmed and flagged, so an
                 // out-of-date or wrong yardage never looks live.
                 val stale = state.gpsStatus == GpsStatus.STALE_FIX
+                val locationOff = state.gpsStatus == GpsStatus.LOCATION_DISABLED
                 val badFix = hasFix && !plausible
                 val trustworthy = hasFix && !stale && plausible
                 val heroColor = if (!trustworthy) OdinOnDim else OdinGreen
@@ -195,11 +196,16 @@ fun DistanceScreen(
                 )
                 Text(
                     when {
+                        locationOff -> "Location off — turn it on"
                         stale -> "stale fix · $pinName"
                         badFix -> "weak GPS · move & wait"
                         else -> "$pinName · ${units.suffix}"
                     },
-                    color = if (stale || badFix) OdinAmber else OdinOnDim,
+                    color = when {
+                        locationOff -> MaterialTheme.colors.error
+                        stale || badFix -> OdinAmber
+                        else -> OdinOnDim
+                    },
                     style = MaterialTheme.typography.caption2,
                 )
 
